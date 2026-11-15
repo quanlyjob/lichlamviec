@@ -1670,6 +1670,207 @@
       box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
     }
 
+
+    /* === NÂNG CẤP V9: TÔ MÀU DÒNG CHƯA TT, NGÀY LỊCH XONG MÀU XANH & ĐỒNG BỘ TOÀN BỘ POPUP === */
+
+    /* 1. Tô màu dòng có tình trạng "Chưa TT" tại trang Quản lý công việc */
+    .row-status-chuatt td {
+      background-color: #fff1f2 !important;
+      color: #881337 !important;
+    }
+    .row-status-chuatt td:first-child {
+      border-left: 4px solid #e11d48 !important;
+    }
+    .row-status-chuatt:hover td {
+      background-color: #ffe4e6 !important;
+    }
+    .row-status-chuatt td .job-badge {
+      background-color: #ffe4e6 !important;
+      border-color: #fda4af !important;
+      color: #9f1239 !important;
+    }
+
+    .row-status-xong td:first-child {
+      border-left: 4px solid #16a34a !important;
+    }
+    .row-status-xong:hover td {
+      background-color: #dcfce7 !important;
+    }
+
+    /* Thẻ mobile khi ở trạng thái Chưa TT */
+    .mobile-job-card.card-status-chuatt {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      border-left: 4px solid #e11d48;
+    }
+
+    /* 2. Tại Lịch làm việc: Ngày có toàn bộ công việc đạt trạng thái "Xong" hiển thị màu xanh lá */
+    .calendar-day.all-done {
+      background: #f0fdf4 !important;
+      border-color: #86efac !important;
+    }
+    .calendar-day.all-done:hover {
+      background: #dcfce7 !important;
+      border-color: #4ade80 !important;
+    }
+    .calendar-day.all-done .day-number {
+      color: #166534;
+    }
+    .calendar-day.all-done.today {
+      border: 2px solid #16a34a !important;
+    }
+    .calendar-day.all-done.today .day-number {
+      background-color: #16a34a !important;
+      color: #ffffff !important;
+    }
+    .calendar-day.all-done .lunar-date {
+      color: #15803d !important;
+    }
+    .calendar-day.all-done .event-badge {
+      background: #16a34a !important;
+      color: #ffffff !important;
+    }
+    /* Khi đang bấm chọn vào ngày đã Xong hết: giữ tông xanh đậm đồng bộ */
+    .calendar-day.all-done.selected-date {
+      background: #15803d !important;
+      border-color: #166534 !important;
+      color: #ffffff !important;
+      box-shadow: 0 6px 16px rgba(21, 128, 61, 0.28) !important;
+    }
+    .calendar-day.all-done.selected-date .day-number {
+      background-color: rgba(255, 255, 255, 0.22) !important;
+      color: #ffffff !important;
+    }
+    .calendar-day.all-done.selected-date .lunar-date {
+      color: #bbf7d0 !important;
+    }
+    .calendar-day.all-done.selected-date .event-badge {
+      background: #ffffff !important;
+      color: #15803d !important;
+    }
+
+    /* Thẻ công việc bên cột chi tiết ngày khi công việc đã "Xong" */
+    .event-item-card.event-done {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      border-left: 4px solid #16a34a;
+    }
+    .event-item-card.event-done:hover {
+      background: #ffffff;
+      border-color: #86efac;
+      border-left-color: #16a34a;
+    }
+
+    /* 3. Đồng bộ giao diện Công nợ & Bảng kê lương, Báo cáo tài chính và toàn bộ Modal */
+    .statement-mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: #f1f5f9;
+      padding: 5px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .statement-mode-tab {
+      position: relative;
+      margin: 0;
+    }
+    .statement-mode-tab input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .statement-mode-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 12px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      text-align: center;
+      user-select: none;
+    }
+    .statement-mode-tab input[type="radio"]:checked + .statement-mode-label {
+      background: #ffffff;
+      color: #7b1113;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+    .statement-mode-tab input[type="radio"]#modeExecutor:checked + .statement-mode-label {
+      color: #15803d;
+    }
+
+    .statement-filter-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .statement-textarea {
+      border-radius: 12px !important;
+      background-color: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      padding: 12px 14px !important;
+      font-size: 12.5px !important;
+      line-height: 1.55 !important;
+      color: #1e293b !important;
+    }
+
+    .btn-brand-primary {
+      background-color: #7b1113 !important;
+      border-color: #7b1113 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(123, 17, 19, 0.2) !important;
+    }
+    .btn-brand-primary:hover {
+      background-color: #991b1b !important;
+      border-color: #991b1b !important;
+      color: #ffffff !important;
+      transform: translateY(-1px);
+    }
+
+    /* Thẻ thống kê trong Popup Báo cáo tài chính tổng hợp */
+    .report-stat-card {
+      padding: 18px 14px;
+      border-radius: 16px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.18s ease;
+    }
+    .report-stat-card:hover {
+      background: #ffffff;
+      box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.06);
+      transform: translateY(-2px);
+    }
+    .report-stat-card.stat-unpaid {
+      background: #fff1f2;
+      border-color: #fecdd3;
+    }
+    .report-stat-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+    .report-stat-value {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
   </style>
 </head>
 <body>
@@ -2125,125 +2326,138 @@
   </div>
 </div>
 
-<!-- Modal Công Nợ & Bảng Kê Lương -->
+<!-- Modal Công Nợ & Bảng Kê Lương (Đồng bộ UI Hiện đại) -->
 <div class="modal fade" id="debtQrModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header py-2">
-        <h6 class="modal-title fw-bold">Công Nợ & Bảng Kê Lương</h6>
+      <div class="modal-header">
+        <h6 class="modal-title">Công Nợ & Bảng Kê Lương</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body py-3">
-        <!-- Chuyển đổi chế độ: Công nợ khách hàng hoặc Bảng kê lương nhân sự -->
-        <div class="mb-2 d-flex align-items-center gap-4 bg-light p-2 rounded border">
-          <div class="form-check mb-0">
-            <input class="form-check-input" type="radio" name="statementMode" id="modeCustomer" value="customer" checked onchange="switchStatementMode()">
-            <label class="form-check-label small fw-bold text-primary" for="modeCustomer" style="cursor: pointer;">📋 Công nợ Khách hàng</label>
+      <div class="modal-body">
+        <!-- Segmented Control chuyển đổi chế độ -->
+        <div class="statement-mode-tabs">
+          <div class="statement-mode-tab">
+            <input type="radio" name="statementMode" id="modeCustomer" value="customer" checked onchange="switchStatementMode()">
+            <label class="statement-mode-label" for="modeCustomer">📋 Công nợ Khách hàng</label>
           </div>
-          <div class="form-check mb-0">
-            <input class="form-check-input" type="radio" name="statementMode" id="modeExecutor" value="executor" onchange="switchStatementMode()">
-            <label class="form-check-label small fw-bold text-success" for="modeExecutor" style="cursor: pointer;">💰 Bảng kê Lương</label>
-          </div>
-        </div>
-
-        <div class="row g-2 mb-2">
-          <div class="col-7">
-            <!-- Nhóm chọn Khách hàng -->
-            <div id="customerSelectorGroup">
-              <label class="form-label small fw-bold mb-1">1. Tìm & Chọn Khách hàng:</label>
-              <input type="text" id="qrSearchCustomerInput" class="form-control form-control-sm mb-1" placeholder="🔍 Gõ tên khách / studio..." oninput="filterQrCustomerDropdown()">
-              <select id="qrCustomerSelect" class="form-select form-select-sm fw-semibold text-primary" onchange="generateQrStatement()">
-                <option value="">-- Chọn khách hàng --</option>
-              </select>
-            </div>
-            <!-- Nhóm chọn Người thực hiện (Lương) -->
-            <div id="executorSelectorGroup" class="d-none">
-              <label class="form-label small fw-bold mb-1">1. Tìm & Chọn Nhân sự:</label>
-              <input type="text" id="qrSearchExecutorInput" class="form-control form-control-sm mb-1" placeholder="🔍 Gõ tên nhân sự..." oninput="filterQrExecutorDropdown()">
-              <select id="qrExecutorSelect" class="form-select form-select-sm fw-semibold text-success" onchange="generateQrStatement()">
-                <option value="">-- Chọn nhân sự --</option>
-              </select>
-            </div>
-          </div>
-          <div class="col-5">
-            <label class="form-label small fw-bold mb-1">2. Kỳ (Tháng):</label>
-            <select id="qrMonthSelect" class="form-select form-select-sm fw-semibold" onchange="generateQrStatement()">
-              <option value="">Tất cả các tháng</option>
-            </select>
-            <div class="form-text mt-1" style="font-size: 11px;">Chọn tất cả hoặc lọc theo tháng.</div>
+          <div class="statement-mode-tab">
+            <input type="radio" name="statementMode" id="modeExecutor" value="executor" onchange="switchStatementMode()">
+            <label class="statement-mode-label" for="modeExecutor">💰 Bảng kê Lương</label>
           </div>
         </div>
 
-        <label class="form-label small fw-bold mt-1">3. Nội dung bảng kê:</label>
-        <textarea id="qrStatementText" class="form-control font-monospace mb-3" rows="11" style="font-size: 11.5px; background-color: #f8fafc;"></textarea>
-        <button type="button" class="btn btn-primary btn-sm w-100 fw-bold py-2" id="btnCopyDebtText" onclick="copyDebtText(this)">Copy Bảng Kê Gửi Zalo</button>
+        <!-- Khung bộ lọc tìm kiếm -->
+        <div class="statement-filter-card">
+          <div class="row g-2.5">
+            <div class="col-12 col-sm-7">
+              <!-- Nhóm chọn Khách hàng -->
+              <div id="customerSelectorGroup">
+                <label class="form-label small fw-bold text-secondary mb-1">1. Tìm & Chọn Khách hàng</label>
+                <input type="text" id="qrSearchCustomerInput" class="form-control mb-2" placeholder="🔍 Gõ tên khách / studio..." oninput="filterQrCustomerDropdown()">
+                <select id="qrCustomerSelect" class="form-select fw-semibold text-primary" onchange="generateQrStatement()">
+                  <option value="">-- Chọn khách hàng --</option>
+                </select>
+              </div>
+              <!-- Nhóm chọn Người thực hiện (Lương) -->
+              <div id="executorSelectorGroup" class="d-none">
+                <label class="form-label small fw-bold text-secondary mb-1">1. Tìm & Chọn Nhân sự</label>
+                <input type="text" id="qrSearchExecutorInput" class="form-control mb-2" placeholder="🔍 Gõ tên nhân sự..." oninput="filterQrExecutorDropdown()">
+                <select id="qrExecutorSelect" class="form-select fw-semibold text-success" onchange="generateQrStatement()">
+                  <option value="">-- Chọn nhân sự --</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-12 col-sm-5 d-flex flex-column justify-content-between">
+              <div>
+                <label class="form-label small fw-bold text-secondary mb-1">2. Kỳ thống kê (Tháng)</label>
+                <select id="qrMonthSelect" class="form-select fw-semibold" onchange="generateQrStatement()">
+                  <option value="">📅 Tất cả các tháng</option>
+                </select>
+              </div>
+              <div class="text-muted mt-2" style="font-size: 11.5px; line-height: 1.35;">
+                💡 Tự động tổng hợp theo thứ tự ngày & giờ thực hiện.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <label class="form-label small fw-bold text-secondary mb-1.5">3. Nội dung bảng kê gửi Zalo:</label>
+        <textarea id="qrStatementText" class="form-control font-monospace statement-textarea mb-3" rows="9"></textarea>
+
+        <button type="button" class="btn btn-brand-primary w-100 py-2.5" id="btnCopyDebtText" onclick="copyDebtText(this)">
+          📤 Sao Chép Bảng Kê Gửi Zalo
+        </button>
       </div>
-      <div class="modal-footer py-2">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Báo Cáo Tài Chính Tổng Hợp -->
+<!-- Modal Báo Cáo Tài Chính Tổng Hợp (Đồng bộ UI Hiện đại) -->
 <div class="modal fade" id="reportModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-      <div class="modal-header py-2">
-        <h6 class="modal-title fw-bold">BÁO CÁO TÀI CHÍNH TỔNG HỢP <span id="reportSubtitleModal" class="text-primary fw-normal"></span></h6>
+      <div class="modal-header">
+        <h6 class="modal-title">Báo Cáo Tài Chính Tổng Hợp <span id="reportSubtitleModal" class="text-secondary fw-semibold ms-1" style="font-size: 13.5px;"></span></h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body py-3">
+      <div class="modal-body">
         <div class="row g-3 text-center">
           <div class="col-6 col-md-3">
-            <div class="p-3 rounded bg-light border">
-              <div class="small text-muted mb-1">Tổng Doanh Thu (Giá trị)</div>
-              <div class="fs-5 fw-bold text-primary" id="repTotalRevenue">0 đ</div>
-              <small class="text-muted" id="repTotalJobCount">0 công việc</small>
+            <div class="report-stat-card">
+              <div class="report-stat-label">Tổng Doanh Thu</div>
+              <div class="report-stat-value text-primary" id="repTotalRevenue">0 đ</div>
+              <small class="text-muted fw-semibold mt-1" id="repTotalJobCount">0 công việc</small>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="p-3 rounded bg-light border">
-              <div class="small text-muted mb-1">Tổng Chi Phí</div>
-              <div class="fs-5 fw-bold text-secondary" id="repTotalCost">0 đ</div>
+            <div class="report-stat-card">
+              <div class="report-stat-label">Tổng Chi Phí</div>
+              <div class="report-stat-value text-secondary" id="repTotalCost">0 đ</div>
+              <small class="text-muted mt-1" style="font-size: 11.5px;">Chi phí nhân sự / phụ phí</small>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="p-3 rounded bg-light border">
-              <div class="small text-muted mb-1">Tổng Lợi Nhuận Thực Tế</div>
-              <div class="fs-5 fw-bold text-success" id="repTotalProfit">0 đ</div>
+            <div class="report-stat-card">
+              <div class="report-stat-label">Lợi Nhuận Thực Tế</div>
+              <div class="report-stat-value text-success" id="repTotalProfit">0 đ</div>
+              <small class="text-muted mt-1" style="font-size: 11.5px;">Doanh thu trừ chi phí</small>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="p-3 rounded bg-danger bg-opacity-10 border border-danger">
-              <div class="small text-danger fw-semibold mb-1">Công Nợ Phải Thu</div>
-              <div class="fs-5 fw-bold text-danger" id="repTotalUnpaid">0 đ</div>
+            <div class="report-stat-card stat-unpaid">
+              <div class="report-stat-label text-danger">Công Nợ Phải Thu</div>
+              <div class="report-stat-value text-danger" id="repTotalUnpaid">0 đ</div>
+              <small class="text-danger opacity-75 mt-1" style="font-size: 11.5px;">Các công việc Chưa TT</small>
             </div>
           </div>
         </div>
       </div>
-      <div class="modal-footer py-2">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Custom Dialog Modal -->
+<!-- Custom Dialog Modal (Đồng bộ UI Hiện đại) -->
 <div class="modal fade" id="customDialogModal" tabindex="-1" style="z-index: 100000;">
   <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
-      <div class="modal-header py-2.5 bg-dark text-white border-0">
-        <h6 class="modal-title fw-bold" id="customDialogTitle" style="font-size: 14px;">Xác nhận</h6>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="customDialogTitle">Xác nhận</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body py-3 px-3 text-center">
+      <div class="modal-body text-center">
         <div id="customDialogMessage" class="mb-2 fw-semibold text-dark" style="font-size: 13.5px;"></div>
-        <input type="text" id="customDialogInput" class="form-control form-control-sm text-center mt-2 d-none" autocomplete="off">
+        <input type="text" id="customDialogInput" class="form-control text-center mt-2 d-none" autocomplete="off">
       </div>
-      <div class="modal-footer py-2 justify-content-center border-0 bg-light gap-2">
-        <button type="button" class="btn btn-outline-secondary btn-sm fw-semibold px-3" data-bs-dismiss="modal" id="customDialogCancelBtn">Hủy</button>
-        <button type="button" class="btn btn-primary btn-sm fw-bold px-4" id="customDialogConfirmBtn">Đồng ý</button>
+      <div class="modal-footer justify-content-center gap-2">
+        <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal" id="customDialogCancelBtn">Hủy</button>
+        <button type="button" class="btn btn-brand-primary btn-sm px-4" id="customDialogConfirmBtn">Đồng ý</button>
       </div>
     </div>
   </div>
@@ -2694,7 +2908,7 @@
     document.getElementById('customDialogCancelBtn').classList.remove('d-none');
     
     const btnConfirm = document.getElementById('customDialogConfirmBtn');
-    btnConfirm.className = 'btn btn-primary btn-sm fw-bold px-4';
+    btnConfirm.className = 'btn btn-brand-primary btn-sm fw-bold px-4';
     btnConfirm.innerText = 'Lưu lại';
     
     customDialogCallback = onConfirm;
@@ -3196,11 +3410,12 @@
 
       let dayJobs = allJobs.filter(j => j.ngay === dateFormatted && (j.congViec.trim() !== '' || j.khachHang.trim() !== ''));
       let hasEvent = dayJobs.length > 0;
+      let isAllDone = hasEvent && dayJobs.every(j => String(j.tinhTrang || '').trim() === 'Xong');
       let isToday = (dateIso === todayIso);
       let isSelected = (dateIso === selectedDateIso);
 
       let classList = "calendar-day";
-      if (hasEvent) classList += " has-event";
+      if (hasEvent) classList += isAllDone ? " has-event all-done" : " has-event";
       if (isSelected) classList += " selected-date";
       if (isToday) classList += " today";
 
@@ -3209,7 +3424,7 @@
       html += `<div class="${classList}" onclick="selectDate('${dateIso}')">
         <div class="day-number">${day}</div>
         <div class="lunar-date">${lunarStr}</div>
-        ${hasEvent ? `<div class="event-badge">${dayJobs.length} lịch</div>` : ''}
+        ${hasEvent ? `<div class="event-badge">${isAllDone ? '✓ ' : ''}${dayJobs.length} lịch</div>` : ''}
       </div>`;
     }
 
@@ -3306,10 +3521,15 @@
         timeAndAddrHtml = `<div class="event-card-addr fst-italic">Chưa cập nhật khung giờ và địa điểm</div>`;
       }
 
-      html += `<div class="event-item-card">
+      const isJobDone = String(j.tinhTrang || '').trim() === 'Xong';
+      const badgeStyle = isJobDone
+        ? "background:#dcfce7; color:#166534; border:1px solid #86efac; font-size: 11.5px; font-weight: 700;"
+        : "background:#fff1f2; color:#9f1239; border:1px solid #fecdd3; font-size: 11.5px; font-weight: 700;";
+
+      html += `<div class="event-item-card ${isJobDone ? 'event-done' : ''}">
         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
           <div class="d-flex align-items-center flex-wrap gap-2">
-            <span class="badge rounded-pill px-2.5 py-1" style="background:#fff1f2; color:#9f1239; border:1px solid #fecdd3; font-size: 11.5px; font-weight: 700;" onclick="openJobInfoPopup(${j.rowNumber})" role="button" title="Bấm để xem chi tiết & thao tác">${j.congViec || 'Chưa phân loại'}</span>
+            <span class="badge rounded-pill px-2.5 py-1" style="${badgeStyle}" onclick="openJobInfoPopup(${j.rowNumber})" role="button" title="Bấm để xem chi tiết & thao tác">${isJobDone ? '✓ ' : ''}${j.congViec || 'Chưa phân loại'}</span>
             <h6 class="event-card-customer">${j.khachHang || 'Chưa ghi tên'}</h6>
           </div>
           <div class="flex-shrink-0">${mapStatusBadgeHtml}</div>
@@ -4185,7 +4405,8 @@
         }
 
         let isXong = (j.tinhTrang === 'Xong');
-        let rowClassAttr = isXong ? 'row-status-xong' : '';
+        let isChuaTT = (j.tinhTrang === 'Chưa TT');
+        let rowClassAttr = isXong ? 'row-status-xong' : (isChuaTT ? 'row-status-chuatt' : '');
         if (isToday) rowClassAttr += (rowClassAttr ? ' today-row' : 'today-row');
 
         const parsedDetail = splitJobDetail(j.chiTiet);
@@ -4340,7 +4561,7 @@
           const safeCust = escapeJsQuotes(j.khachHang || '');
 
           cardsHtml += `
-            <div class="mobile-job-card ${j.tinhTrang === 'Xong' ? 'card-status-xong' : ''} ${isToday ? 'card-today' : ''}">
+            <div class="mobile-job-card ${j.tinhTrang === 'Xong' ? 'card-status-xong' : (j.tinhTrang === 'Chưa TT' ? 'card-status-chuatt' : '')} ${isToday ? 'card-today' : ''}">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <div class="d-flex align-items-center gap-1.5">
                   <span class="fw-bold text-dark" style="font-size: 13.5px;">${item.thu}, ${j.ngay}</span>
@@ -4753,7 +4974,7 @@
   function copyDebtText(btnEl) {
     const ta = document.getElementById('qrStatementText');
     navigator.clipboard.writeText(ta.value).then(() => {
-      animateCopyButton(btnEl, 'Copy Bảng Kê Gửi Zalo');
+      animateCopyButton(btnEl, '📤 Sao Chép Bảng Kê Gửi Zalo');
       showToast("Đã copy nội dung bảng kê");
     });
   }
