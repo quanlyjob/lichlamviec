@@ -2163,19 +2163,19 @@
             <div class="job-info-label">Người thực hiện</div>
             <div class="job-info-val text-success fw-semibold" id="infoPopupNguoiThucHien">-</div>
           </div>
-          <div class="job-info-row">
-            <div class="job-info-label">Ghi chú</div>
-            <div class="job-info-val text-dark" id="infoPopupGhiChu">-</div>
+          <div class="job-info-row align-items-start">
+            <div class="job-info-label pt-1">Ghi chú</div>
+            <div class="job-info-val">
+              <textarea id="infoPopupGhiChuInput" class="form-control form-control-sm" rows="2" placeholder="Nhập hoặc sửa ghi chú trực tiếp tại đây..." style="font-size: 13px; background-color: #ffffff;"></textarea>
+              <div class="d-flex justify-content-end mt-1.5">
+                <button type="button" class="btn btn-sm py-1 px-2.5 fw-semibold text-white" id="btnSavePopupNote" onclick="saveNoteFromInfoPopup(this)" style="background-color: #7b1113; font-size: 11.5px; border-radius: 7px;">💾 Lưu ghi chú</button>
+              </div>
+            </div>
           </div>
         </div>
 
         <label class="form-label small fw-bold text-secondary mb-1.5">Nội dung tin nhắn gửi Zalo:</label>
         <textarea id="infoPopupZaloText" class="form-control font-monospace mb-3" rows="6" style="font-size: 12.5px; background-color: #f8fafc;"></textarea>
-
-        <div class="mb-3">
-          <label class="form-label small fw-bold text-secondary mb-1.5">Nội dung ghi chú:</label>
-          <textarea id="infoPopupNoteContent" class="form-control" rows="2" readonly placeholder="Không có ghi chú cho công việc này" style="font-size: 13px; background-color: #fffbeb; border-color: #fde68a !important; color: #78350f;"></textarea>
-        </div>
 
         <div class="d-flex gap-2 justify-content-end align-items-center">
           <button type="button" class="btn btn-toolbar-modern btn-sm px-3" id="btnEditFromInfoPopup">✏️ Sửa công việc</button>
@@ -2205,7 +2205,7 @@
             <option value="jobTypes">Loại Công việc</option>
             <option value="customerList">Khách hàng</option>
             <option value="executorList">Người thực hiện</option>
-            <option value="statusList">Tình trạng công việc</option>
+            
           </select>
         </div>
 
@@ -2250,35 +2250,30 @@
 
           <div class="row g-2.5 mb-2.5">
             <div class="col-6">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="form-label mb-0">Công việc</label>
-                <a href="javascript:void(0)" class="btn-quick-add" onclick="addNewJobTypeOption()">+ Thêm</a>
-              </div>
-              <select class="form-select" name="congViec" id="formCongViec" required></select>
+              <label class="form-label">Công việc</label>
+              <input type="text" class="form-control" name="congViec" id="formCongViec" list="listCongViec" placeholder="Nhập hoặc chọn công việc..." autocomplete="off" required>
+              <datalist id="listCongViec"></datalist>
             </div>
             <div class="col-6">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="form-label mb-0">Tình trạng</label>
-                <a href="javascript:void(0)" class="btn-quick-add" onclick="addNewStatusOption()">+ Thêm</a>
-              </div>
-              <select class="form-select" name="tinhTrang" id="formTinhTrang" required></select>
+              <label class="form-label">Tình trạng</label>
+              <select class="form-select" name="tinhTrang" id="formTinhTrang" required>
+                <option value="Chờ">Chờ</option>
+                <option value="Chưa TT">Chưa TT</option>
+                <option value="Xong">Xong</option>
+              </select>
             </div>
           </div>
 
           <div class="row g-2.5 mb-2.5">
             <div class="col-6">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="form-label mb-0">Khách hàng</label>
-                <a href="javascript:void(0)" class="btn-quick-add" onclick="addNewCustomerOption()">+ Thêm</a>
-              </div>
-              <select class="form-select" name="khachHang" id="formKhachHang" required></select>
+              <label class="form-label">Khách hàng</label>
+              <input type="text" class="form-control" name="khachHang" id="formKhachHang" list="listKhachHang" placeholder="Nhập hoặc chọn khách hàng..." autocomplete="off" required>
+              <datalist id="listKhachHang"></datalist>
             </div>
             <div class="col-6">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="form-label mb-0">Người thực hiện</label>
-                <a href="javascript:void(0)" class="btn-quick-add" onclick="addNewExecutorOption()">+ Thêm</a>
-              </div>
-              <select class="form-select" name="nguoiThucHien" id="formNguoiThucHien" required></select>
+              <label class="form-label">Người thực hiện</label>
+              <input type="text" class="form-control" name="nguoiThucHien" id="formNguoiThucHien" list="listNguoiThucHien" placeholder="Nhập hoặc chọn nhân sự..." autocomplete="off" required>
+              <datalist id="listNguoiThucHien"></datalist>
             </div>
           </div>
           
@@ -3103,10 +3098,9 @@
     const ghiChuStr = getJobNote(j);
     document.getElementById('infoPopupKhachHang').innerText = khachHangStr;
     document.getElementById('infoPopupNguoiThucHien').innerText = nguoiThucHienStr;
-    document.getElementById('infoPopupGhiChu').innerHTML = ghiChuStr
-      ? `<span class="text-dark">${ghiChuStr.replace(/\n/g, '<br>')}</span>`
-      : `<span class="text-muted fst-italic fw-normal">Không có ghi chú</span>`;
-    document.getElementById('infoPopupNoteContent').value = ghiChuStr;
+    const noteInp = document.getElementById('infoPopupGhiChuInput');
+    noteInp.value = ghiChuStr;
+    noteInp.setAttribute('data-row', rowNumber);
 
     const btnEdit = document.getElementById('btnEditFromInfoPopup');
     btnEdit.onclick = function() {
@@ -3128,6 +3122,64 @@
     document.getElementById('infoPopupZaloText').value = buildZaloJobText(j, savedMapLink);
 
     jobInfoPopupModalInstance.show();
+  }
+
+  function saveNoteFromInfoPopup(btnEl) {
+    const noteInp = document.getElementById('infoPopupGhiChuInput');
+    const rowNumber = Number(noteInp.getAttribute('data-row'));
+    if (!rowNumber) return;
+    const j = allJobs.find(item => item.rowNumber === rowNumber);
+    if (!j) return;
+
+    const newNote = noteInp.value.trim();
+    const parsed = splitJobDetail(j.chiTiet);
+    let combinedDetail = combineJobDetail(parsed.thoiGian, parsed.diaChi);
+    if (newNote) {
+      combinedDetail += ` [NOTE:${newNote.replace(/\]/g, ')')}]`;
+    }
+
+    const oldHtml = btnEl ? btnEl.innerHTML : '💾 Lưu ghi chú';
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.innerHTML = 'Đang lưu...';
+    }
+
+    const formData = {
+      rowNumber: j.rowNumber,
+      ngay: toInputDate(j.ngay),
+      congViec: j.congViec || '',
+      chiTiet: combinedDetail,
+      mapLink: j.mapLink || '',
+      ghiChu: newNote,
+      khachHang: j.khachHang || '',
+      nguoiThucHien: j.nguoiThucHien || 'Lê Tân',
+      tinhTrang: j.tinhTrang || 'Chờ',
+      giaTri: j.luuTruGiaTri || parseMoney(j.giaTri),
+      daCoc: j.luuTruDaCoc || parseMoney(j.daCoc),
+      chiPhi: j.luuTruChiPhi || parseMoney(j.chiPhi),
+      maDangNhap: j.maDangNhap || currentAuthCode
+    };
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        allJobs = res.jobs || [];
+        renderCalendar();
+        renderSelectedDayJobs();
+        renderMasterTable();
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = oldHtml;
+        }
+        showToast('Đã lưu ghi chú công việc');
+      })
+      .withFailureHandler(function(err) {
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = oldHtml;
+        }
+        showToast('Lỗi lưu ghi chú: ' + (err.message || err), true);
+      })
+      .saveJobData(formData);
   }
 
   function copyJobInfoZalo(btnEl) {
@@ -3588,29 +3640,29 @@
 
   function updateHeaderStats() {}
 
+  const FIXED_EDIT_STATUSES = ["Chờ", "Chưa TT", "Xong"];
+
   function populateModalDropdowns(selectedJob = "", selectedCust = "", selectedExec = "", selectedStatus = "") {
     let jobOpts = [...jobTypes];
     if (selectedJob && !jobOpts.includes(selectedJob)) jobOpts.push(selectedJob);
-    const jobSel = document.getElementById('formCongViec');
-    jobSel.innerHTML = `<option value="">-- Chọn công việc --</option>` + jobOpts.map(j => `<option value="${j}" ${j === selectedJob ? 'selected' : ''}>${j}</option>`).join('');
+    document.getElementById('listCongViec').innerHTML = jobOpts.map(j => `<option value="${j}">`).join('');
+    document.getElementById('formCongViec').value = selectedJob || "";
 
     let custOpts = [...customerList];
     if (selectedCust && !custOpts.includes(selectedCust)) custOpts.push(selectedCust);
-    const custSel = document.getElementById('formKhachHang');
-    custSel.innerHTML = `<option value="">-- Chọn khách hàng --</option>` + custOpts.map(c => `<option value="${c}" ${c === selectedCust ? 'selected' : ''}>${c}</option>`).join('');
+    document.getElementById('listKhachHang').innerHTML = custOpts.map(c => `<option value="${c}">`).join('');
+    document.getElementById('formKhachHang').value = selectedCust || "";
 
     let execOpts = [...executorList];
-    const targetExec = selectedExec || "Lê Tân";
+    const targetExec = selectedExec !== undefined && selectedExec !== null ? selectedExec : "Lê Tân";
     if (targetExec && !execOpts.includes(targetExec)) execOpts.push(targetExec);
-    const execSel = document.getElementById('formNguoiThucHien');
-    execSel.innerHTML = `<option value="">-- Chọn người thực hiện --</option>` + execOpts.map(e => `<option value="${e}" ${e === targetExec ? 'selected' : ''}>${e}</option>`).join('');
+    document.getElementById('listNguoiThucHien').innerHTML = execOpts.map(e => `<option value="${e}">`).join('');
+    document.getElementById('formNguoiThucHien').value = targetExec;
 
-    let statusOpts = [...statusList];
-    const targetStatus = selectedStatus || "Chờ";
-    if (targetStatus && !statusOpts.includes(targetStatus)) statusOpts.push(targetStatus);
+    const targetStatus = FIXED_EDIT_STATUSES.includes(selectedStatus) ? selectedStatus : "Chờ";
     const statusSel = document.getElementById('formTinhTrang');
     if (statusSel) {
-      statusSel.innerHTML = statusOpts.map(s => `<option value="${s}" ${s === targetStatus ? 'selected' : ''}>${s}</option>`).join('');
+      statusSel.innerHTML = FIXED_EDIT_STATUSES.map(s => `<option value="${s}" ${s === targetStatus ? 'selected' : ''}>${s}</option>`).join('');
     }
   }
 
@@ -4798,6 +4850,23 @@
     btn.disabled = true; btn.innerText = 'Đang lưu...';
 
     const formData = Object.fromEntries(new FormData(formEl).entries());
+    let catsChanged = false;
+    const cleanJob = String(formData.congViec || '').trim();
+    const cleanCust = String(formData.khachHang || '').trim();
+    const cleanExec = String(formData.nguoiThucHien || '').trim();
+    if (cleanJob && !jobTypes.some(x => x.toLowerCase() === cleanJob.toLowerCase())) {
+      jobTypes.push(cleanJob);
+      catsChanged = true;
+    }
+    if (cleanCust && !customerList.some(x => x.toLowerCase() === cleanCust.toLowerCase())) {
+      customerList.unshift(cleanCust);
+      catsChanged = true;
+    }
+    if (cleanExec && !executorList.some(x => x.toLowerCase() === cleanExec.toLowerCase())) {
+      executorList.push(cleanExec);
+      catsChanged = true;
+    }
+    if (catsChanged) saveCategoriesPrefs();
     google.script.run
       .withSuccessHandler(function(res) {
         allJobs = res.jobs || [];
