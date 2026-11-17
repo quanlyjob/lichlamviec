@@ -2166,9 +2166,9 @@
           <div class="job-info-row align-items-start">
             <div class="job-info-label pt-1">Ghi chú</div>
             <div class="job-info-val">
-              <textarea id="infoPopupGhiChuInput" class="form-control form-control-sm" rows="2" placeholder="Nhập hoặc sửa ghi chú trực tiếp tại đây..." oninput="syncNoteToPopupZaloText()" style="font-size: 13px; background-color: #ffffff;"></textarea>
-              <div class="d-flex justify-content-end mt-1.5">
-                <button type="button" class="btn btn-sm py-1 px-2.5 fw-semibold text-white" id="btnSavePopupNote" onclick="saveNoteFromInfoPopup(this)" style="background-color: #7b1113; font-size: 11.5px; border-radius: 7px;">💾 Lưu ghi chú</button>
+              <textarea id="infoPopupGhiChuInput" class="form-control form-control-sm" rows="2" placeholder="Nhập hoặc sửa ghi chú trực tiếp tại đây..." oninput="onInfoPopupNoteInput(this)" style="font-size: 13px; background-color: #ffffff;"></textarea>
+              <div class="d-flex justify-content-between align-items-center mt-1.5">
+                <small class="text-muted fst-italic" id="noteSaveStatusText" style="font-size: 11px;">⚡ Tự động lưu tức thì</small>
               </div>
             </div>
           </div>
@@ -3147,6 +3147,58 @@
     document.getElementById('infoPopupZaloText').value = buildZaloJobText(j, savedMapLink);
 
     jobInfoPopupModalInstance.show();
+  }
+
+
+  let noteAutoSaveTimer = null;
+  function onInfoPopupNoteInput(textareaEl) {
+    syncNoteToPopupZaloText();
+    const statusEl = document.getElementById('noteSaveStatusText');
+    if (statusEl) statusEl.innerText = 'Đang tự động lưu...';
+
+    clearTimeout(noteAutoSaveTimer);
+    noteAutoSaveTimer = setTimeout(function() {
+      const rowNumber = Number(textareaEl.getAttribute('data-row'));
+      if (!rowNumber) return;
+      const j = allJobs.find(item => item.rowNumber === rowNumber);
+      if (!j) return;
+
+      const newNote = textareaEl.value.trim();
+      const parsed = splitJobDetail(j.chiTiet);
+      let combinedDetail = combineJobDetail(parsed.thoiGian, parsed.diaChi);
+      if (newNote) {
+        combinedDetail += ` [NOTE:${newNote.replace(/\]/g, ')')}]`;
+      }
+
+      const formData = {
+        rowNumber: j.rowNumber,
+        ngay: toInputDate(j.ngay),
+        congViec: j.congViec || '',
+        chiTiet: combinedDetail,
+        mapLink: j.mapLink || '',
+        ghiChu: newNote,
+        khachHang: j.khachHang || '',
+        nguoiThucHien: j.nguoiThucHien || 'Lê Tân',
+        tinhTrang: j.tinhTrang || 'Chờ',
+        giaTri: j.luuTruGiaTri || parseMoney(j.giaTri),
+        daCoc: j.luuTruDaCoc || parseMoney(j.daCoc),
+        chiPhi: j.luuTruChiPhi || parseMoney(j.chiPhi),
+        maDangNhap: j.maDangNhap || currentAuthCode
+      };
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          allJobs = res.jobs || [];
+          renderCalendar();
+          renderSelectedDayJobs();
+          renderMasterTable();
+          if (statusEl) statusEl.innerText = '⚡ Đã tự động lưu';
+        })
+        .withFailureHandler(function(err) {
+          if (statusEl) statusEl.innerText = '❌ Lỗi tự động lưu';
+        })
+        .saveJobData(formData);
+    }, 700);
   }
 
   function saveNoteFromInfoPopup(btnEl) {
