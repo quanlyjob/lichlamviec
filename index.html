@@ -2251,7 +2251,7 @@
           <div class="row g-2.5 mb-2.5">
             <div class="col-6">
               <label class="form-label">Công việc</label>
-              <input type="text" class="form-control" name="congViec" id="formCongViec" list="listCongViec" placeholder="Nhập hoặc chọn công việc..." autocomplete="off" required>
+              <input type="text" class="form-control" name="congViec" id="formCongViec" list="listCongViec" placeholder="Nhập hoặc chọn công việc..." autocomplete="off" oninput="if(this.value.length===1) this.value=capitalizeFirstLetter(this.value)" onblur="this.value=capitalizeFirstLetter(this.value)" required>
               <datalist id="listCongViec"></datalist>
             </div>
             <div class="col-6">
@@ -2267,12 +2267,12 @@
           <div class="row g-2.5 mb-2.5">
             <div class="col-6">
               <label class="form-label">Khách hàng</label>
-              <input type="text" class="form-control" name="khachHang" id="formKhachHang" list="listKhachHang" placeholder="Nhập hoặc chọn khách hàng..." autocomplete="off" required>
+              <input type="text" class="form-control" name="khachHang" id="formKhachHang" list="listKhachHang" placeholder="Nhập hoặc chọn khách hàng..." autocomplete="off" oninput="this.value=this.value.replace(/(^|\s+)(\S)/g, (m, s, c) => s + c.toLocaleUpperCase('vi-VN'))" onblur="this.value=capitalizeAllWords(this.value)" required>
               <datalist id="listKhachHang"></datalist>
             </div>
             <div class="col-6">
               <label class="form-label">Người thực hiện</label>
-              <input type="text" class="form-control" name="nguoiThucHien" id="formNguoiThucHien" list="listNguoiThucHien" placeholder="Nhập hoặc chọn nhân sự..." autocomplete="off" required>
+              <input type="text" class="form-control" name="nguoiThucHien" id="formNguoiThucHien" list="listNguoiThucHien" placeholder="Nhập hoặc chọn nhân sự..." autocomplete="off" oninput="this.value=this.value.replace(/(^|\s+)(\S)/g, (m, s, c) => s + c.toLocaleUpperCase('vi-VN'))" onblur="this.value=capitalizeAllWords(this.value)" required>
               <datalist id="listNguoiThucHien"></datalist>
             </div>
           </div>
@@ -2485,7 +2485,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlWdVoIJ1hzwGyFDdKUiQG3w08LtVtY4iHFJMGQIBNXY1kI7MdDjinwWHLvrXfEMBO0w/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwv_wNwY1I08CbWsEonDKXtpZoix3pjEJF_gxPQSWoys4DNprEeUB9EDuyNkRZuUTe-fA/exec";
 
   let currentAuthCode = "";
   let isAdminAccount = false;
@@ -2957,6 +2957,18 @@
       btnEl.innerHTML = originalHtml;
       btnEl.classList.replace('btn-success', 'btn-primary');
     }, 1600);
+  }
+
+  function capitalizeFirstLetter(str) {
+    const s = String(str || "").trim();
+    if (!s) return "";
+    return s.charAt(0).toLocaleUpperCase('vi-VN') + s.slice(1);
+  }
+
+  function capitalizeAllWords(str) {
+    const s = String(str || "").trim();
+    if (!s) return "";
+    return s.split(/\s+/).map(w => w.charAt(0).toLocaleUpperCase('vi-VN') + w.slice(1)).join(' ');
   }
 
   function getJobNote(j) {
@@ -3635,6 +3647,11 @@
         ? "background:#dcfce7; color:#166534; border:1px solid #86efac; font-size: 11.5px; font-weight: 700;"
         : "background:#fff1f2; color:#9f1239; border:1px solid #fecdd3; font-size: 11.5px; font-weight: 700;";
 
+      const ghiChuDayStr = getJobNote(j);
+      const ghiChuDayHtml = ghiChuDayStr
+        ? `<div class="mt-2 px-2.5 py-1.5 rounded-3 small" style="background-color: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 12px; line-height: 1.4;">📝 <strong>Ghi chú:</strong> ${ghiChuDayStr.replace(/\n/g, '<br>')}</div>`
+        : '';
+
       html += `<div class="event-item-card ${isJobDone ? 'event-done' : ''}">
         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
           <div class="d-flex align-items-center flex-wrap gap-2">
@@ -3644,6 +3661,7 @@
           <div class="flex-shrink-0">${mapStatusBadgeHtml}</div>
         </div>
         ${timeAndAddrHtml}
+        ${ghiChuDayHtml}
         <div class="mt-2">
           <span class="event-card-exec">👤 ${j.nguoiThucHien || 'Lê Tân'}</span>
         </div>
@@ -4013,12 +4031,13 @@
 
   function addCatalogItemDirect() {
     const inputEl = document.getElementById('newCatalogItemInput');
-    const val = inputEl.value.trim();
-    if (!val) {
+    const rawVal = inputEl.value.trim();
+    if (!rawVal) {
       showToast('Vui lòng nhập tên mục cần thêm', true);
       return;
     }
     const catKey = document.getElementById('catalogCategorySelect').value;
+    const val = (catKey === 'jobTypes') ? capitalizeFirstLetter(rawVal) : capitalizeAllWords(rawVal);
     let list = jobTypes;
     if (catKey === 'customerList') list = customerList;
     else if (catKey === 'executorList') list = executorList;
@@ -4068,8 +4087,9 @@
     const oldName = list[idx];
     
     showPromptDialog(`Đổi tên "${oldName}" thành:`, oldName, (newName) => {
-      if (newName && newName.trim() !== "" && newName.trim() !== oldName) {
-        const cleanNewName = newName.trim();
+      if (newName && newName.trim() !== "") {
+        const cleanNewName = (catKey === 'jobTypes') ? capitalizeFirstLetter(newName) : capitalizeAllWords(newName);
+        if (cleanNewName === oldName) return;
         
         if (list.includes(cleanNewName)) {
           showToast("Tên này đã tồn tại", true);
@@ -4865,9 +4885,12 @@
 
     const formData = Object.fromEntries(new FormData(formEl).entries());
     let catsChanged = false;
-    const cleanJob = String(formData.congViec || '').trim();
-    const cleanCust = String(formData.khachHang || '').trim();
-    const cleanExec = String(formData.nguoiThucHien || '').trim();
+    const cleanJob = capitalizeFirstLetter(formData.congViec || '');
+    const cleanCust = capitalizeAllWords(formData.khachHang || '');
+    const cleanExec = capitalizeAllWords(formData.nguoiThucHien || '');
+    formData.congViec = cleanJob;
+    formData.khachHang = cleanCust;
+    formData.nguoiThucHien = cleanExec;
     if (cleanJob && !jobTypes.some(x => x.toLowerCase() === cleanJob.toLowerCase())) {
       jobTypes.push(cleanJob);
       catsChanged = true;
