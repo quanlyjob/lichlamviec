@@ -2396,15 +2396,26 @@
   </div>
 </div>
 
-<!-- Modal Báo Cáo Tài Chính Tổng Hợp (Đồng bộ UI Hiện đại) -->
+<!-- Modal Báo Cáo Tài Chính Tổng Hợp (Có bộ lọc thời gian) -->
 <div class="modal fade" id="reportModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h6 class="modal-title">Báo Cáo Tài Chính Tổng Hợp <span id="reportSubtitleModal" class="text-secondary fw-semibold ms-1" style="font-size: 13.5px;"></span></h6>
+        <h6 class="modal-title">Báo Cáo Tài Chính Tổng Hợp</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
+        <!-- Thanh chọn bộ lọc thời gian -->
+        <div class="statement-filter-card mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <label class="form-label small fw-bold text-secondary mb-0">📅 Kỳ báo cáo:</label>
+            <select id="reportMonthSelect" class="form-select form-select-sm fw-semibold text-primary shadow-sm" style="width: 180px;" onchange="updateFinancialReport()">
+              <option value="">Tất cả các tháng</option>
+            </select>
+          </div>
+          <div class="text-muted small" id="reportSubtitleModal" style="font-weight: 600;"></div>
+        </div>
+
         <div class="row g-3 text-center">
           <div class="col-6 col-md-3">
             <div class="report-stat-card">
@@ -3837,7 +3848,58 @@
   }
 
   function openReportModal() {
+    // Populate month options in report modal from sortedMonths or existing dropdown
+    const tableMonthSelect = document.getElementById('filterMonthTable');
+    const reportMonthSelect = document.getElementById('reportMonthSelect');
+    if (tableMonthSelect && reportMonthSelect) {
+      reportMonthSelect.innerHTML = tableMonthSelect.innerHTML;
+      // Default to currently selected month in table if any, else ""
+      reportMonthSelect.value = tableMonthSelect.value;
+    }
+    updateFinancialReport();
     reportModalInstance.show();
+  }
+
+  function updateFinancialReport() {
+    const reportMonth = document.getElementById('reportMonthSelect').value;
+    const selectedExecutor = filterExecutorVal; // respect current executor filter if any
+
+    let sumGiaTri = 0, sumChiPhi = 0, sumLoiNhuan = 0, sumChuaTT = 0;
+    let filteredJobCount = 0;
+
+    allJobs.forEach(j => {
+      if (!j.congViec && !j.khachHang) return;
+      if (reportMonth) {
+        let p = j.ngay.split('/');
+        if (p.length !== 3 || `${p[1].padStart(2, '0')}/${p[2]}` !== reportMonth) return;
+      }
+      if (selectedExecutor && (j.nguoiThucHien || 'Lê Tân').trim().toLowerCase() !== selectedExecutor.toLowerCase()) return;
+
+      filteredJobCount++;
+      let gVal = j.luuTruGiaTri || parseMoney(j.giaTri);
+      let cCoc = j.luuTruDaCoc || parseMoney(j.daCoc);
+      let cVal = j.luuTruChiPhi || parseMoney(j.chiPhi);
+      let lVal = gVal - cVal;
+
+      sumGiaTri += gVal;
+      sumChiPhi += cVal;
+      sumLoiNhuan += lVal;
+
+      if (j.tinhTrang === 'Chưa TT') {
+        sumChuaTT += (gVal > 0 ? Math.max(0, gVal - cCoc) : lVal);
+      }
+    });
+
+    let subtitle = "";
+    if (reportMonth) subtitle += `(Tháng ${reportMonth})`;
+    if (selectedExecutor) subtitle += ` - Nhân sự: ${selectedExecutor}`;
+
+    document.getElementById('reportSubtitleModal').innerText = subtitle;
+    document.getElementById('repTotalRevenue').innerText = sumGiaTri.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('repTotalJobCount').innerText = `${filteredJobCount} công việc`;
+    document.getElementById('repTotalCost').innerText = sumChiPhi.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('repTotalProfit').innerText = sumLoiNhuan.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('repTotalUnpaid').innerText = sumChuaTT.toLocaleString('vi-VN') + ' đ';
   }
 
   function clearAllFilters() {
