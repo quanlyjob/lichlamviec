@@ -2166,7 +2166,7 @@
           <div class="job-info-row align-items-start">
             <div class="job-info-label pt-1">Ghi chú</div>
             <div class="job-info-val">
-              <textarea id="infoPopupGhiChuInput" class="form-control form-control-sm" rows="2" placeholder="Nhập hoặc sửa ghi chú trực tiếp tại đây..." style="font-size: 13px; background-color: #ffffff;"></textarea>
+              <textarea id="infoPopupGhiChuInput" class="form-control form-control-sm" rows="2" placeholder="Nhập hoặc sửa ghi chú trực tiếp tại đây..." oninput="syncNoteToPopupZaloText()" style="font-size: 13px; background-color: #ffffff;"></textarea>
               <div class="d-flex justify-content-end mt-1.5">
                 <button type="button" class="btn btn-sm py-1 px-2.5 fw-semibold text-white" id="btnSavePopupNote" onclick="saveNoteFromInfoPopup(this)" style="background-color: #7b1113; font-size: 11.5px; border-radius: 7px;">💾 Lưu ghi chú</button>
               </div>
@@ -3057,7 +3057,7 @@
     return (a.rowNumber || 0) - (b.rowNumber || 0);
   }
 
-  function buildZaloJobText(j, mapLinkToUse) {
+  function buildZaloJobText(j, mapLinkToUse, noteOverride = null) {
     const parsed = splitJobDetail(j.chiTiet);
     const ngayFull = j.thu ? `${j.thu}, ${j.ngay}` : j.ngay;
     const congViecStr = j.congViec || 'Chưa cập nhật';
@@ -3065,6 +3065,7 @@
     const diaChiText = parsed.diaChi || 'Chưa cập nhật';
     const khachHangStr = j.khachHang || 'Chưa cập nhật';
     const nguoiThucHienStr = j.nguoiThucHien || 'Lê Tân';
+    const noteText = noteOverride !== null ? String(noteOverride).trim() : getJobNote(j);
 
     const lines = [
       `THÔNG TIN LỊCH LÀM VIỆC`,
@@ -3076,7 +3077,19 @@
       `Khách hàng: ${khachHangStr}`,
       `Người thực hiện: ${nguoiThucHienStr}`
     ];
+    if (noteText) {
+      lines.push(`Ghi chú: ${noteText}`);
+    }
     return lines.join('\n');
+  }
+
+  function syncNoteToPopupZaloText() {
+    const noteInp = document.getElementById('infoPopupGhiChuInput');
+    const rowNumber = Number(noteInp.getAttribute('data-row'));
+    const j = allJobs.find(item => item.rowNumber === rowNumber);
+    if (!j) return;
+    const savedMapLink = (j.mapLink || '').trim();
+    document.getElementById('infoPopupZaloText').value = buildZaloJobText(j, savedMapLink, noteInp.value);
   }
 
   function openJobInfoPopup(rowNumber) {
@@ -3163,6 +3176,7 @@
     google.script.run
       .withSuccessHandler(function(res) {
         allJobs = res.jobs || [];
+        syncNoteToPopupZaloText();
         renderCalendar();
         renderSelectedDayJobs();
         renderMasterTable();
