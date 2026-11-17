@@ -2371,7 +2371,7 @@
             <div class="col-12 col-sm-5 d-flex flex-column justify-content-between">
               <div>
                 <label class="form-label small fw-bold text-secondary mb-1">2. Kỳ thống kê (Tháng)</label>
-                <select id="qrMonthSelect" class="form-select fw-semibold" onchange="generateQrStatement()">
+                <select id="qrMonthSelect" class="form-select fw-semibold" onchange="updateQrDropdownsAndStatement()">
                   <option value="">📅 Tất cả các tháng</option>
                 </select>
               </div>
@@ -4824,27 +4824,13 @@
   }
 
   function openDebtQrModal() {
-    const custMap = new Map();
-    const execMap = new Map();
     const setMonths = new Set();
-
     allJobs.forEach(j => {
-      if (j.tinhTrang === 'Chưa TT' && j.khachHang && j.khachHang.trim() !== '') {
-        const cName = j.khachHang.trim();
-        custMap.set(cName, (custMap.get(cName) || 0) + 1);
-      }
-      const execName = (j.nguoiThucHien || 'Lê Tân').trim();
-      if (execName && (j.congViec || j.khachHang) && j.ttChiPhi !== 'Đã trả') {
-        execMap.set(execName, (execMap.get(execName) || 0) + 1);
-      }
       if (j.ngay && j.ngay.includes('/')) {
         const p = j.ngay.split('/');
         if (p.length === 3) setMonths.add(`${p[1].padStart(2, '0')}/${p[2]}`);
       }
     });
-
-    qrUnpaidCustomersCache = Array.from(custMap.entries()).map(([name, count]) => ({ name, count }));
-    qrExecutorsCache = Array.from(execMap.entries()).map(([name, count]) => ({ name, count }));
 
     const sortedMonths = Array.from(setMonths).sort((a, b) => {
       const [m1, y1] = a.split('/').map(Number);
@@ -4861,11 +4847,37 @@
 
     document.getElementById('qrSearchCustomerInput').value = '';
     document.getElementById('qrSearchExecutorInput').value = '';
-    filterQrCustomerDropdown(filterCustomerVal);
-    filterQrExecutorDropdown();
-
-    generateQrStatement();
+    
+    updateQrDropdownsAndStatement(filterCustomerVal);
     debtQrModalInstance.show();
+  }
+
+  function updateQrDropdownsAndStatement(preferredCust = null) {
+    const selectedMonth = document.getElementById('qrMonthSelect').value;
+    const custMap = new Map();
+    const execMap = new Map();
+
+    allJobs.forEach(j => {
+      if (selectedMonth) {
+        let p = j.ngay.split('/');
+        if (p.length !== 3 || `${p[1].padStart(2, '0')}/${p[2]}` !== selectedMonth) return;
+      }
+      if (j.tinhTrang === 'Chưa TT' && j.khachHang && j.khachHang.trim() !== '') {
+        const cName = j.khachHang.trim();
+        custMap.set(cName, (custMap.get(cName) || 0) + 1);
+      }
+      const execName = (j.nguoiThucHien || 'Lê Tân').trim();
+      if (execName && (j.congViec || j.khachHang) && j.ttChiPhi !== 'Đã trả') {
+        execMap.set(execName, (execMap.get(execName) || 0) + 1);
+      }
+    });
+
+    qrUnpaidCustomersCache = Array.from(custMap.entries()).map(([name, count]) => ({ name, count }));
+    qrExecutorsCache = Array.from(execMap.entries()).map(([name, count]) => ({ name, count }));
+
+    filterQrCustomerDropdown(preferredCust);
+    filterQrExecutorDropdown();
+    generateQrStatement();
   }
 
   function filterQrCustomerDropdown(preferredCust = null) {
