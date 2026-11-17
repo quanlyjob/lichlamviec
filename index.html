@@ -5272,7 +5272,46 @@
     showToast('Đã đăng xuất mã truy cập');
   }
 
+
+  document.addEventListener('input', function(e) {
+    const el = e.target;
+    if ((el.tagName === 'INPUT' && el.type === 'text') || el.tagName === 'TEXTAREA') {
+      // Avoid modifying password, date, number inputs
+      if (el.id === 'loginCodeInput' || el.id === 'formMaDangNhap' || el.classList.contains('font-monospace')) return;
+      const val = el.value;
+      if (val.length === 1) {
+        el.value = val.charAt(0).toLocaleUpperCase('vi-VN');
+      }
+    }
+  });
+
+
+  let backgroundSyncInterval = null;
+  function startRealtimeSync() {
+    if (backgroundSyncInterval) clearInterval(backgroundSyncInterval);
+    backgroundSyncInterval = setInterval(function() {
+      if (!currentAuthCode) return;
+      // Silent background fetch to sync changes made from other devices
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.jobs) {
+            const newJobsJson = JSON.stringify(res.jobs);
+            const oldJobsJson = JSON.stringify(allJobs);
+            if (newJobsJson !== oldJobsJson) {
+              allJobs = res.jobs;
+              renderCalendar();
+              renderSelectedDayJobs();
+              renderMasterTable();
+            }
+          }
+        })
+        .withFailureHandler(function() {})
+        .getAllJobsData(currentAuthCode);
+    }, 6000); // Poll every 6 seconds for real-time multi-device sync
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
+    startRealtimeSync();
     initCustomDialog();
     loadCategoriesPrefs();
     loadTableColumnSettings();
