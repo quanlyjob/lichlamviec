@@ -2163,10 +2163,19 @@
             <div class="job-info-label">Người thực hiện</div>
             <div class="job-info-val text-success fw-semibold" id="infoPopupNguoiThucHien">-</div>
           </div>
+          <div class="job-info-row">
+            <div class="job-info-label">Ghi chú</div>
+            <div class="job-info-val text-dark" id="infoPopupGhiChu">-</div>
+          </div>
         </div>
 
         <label class="form-label small fw-bold text-secondary mb-1.5">Nội dung tin nhắn gửi Zalo:</label>
         <textarea id="infoPopupZaloText" class="form-control font-monospace mb-3" rows="6" style="font-size: 12.5px; background-color: #f8fafc;"></textarea>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-secondary mb-1.5">Nội dung ghi chú:</label>
+          <textarea id="infoPopupNoteContent" class="form-control" rows="2" readonly placeholder="Không có ghi chú cho công việc này" style="font-size: 13px; background-color: #fffbeb; border-color: #fde68a !important; color: #78350f;"></textarea>
+        </div>
 
         <div class="d-flex gap-2 justify-content-end align-items-center">
           <button type="button" class="btn btn-toolbar-modern btn-sm px-3" id="btnEditFromInfoPopup">✏️ Sửa công việc</button>
@@ -2294,6 +2303,11 @@
               <button class="btn btn-outline-secondary" type="button" onclick="fixMapLinkInput(this)" title="Chuẩn hóa về link rút gọn">Fix maps</button>
               <button class="btn btn-outline-success" type="button" onclick="fetchAddressFromMap(this)" title="Trích xuất địa chỉ tự động vào ô Địa chỉ">Lấy địa chỉ</button>
             </div>
+          </div>
+
+          <div class="mb-2.5">
+            <label class="form-label">Ghi chú công việc</label>
+            <textarea class="form-control" name="ghiChu" id="formGhiChu" rows="2" placeholder="Nhập ghi chú thêm cho công việc (nếu có)..."></textarea>
           </div>
 
           <div class="row g-2.5 pt-1">
@@ -2476,7 +2490,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxchZqRFj_K0lSud4_JTvpqGyRGWJ2ulAWoiBlZc0x8jKfpd9ZxIxmKnmMHPVpD_lmK6Q/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlWdVoIJ1hzwGyFDdKUiQG3w08LtVtY4iHFJMGQIBNXY1kI7MdDjinwWHLvrXfEMBO0w/exec";
 
   let currentAuthCode = "";
   let isAdminAccount = false;
@@ -2950,9 +2964,22 @@
     }, 1600);
   }
 
+  function getJobNote(j) {
+    if (!j) return "";
+    if (j.ghiChu && String(j.ghiChu).trim() !== "") return String(j.ghiChu).trim();
+    const raw = String(j.chiTiet || "");
+    const m = raw.match(/\[NOTE:([\s\S]*?)\]/);
+    return m ? m[1].trim() : "";
+  }
+
+  function stripNoteTag(chiTietStr) {
+    if (!chiTietStr) return "";
+    return String(chiTietStr).replace(/\[NOTE:[\s\S]*?\]/g, "").trim();
+  }
+
   function splitJobDetail(chiTietStr) {
     if (!chiTietStr) return { thoiGian: "", diaChi: "" };
-    const s = String(chiTietStr).trim();
+    const s = stripNoteTag(chiTietStr);
     if (!s) return { thoiGian: "", diaChi: "" };
 
     if (s.includes(" | ")) {
@@ -3073,8 +3100,13 @@
     document.getElementById('infoPopupNgay').innerText = ngayFull;
     document.getElementById('infoPopupCongViec').innerText = congViecStr;
     document.getElementById('infoPopupThoiGian').innerText = thoiGianStr;
+    const ghiChuStr = getJobNote(j);
     document.getElementById('infoPopupKhachHang').innerText = khachHangStr;
     document.getElementById('infoPopupNguoiThucHien').innerText = nguoiThucHienStr;
+    document.getElementById('infoPopupGhiChu').innerHTML = ghiChuStr
+      ? `<span class="text-dark">${ghiChuStr.replace(/\n/g, '<br>')}</span>`
+      : `<span class="text-muted fst-italic fw-normal">Không có ghi chú</span>`;
+    document.getElementById('infoPopupNoteContent').value = ghiChuStr;
 
     const btnEdit = document.getElementById('btnEditFromInfoPopup');
     btnEdit.onclick = function() {
@@ -4706,6 +4738,7 @@
     if (maDnInput) maDnInput.value = currentAuthCode;
     document.getElementById('formThoiGian').value = '';
     document.getElementById('formDiaChi').value = '';
+    document.getElementById('formGhiChu').value = '';
     document.getElementById('formNgay').value = isoDateStr || getLocalIsoDate(new Date());
     document.getElementById('chipsGiaTri').innerHTML = '';
     document.getElementById('chipsDaCoc').innerHTML = '';
@@ -4730,6 +4763,7 @@
     document.getElementById('formThoiGian').value = parsedDetail.thoiGian || '';
     document.getElementById('formDiaChi').value = parsedDetail.diaChi || '';
     document.getElementById('formMapLink').value = j.mapLink || '';
+    document.getElementById('formGhiChu').value = getJobNote(j);
 
     const gVal = j.luuTruGiaTri || 0;
     const cCocVal = j.luuTruDaCoc || 0;
@@ -4753,7 +4787,12 @@
     
     const thoiGianVal = document.getElementById('formThoiGian').value;
     const diaChiVal = document.getElementById('formDiaChi').value;
-    document.getElementById('formChiTiet').value = combineJobDetail(thoiGianVal, diaChiVal);
+    const ghiChuVal = document.getElementById('formGhiChu').value.trim();
+    let combinedDetail = combineJobDetail(thoiGianVal, diaChiVal);
+    if (ghiChuVal) {
+      combinedDetail += ` [NOTE:${ghiChuVal.replace(/\]/g, ')')}]`;
+    }
+    document.getElementById('formChiTiet').value = combinedDetail;
 
     const btn = document.getElementById('btnSave');
     btn.disabled = true; btn.innerText = 'Đang lưu...';
