@@ -1966,98 +1966,7 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
               <div>
                 <h6 class="fw-bold mb-0 text-dark" id="selectedDateHeader">Hôm nay</h6>
-                <small class="text-muted" id="selectedDateSubCount">0 lịch làm việc</small>
-              </div>
-              <button class="btn btn-sm fw-bold text-white px-3 shadow-sm" style="background-color: #7b1113; border-radius: 8px;" onclick="openAddModal()">
-                + Thêm công việc
-              </button>
-            </div>
-            <input type="text" id="filterCustomerInput" class="form-control form-control-sm mb-3" placeholder="🔍 Tìm tên dâu rể / studio..." oninput="renderSelectedDayJobs()">
-
-            <div id="selectedDayEventsContainer"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 2 -->
-    <div id="tabChitiet" class="d-none">
-      <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2 top-header-bar">
-        <div>
-          <div class="page-subtitle">QUẢN LÝ CÔNG VIỆC & CÔNG NỢ</div>
-          <div class="page-title mb-0">Danh sách công việc</div>
-        </div>
-      </div>
-
-      <div class="card border-0 shadow-sm p-3 mb-3">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-          <div class="d-flex align-items-center flex-wrap gap-2">
-            <select id="filterMonthTable" class="form-select form-select-sm fw-semibold text-primary shadow-sm" style="width: 165px; border-radius: 8px; height: 31px;" onchange="renderMasterTable(false)">
-              <option value="">📅 Tất cả tháng</option>
-            </select>
-            
-            <div class="search-filter-box shadow-sm">
-              <span class="search-filter-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-              </span>
-              <input type="text" id="searchTableInput" class="search-filter-input" placeholder="Tìm khách, việc, địa chỉ..." oninput="renderMasterTable(false)">
-              <button type="button" id="btnClearAllFilters" class="btn-clear-filter" onclick="clearAllFilters()" title="Xóa tìm kiếm & tất cả bộ lọc">✕</button>
-            </div>
-
-            <!-- Nút Cột hiển thị -->
-            <div class="dropdown">
-              <button class="btn btn-sm dropdown-toggle btn-toolbar-modern" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i data-lucide="columns-3"></i>
-                <span>Cột hiển thị</span>
-              </button>
-              <ul class="dropdown-menu column-visibility-dropdown shadow" id="columnVisibilityDropdown"></ul>
-            </div>
-
-            <!-- Nút gộp 3 bộ lọc: Chỉ ngày trống, Thiếu giờ/địa chỉ, Ẩn công việc đã xong -->
-            <div class="dropdown">
-              <button class="btn btn-sm dropdown-toggle btn-toolbar-modern" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                <i data-lucide="sliders-horizontal"></i>
-                <span>Bộ lọc hiển thị</span>
-                <span id="quickFilterActiveBadge" class="badge rounded-pill d-none ms-1" style="background-color: #7b1113; font-size: 10px; padding: 2px 6px;">0</span>
-              </button>
-              <div class="dropdown-menu column-visibility-dropdown shadow" style="min-width: 225px !important;">
-                <div class="px-2 py-1 mb-1 d-flex justify-content-between align-items-center border-bottom" style="font-size: 11.5px;">
-                  <span class="fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">Lọc nhanh</span>
-                  <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-danger fw-semibold" style="font-size: 11.5px;" onclick="resetQuickFilters(event)">Tắt hết</button>
-                </div>
-                <label class="col-vis-item justify-content-between mb-0" for="toggleOnlyEmptyDays">
-                  <span>Chỉ ngày trống</span>
-                  <div class="form-check form-switch mb-0 p-0 d-flex align-items-center">
-                    <input class="form-check-input m-0" type="checkbox" id="toggleOnlyEmptyDays" onchange="saveTablePrefs(); renderMasterTable(false);" style="cursor: pointer;">
-                  </div>
-                </label>
-                <label class="col-vis-item justify-content-between mb-0" for="toggleMissingTimeOrAddress">
-                  <span>Thiếu giờ/địa chỉ</span>
-                  <div class="form-check form-switch mb-0 p-0 d-flex align-items-center">
-                    <input class="form-check-input m-0" type="checkbox" id="toggleMissingTimeOrAddress" onchange="saveTablePrefs(); renderMasterTable(false);" style="cursor: pointer;">
-                  </div>
-                </label>
-                <label class="col-vis-item justify-content-between mb-0" for="toggleHideCompleted">
-                  <span>Ẩn công việc đã xong</span>
-                  <div class="form-check form-switch mb-0 p-0 d-flex align-items-center">
-                    <input class="form-check-input m-0" type="checkbox" id="toggleHideCompleted" onchange="saveTablePrefs(); renderMasterTable(false);" style="cursor: pointer;">
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <button type="button" id="btnRefreshTable" class="btn btn-sm btn-toolbar-modern ms-auto btn-refresh-table px-3.5" onclick="triggerRefresh(this)">
-            Làm mới
-          </button>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top" style="font-size: 12px;">
-          <small class="text-muted fw-medium" id="tableStatusHint"></small>
-          <small class="text-muted fst-italic">💡 Mẹo: Kéo thả các tiêu đề cột để thay đổi vị trí</small>
+                
         </div>
       </div>
 
@@ -2356,13 +2265,28 @@
           </div>
         </div>
 
-        <!-- Khung bộ lọc tìm kiếm -->
+        <!-- Khung bộ lọc tìm kiếm theo thứ tự: 1. Kỳ thống kê - 2. Tình trạng - 3. Tìm & Chọn Khách hàng/Nhân sự -->
         <div class="statement-filter-card">
           <div class="row g-2.5">
-            <div class="col-12 col-sm-7">
+            <div class="col-12 col-sm-6 mb-2">
+              <label class="form-label small fw-bold text-secondary mb-1">1. Kỳ thống kê (Tháng)</label>
+              <select id="qrMonthSelect" class="form-select fw-semibold" onchange="updateQrDropdownsAndStatement()">
+                <option value="">📅 Tất cả các tháng</option>
+              </select>
+            </div>
+            <div class="col-12 col-sm-6 mb-2">
+              <label class="form-label small fw-bold text-secondary mb-1">2. Tình trạng</label>
+              <select id="qrStatusSelect" class="form-select fw-semibold text-danger" onchange="updateQrDropdownsAndStatement()">
+                <option value="">Tất cả tình trạng</option>
+                <option value="Chờ">Chờ</option>
+                <option value="Chưa TT" selected>Chưa TT</option>
+                <option value="Xong">Xong</option>
+              </select>
+            </div>
+            <div class="col-12">
               <!-- Nhóm chọn Khách hàng -->
               <div id="customerSelectorGroup">
-                <label class="form-label small fw-bold text-secondary mb-1">1. Tìm & Chọn Khách hàng</label>
+                <label class="form-label small fw-bold text-secondary mb-1">3. Tìm & Chọn Khách hàng</label>
                 <input type="text" id="qrSearchCustomerInput" class="form-control mb-2" placeholder="🔍 Gõ tên khách / studio..." oninput="filterQrCustomerDropdown()">
                 <select id="qrCustomerSelect" class="form-select fw-semibold text-primary" onchange="generateQrStatement()">
                   <option value="">-- Chọn khách hàng --</option>
@@ -2370,22 +2294,11 @@
               </div>
               <!-- Nhóm chọn Người thực hiện (Lương) -->
               <div id="executorSelectorGroup" class="d-none">
-                <label class="form-label small fw-bold text-secondary mb-1">1. Tìm & Chọn Nhân sự</label>
+                <label class="form-label small fw-bold text-secondary mb-1">3. Tìm & Chọn Nhân sự</label>
                 <input type="text" id="qrSearchExecutorInput" class="form-control mb-2" placeholder="🔍 Gõ tên nhân sự..." oninput="filterQrExecutorDropdown()">
                 <select id="qrExecutorSelect" class="form-select fw-semibold text-success" onchange="generateQrStatement()">
                   <option value="">-- Chọn nhân sự --</option>
                 </select>
-              </div>
-            </div>
-            <div class="col-12 col-sm-5 d-flex flex-column justify-content-between">
-              <div>
-                <label class="form-label small fw-bold text-secondary mb-1">2. Kỳ thống kê (Tháng)</label>
-                <select id="qrMonthSelect" class="form-select fw-semibold" onchange="updateQrDropdownsAndStatement()">
-                  <option value="">📅 Tất cả các tháng</option>
-                </select>
-              </div>
-              <div class="text-muted mt-2" style="font-size: 11.5px; line-height: 1.35;">
-                💡 Tự động tổng hợp theo thứ tự ngày & giờ thực hiện.
               </div>
             </div>
           </div>
@@ -5051,6 +4964,7 @@
 
   function updateQrDropdownsAndStatement(preferredCust = null) {
     const selectedMonth = document.getElementById('qrMonthSelect').value;
+    const selectedStatus = document.getElementById('qrStatusSelect').value;
     const custMap = new Map();
     const execMap = new Map();
 
@@ -5059,12 +4973,14 @@
         let p = j.ngay.split('/');
         if (p.length !== 3 || `${p[1].padStart(2, '0')}/${p[2]}` !== selectedMonth) return;
       }
-      if (j.tinhTrang === 'Chưa TT' && j.khachHang && j.khachHang.trim() !== '') {
+      if (selectedStatus && (j.tinhTrang || 'Chờ').trim() !== selectedStatus) return;
+
+      if (j.khachHang && j.khachHang.trim() !== '') {
         const cName = j.khachHang.trim();
         custMap.set(cName, (custMap.get(cName) || 0) + 1);
       }
       const execName = (j.nguoiThucHien || 'Lê Tân').trim();
-      if (execName && (j.congViec || j.khachHang) && j.ttChiPhi !== 'Đã trả') {
+      if (execName && (j.congViec || j.khachHang)) {
         execMap.set(execName, (execMap.get(execName) || 0) + 1);
       }
     });
@@ -5147,8 +5063,10 @@
   }
 
   function generateCustomerDebtStatement(cust, selectedMonth) {
+    const selectedStatus = document.getElementById('qrStatusSelect').value;
     const unpaidJobs = allJobs.filter(j => {
-      if (!j.khachHang || j.khachHang.trim().toLowerCase() !== cust.toLowerCase() || j.tinhTrang !== 'Chưa TT') return false;
+      if (!j.khachHang || j.khachHang.trim().toLowerCase() !== cust.toLowerCase()) return false;
+      if (selectedStatus && (j.tinhTrang || 'Chờ').trim() !== selectedStatus) return false;
       if (selectedMonth) {
         let p = j.ngay.split('/');
         if (p.length === 3 && `${p[1].padStart(2, '0')}/${p[2]}` !== selectedMonth) return false;
@@ -5200,11 +5118,12 @@
   }
 
   function generateExecutorSalaryStatement(execName, selectedMonth) {
+    const selectedStatus = document.getElementById('qrStatusSelect').value;
     const filteredJobs = allJobs.filter(j => {
       const jExec = (j.nguoiThucHien || 'Lê Tân').trim();
       if (jExec.toLowerCase() !== execName.toLowerCase()) return false;
       if (!j.congViec && !j.khachHang) return false;
-      if (j.ttChiPhi === 'Đã trả') return false;
+      if (selectedStatus && (j.tinhTrang || 'Chờ').trim() !== selectedStatus) return false;
       if (selectedMonth) {
         let p = j.ngay.split('/');
         if (p.length === 3 && `${p[1].padStart(2, '0')}/${p[2]}` !== selectedMonth) return false;
