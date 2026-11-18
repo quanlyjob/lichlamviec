@@ -1869,7 +1869,7 @@
     <!-- TAB 1 -->
     <div id="tabLich">
       <div class="mb-3 top-header-bar">
-        <div class="page-title mb-0">Lịch của Lê Tân</div>
+        <div class="page-title mb-0" id="calendarPageTitle">Lịch làm việc</div>
       </div>
 
       <div class="row g-4 align-items-start">
@@ -3811,6 +3811,7 @@
         document.getElementById('loginOverlay').classList.add('d-none');
         const menuBadge = document.getElementById('menuAuthCodeBadge');
         if (menuBadge) menuBadge.innerText = currentAuthCode;
+        updateCalendarPageTitle();
 
         document.getElementById('adminOwnerCodeGroup').classList.toggle('d-none', !isAdminAccount);
         const btnManageAuth = document.getElementById('btnMenuManageAuthCodes');
@@ -5592,6 +5593,7 @@
     }
 
     currentAuthCode = rawCode;
+    updateCalendarPageTitle();
     loadCategoriesPrefs();
     const remember = document.getElementById('rememberLoginCheck').checked;
     try {
@@ -5746,6 +5748,16 @@
     });
   }
 
+  function updateCalendarPageTitle() {
+    const titleEl = document.getElementById('calendarPageTitle');
+    if (!titleEl) return;
+    if (currentAuthCode && currentAuthCode.trim() !== '') {
+      titleEl.innerText = `Lịch của ${currentAuthCode.trim().toUpperCase()}`;
+    } else {
+      titleEl.innerText = 'Lịch làm việc';
+    }
+  }
+
   function logoutCode() {
     currentAuthCode = "";
     isAdminAccount = false;
@@ -5753,6 +5765,7 @@
     resetCategoriesToDefault();
     try { localStorage.removeItem('letan_saved_auth_code'); } catch (e) {}
     document.getElementById('loginCodeInput').value = '';
+    updateCalendarPageTitle();
     document.getElementById('loginOverlay').classList.remove('d-none');
     renderCalendar();
     renderSelectedDayJobs();
@@ -5839,6 +5852,7 @@
       const savedCode = localStorage.getItem('letan_saved_auth_code');
       if (savedCode && savedCode.trim() !== '') {
         currentAuthCode = savedCode.trim().toUpperCase();
+        updateCalendarPageTitle();
         loadCategoriesPrefs();
         document.getElementById('loginCodeInput').value = currentAuthCode;
         loadData();
