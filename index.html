@@ -1857,7 +1857,7 @@
     <div id="loginSignInForm">
       <div class="mb-3 text-start">
         <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập:</label>
-        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mã truy cập..." style="letter-spacing: 1.5px; height: 42px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitLoginCode()">
+        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold text-uppercase" placeholder="NHẬP MÃ TRUY CẬP..." autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" style="letter-spacing: 1.5px; height: 42px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitLoginCode()">
       </div>
       <div class="d-flex align-items-center justify-content-between mb-3 px-1">
         <div class="form-check text-start mb-0">
@@ -1875,7 +1875,7 @@
     <div id="loginRegisterForm" class="d-none text-start">
       <div class="mb-2.5">
         <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập muốn tạo:</label>
-        <input type="text" id="regAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="VD: STUDIOA, JUNE..." autocomplete="off" style="height: 40px; border-radius: 10px;">
+        <input type="text" id="regAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="VD: STUDIOA, JUNE..." autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" autocomplete="off" style="height: 40px; border-radius: 10px;">
       </div>
       <div class="mb-3">
         <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị:</label>
@@ -2482,7 +2482,7 @@
           <label class="form-label small fw-bold text-secondary mb-1.5">Cấp phép trực tiếp Mã đăng nhập mới:</label>
           <div class="row g-2">
             <div class="col-4">
-              <input type="text" id="newAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="Mã ĐN..." autocomplete="off">
+              <input type="text" id="newAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="Mã ĐN..." autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" autocomplete="off">
             </div>
             <div class="col-5">
               <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tên hiển thị...">
@@ -2523,7 +2523,7 @@
         </div>
         <div class="mb-2" id="selfChangeCodeGroup">
           <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập của bạn:</label>
-          <input type="text" id="selfNewCodeInput" class="form-control text-uppercase fw-bold" placeholder="Nhập mã mới..." autocomplete="off">
+          <input type="text" id="selfNewCodeInput" class="form-control text-uppercase fw-bold" placeholder="Nhập mã mới..." autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" autocomplete="off">
           <small class="text-muted d-block mt-1" style="font-size: 11px;">Khi đổi mã mới, toàn bộ công việc và danh mục hiện tại sẽ tự động chuyển sang mã mới.</small>
         </div>
       </div>
@@ -2557,12 +2557,15 @@
   let manageAuthCodesModalInstance;
   let selfAccountModalInstance;
 
+  let currentAdminAuthCode = "ADMINLETAN";
+
   function normalizeCodeServer(code) {
     return String(code || "").trim().toUpperCase();
   }
 
   function isAdminCode(code) {
-    return normalizeCodeServer(code) === "ADMINLETAN";
+    const clean = normalizeCodeServer(code);
+    return clean !== "" && clean === normalizeCodeServer(currentAdminAuthCode);
   }
 
   function formatMoneyVn(val) {
@@ -2678,12 +2681,20 @@
       const timeoutId = setTimeout(() => controller.abort(), 12000);
       let jobsRes, catsRes, authCodesRes, legacyCatsRes;
       try {
-        [jobsRes, catsRes, authCodesRes, legacyCatsRes] = await Promise.all([
+        let adminCfgRes;
+        [jobsRes, catsRes, authCodesRes, legacyCatsRes, adminCfgRes] = await Promise.all([
           fetch(dbUrl + "/jobs.json", { signal: controller.signal }),
           fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(cleanAuth)}.json`, { signal: controller.signal }),
           fetch(dbUrl + "/auth_codes.json", { signal: controller.signal }),
-          fetch(dbUrl + "/categories.json", { signal: controller.signal })
+          fetch(dbUrl + "/categories.json", { signal: controller.signal }),
+          fetch(dbUrl + "/system_config/admin_code.json", { signal: controller.signal })
         ]);
+        if (adminCfgRes && adminCfgRes.ok) {
+          const remoteAdminCode = await adminCfgRes.json();
+          if (remoteAdminCode && typeof remoteAdminCode === "string" && remoteAdminCode.trim() !== "") {
+            currentAdminAuthCode = normalizeCodeServer(remoteAdminCode);
+          }
+        }
       } catch (fetchErr) {
         if (fetchErr && fetchErr.name === 'AbortError') {
           throw new Error("Kết nối Firebase quá thời gian (12s). Vui lòng kiểm tra mạng hoặc link Database!");
@@ -2700,7 +2711,7 @@
       // Kiểm tra quyền truy cập: ADMINLETAN luôn được phép; các mã khác phải được ADMINLETAN duyệt
       let resolvedDisplayName = "";
       if (isAdminCode(cleanAuth)) {
-        const adminEntry = authorizedCodesMap["ADMINLETAN"] || {};
+        const adminEntry = authorizedCodesMap[currentAdminAuthCode] || authorizedCodesMap["ADMINLETAN"] || {};
         resolvedDisplayName = (adminEntry.displayName || adminEntry.note || "Lê Tân").trim();
       } else {
         const entry = authorizedCodesMap[cleanAuth];
@@ -2801,35 +2812,67 @@
       const requestedNewCode = normalizeCodeServer(args[1]);
       if (!newDisplay) throw new Error("Tên hiển thị không được để trống!");
 
-      const targetCode = isAdminCode(cleanAuth) ? cleanAuth : (requestedNewCode || cleanAuth);
+      const wasAdmin = isAdminCode(cleanAuth);
+      const targetCode = requestedNewCode || cleanAuth;
       if (!/^[A-Z0-9_-]{3,24}$/.test(targetCode)) {
         throw new Error("Mã đăng nhập chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!");
       }
 
       if (targetCode !== cleanAuth) {
-        if (isAdminCode(targetCode) || authorizedCodesMap[targetCode]) {
+        if (authorizedCodesMap[targetCode]) {
           throw new Error(`Mã "${targetCode}" đã được sử dụng. Vui lòng chọn mã khác!`);
         }
-        const oldEntry = authorizedCodesMap[cleanAuth] || {};
-        const newEntry = {
-          code: targetCode,
-          displayName: newDisplay,
-          note: newDisplay,
-          status: "approved",
-          active: true,
-          createdAt: oldEntry.createdAt || Date.now(),
-          updatedAt: Date.now()
-        };
+        if (wasAdmin) {
+          // Cập nhật mã Admin mới lên Firebase /system_config/admin_code
+          await fetch(`${dbUrl}/system_config/admin_code.json`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(targetCode)
+          });
+          currentAdminAuthCode = targetCode;
+          const oldAdminEntry = authorizedCodesMap[cleanAuth] || authorizedCodesMap["ADMINLETAN"] || {};
+          const newAdminEntry = {
+            code: targetCode,
+            displayName: newDisplay,
+            note: newDisplay,
+            status: "approved",
+            active: true,
+            isAdmin: true,
+            createdAt: oldAdminEntry.createdAt || Date.now(),
+            updatedAt: Date.now()
+          };
+          await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(targetCode)}.json`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newAdminEntry)
+          });
+          if (authorizedCodesMap[cleanAuth]) {
+            await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" });
+            delete authorizedCodesMap[cleanAuth];
+          }
+          authorizedCodesMap[targetCode] = newAdminEntry;
+        } else {
+          const oldEntry = authorizedCodesMap[cleanAuth] || {};
+          const newEntry = {
+            code: targetCode,
+            displayName: newDisplay,
+            note: newDisplay,
+            status: "approved",
+            active: true,
+            createdAt: oldEntry.createdAt || Date.now(),
+            updatedAt: Date.now()
+          };
 
-        // 1. Tạo bản ghi mã mới và xóa mã cũ trong auth_codes
-        await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(targetCode)}.json`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newEntry)
-        });
-        await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" });
-        delete authorizedCodesMap[cleanAuth];
-        authorizedCodesMap[targetCode] = newEntry;
+          // 1. Tạo bản ghi mã mới và xóa mã cũ trong auth_codes
+          await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(targetCode)}.json`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newEntry)
+          });
+          await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" });
+          delete authorizedCodesMap[cleanAuth];
+          authorizedCodesMap[targetCode] = newEntry;
+        }
 
         // 2. Di chuyển danh mục riêng sang mã mới
         const catsPayload = { jobTypes, customerList, executorList, statusList };
@@ -4813,7 +4856,7 @@
     let selectedAuthCodeFilter = (isAdminAccount && authCodeSelectEl) ? authCodeSelectEl.value : '';
 
     if (isAdminAccount && authCodeSelectEl) {
-      const codeSet = new Set(['ADMINLETAN']);
+      const codeSet = new Set([normalizeCodeServer(currentAdminAuthCode)]);
       Object.keys(authorizedCodesMap || {}).forEach(c => codeSet.add(normalizeCodeServer(c)));
       allJobs.forEach(j => { if (j.maDangNhap) codeSet.add(normalizeCodeServer(j.maDangNhap)); });
       const sortedCodes = Array.from(codeSet).sort();
@@ -5782,7 +5825,7 @@
       startRealtimeSync();
       btn.disabled = false;
       btn.innerHTML = oldText;
-      showToast(currentAuthCode === 'ADMINLETAN' ? 'Đã mở khóa toàn quyền ADMINLETAN' : `Xin chào: ${currentAuthCode}`);
+      showToast(isAdminCode(currentAuthCode) ? `Đã mở khóa toàn quyền ${currentAuthCode}` : `Xin chào: ${currentAuthCode}`);
     });
   }
 
@@ -5860,7 +5903,7 @@
         codeInp.value = '';
         nameInp.value = '';
         banner.className = 'alert alert-success py-2 px-3 small mb-3';
-        banner.innerHTML = `✅ Đã gửi yêu cầu tạo mã <strong>${res.code}</strong> (${res.displayName}). Vui lòng chờ <strong>ADMINLETAN</strong> duyệt để đăng nhập!`;
+        banner.innerHTML = `✅ Đã gửi yêu cầu tạo mã <strong>${res.code}</strong> (${res.displayName}). Vui lòng liên hệ <strong>LETAN (0966.220.002)</strong> để phê duyệt !`;
         banner.classList.remove('d-none');
         showToast('Đã gửi yêu cầu tạo mã chờ duyệt');
       })
@@ -5879,8 +5922,8 @@
     document.getElementById('selfDisplayNameInput').value = currentDisplayName || currentAuthCode;
     const codeInp = document.getElementById('selfNewCodeInput');
     codeInp.value = currentAuthCode;
-    codeInp.disabled = isAdminAccount;
-    document.getElementById('selfChangeCodeGroup').classList.toggle('d-none', isAdminAccount);
+    codeInp.disabled = false;
+    document.getElementById('selfChangeCodeGroup').classList.remove('d-none');
     selfAccountModalInstance.show();
   }
 
@@ -5892,7 +5935,7 @@
       showToast('Vui lòng nhập Tên hiển thị!', true);
       return;
     }
-    if (!isAdminAccount && (!newCode || !/^[A-Z0-9_-]{3,24}$/.test(newCode))) {
+    if (!newCode || !/^[A-Z0-9_-]{3,24}$/.test(newCode)) {
       showToast('Mã đăng nhập mới không hợp lệ (3-24 ký tự không dấu)!', true);
       return;
     }
@@ -5982,12 +6025,13 @@
       }
     }
 
-    const adminInfo = authorizedCodesMap["ADMINLETAN"] || {};
+    const adminCodeLabel = normalizeCodeServer(currentAdminAuthCode);
+    const adminInfo = authorizedCodesMap[adminCodeLabel] || authorizedCodesMap["ADMINLETAN"] || {};
     const adminName = adminInfo.displayName || adminInfo.note || "Lê Tân";
     let html = `
       <div class="catalog-item-row" style="background: #fff1f2; border-color: #fecdd3;">
         <div>
-          <span class="fw-bold text-danger" style="font-size: 13.5px;">ADMINLETAN</span>
+          <span class="fw-bold text-danger" style="font-size: 13.5px;">${adminCodeLabel}</span>
           <span class="badge bg-danger ms-1" style="font-size: 10px;">Quản trị</span>
           <div class="small text-secondary fw-semibold">Tên: ${adminName}</div>
         </div>
