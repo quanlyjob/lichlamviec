@@ -1934,6 +1934,10 @@
             <select id="filterMonthTable" class="form-select form-select-sm fw-semibold text-primary shadow-sm" style="width: 165px; border-radius: 8px; height: 31px;" onchange="renderMasterTable(false)">
               <option value="">📅 Tất cả tháng</option>
             </select>
+
+            <select id="filterAuthCodeTable" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 170px; border-radius: 8px; height: 36px;" onchange="renderMasterTable(false)" title="Lọc công việc theo Mã đăng nhập">
+              <option value="">🔑 Tất cả Mã ĐN</option>
+            </select>
             
             <div class="search-filter-box shadow-sm">
               <span class="search-filter-icon">
@@ -2057,6 +2061,11 @@
     <button type="button" class="menu-action-item" onclick="openManageCatalogsModal(); closeAssistiveMenu();">
       <span class="menu-icon-wrap"><i data-lucide="sliders"></i></span>
       <span>Quản lý danh mục</span>
+    </button>
+
+    <button type="button" class="menu-action-item d-none" id="btnMenuManageAuthCodes" onclick="openManageAuthCodesModal(); closeAssistiveMenu();">
+      <span class="menu-icon-wrap" style="background: #fff1f2; color: #7b1113;"><i data-lucide="shield-check"></i></span>
+      <span>Quản lý Mã đăng nhập</span>
     </button>
 
     <button type="button" class="menu-action-item" onclick="exportFirebaseBackupJson(); closeAssistiveMenu();">
@@ -2427,6 +2436,44 @@
   </div>
 </div>
 
+<!-- Modal Quản lý Mã Đăng Nhập (Chỉ ADMINLETAN) -->
+<div class="modal fade" id="manageAuthCodesModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title">Quản Lý Mã Đăng Nhập (ADMIN)</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning py-2 px-3 small mb-3" style="border-radius: 10px;">
+          🛡️ Chỉ những mã đăng nhập được <strong>ADMINLETAN</strong> cấp phép dưới đây mới có quyền truy cập hệ thống. Mỗi mã sử dụng dữ liệu Khách hàng, Công việc, Người thực hiện riêng biệt.
+        </div>
+
+        <div class="statement-filter-card mb-3">
+          <label class="form-label small fw-bold text-secondary mb-1.5">Cấp phép Mã đăng nhập mới:</label>
+          <div class="row g-2">
+            <div class="col-5">
+              <input type="text" id="newAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="VD: STUDIOA" autocomplete="off">
+            </div>
+            <div class="col-4">
+              <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tên / Ghi chú...">
+            </div>
+            <div class="col-3">
+              <button type="button" class="btn btn-brand-primary w-100 h-100" onclick="addAuthorizedCode()">+ Cấp mã</button>
+            </div>
+          </div>
+        </div>
+
+        <label class="form-label small fw-bold text-secondary mb-1.5">Danh sách Mã đăng nhập đang hoạt động:</label>
+        <div id="authCodesListContainer" class="catalog-list-box"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // === CẤU HÌNH FIREBASE REALTIME DATABASE (KHÔNG QUA SCRIPT.GOOGLE.COM) ===
@@ -2443,7 +2490,9 @@
   let currentAuthCode = "";
   let isAdminAccount = false;
   let firebaseJobsMap = {}; // id -> job object
+  let authorizedCodesMap = {}; // code -> { code, note, active, createdAt }
   let firebaseEventSource = null;
+  let manageAuthCodesModalInstance;
 
   function normalizeCodeServer(code) {
     return String(code || "").trim().toUpperCase();
@@ -2517,7 +2566,7 @@
         mapLink: String(item.mapLink || "").trim(),
         ghiChu: String(item.ghiChu || "").trim() || getJobNote(item),
         khachHang: khachHangStr,
-        nguoiThucHien: String(item.nguoiThucHien || "Lê Tân").trim(),
+        nguoiThucHien: String(item.nguoiThucHien || "").trim(),
         tinhTrang: tinhTrangStr,
         giaTri: formatMoneyVn(gVal),
         daCoc: formatMoneyVn(cCoc),
@@ -2564,10 +2613,12 @@
       if (!cleanAuth) throw new Error("Vui lòng nhập mã đăng nhập!");
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 12000);
-      let jobsRes, catsRes;
+      let jobsRes, catsRes, authCodesRes, legacyCatsRes;
       try {
-        [jobsRes, catsRes] = await Promise.all([
+        [jobsRes, catsRes, authCodesRes, legacyCatsRes] = await Promise.all([
           fetch(dbUrl + "/jobs.json", { signal: controller.signal }),
+          fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(cleanAuth)}.json`, { signal: controller.signal }),
+          fetch(dbUrl + "/auth_codes.json", { signal: controller.signal }),
           fetch(dbUrl + "/categories.json", { signal: controller.signal })
         ]);
       } catch (fetchErr) {
@@ -2579,12 +2630,60 @@
         clearTimeout(timeoutId);
       }
       if (!jobsRes.ok) throw new Error("Không thể kết nối Firebase (" + jobsRes.status + "). Kiểm tra lại URL hoặc Rules!");
+
+      const authCodesData = (authCodesRes && authCodesRes.ok ? (await authCodesRes.json()) : null) || {};
+      authorizedCodesMap = authCodesData;
+
+      // Kiểm tra quyền truy cập: ADMINLETAN luôn được phép; các mã khác phải được ADMINLETAN cấp phép trước
+      if (!isAdminCode(cleanAuth)) {
+        const entry = authorizedCodesMap[cleanAuth];
+        if (!entry || entry.active === false) {
+          throw new Error(`Mã "${cleanAuth}" chưa được ADMINLETAN cấp phép hoặc đã bị khóa!`);
+        }
+      }
+
       const jobsData = (await jobsRes.json()) || {};
-      const catsData = catsRes.ok ? (await catsRes.json()) : null;
+      let catsData = catsRes && catsRes.ok ? (await catsRes.json()) : null;
+      // Fallback sang categories cũ cho ADMINLETAN nếu chưa có categories_by_code/ADMINLETAN
+      if (!catsData && isAdminCode(cleanAuth) && legacyCatsRes && legacyCatsRes.ok) {
+        catsData = await legacyCatsRes.json();
+      }
+
       firebaseJobsMap = jobsData;
       const result = buildFilteredJobsFromMap(firebaseJobsMap, cleanAuth);
       result.categories = catsData;
+      result.authCodes = authorizedCodesMap;
       return result;
+    }
+
+    if (action === "saveAuthCodeAdmin") {
+      if (!isAdminCode(cleanAuth)) throw new Error("Chỉ ADMINLETAN mới có quyền quản lý mã đăng nhập!");
+      const codeToSave = normalizeCodeServer(args[0]);
+      const noteStr = String(args[1] || "").trim();
+      const isActive = args[2] !== false;
+      if (!codeToSave) throw new Error("Mã đăng nhập không hợp lệ!");
+      const payload = {
+        code: codeToSave,
+        note: noteStr,
+        active: isActive,
+        updatedAt: Date.now()
+      };
+      await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(codeToSave)}.json`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      authorizedCodesMap[codeToSave] = payload;
+      return { success: true, authCodes: authorizedCodesMap };
+    }
+
+    if (action === "deleteAuthCodeAdmin") {
+      if (!isAdminCode(cleanAuth)) throw new Error("Chỉ ADMINLETAN mới có quyền xóa mã đăng nhập!");
+      const codeToDel = normalizeCodeServer(args[0]);
+      if (!codeToDel || isAdminCode(codeToDel)) throw new Error("Không thể xóa mã quản trị!");
+      await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(codeToDel)}.json`, { method: "DELETE" });
+      delete authorizedCodesMap[codeToDel];
+      return { success: true, authCodes: authorizedCodesMap };
     }
 
     if (action === "saveJobData") {
@@ -2598,7 +2697,7 @@
       const cVal = parseMoney(form.chiPhi);
       const congViecFormatted = capitalizeFirstLetter(form.congViec);
       const khachHangFormatted = capitalizeAllWords(form.khachHang);
-      const nguoiThucHien = capitalizeAllWords(form.nguoiThucHien || "Lê Tân");
+      const nguoiThucHien = capitalizeAllWords(form.nguoiThucHien || "");
       const tinhTrang = String(form.tinhTrang || "Chờ").trim();
       const chiTietClean = stripNoteTag(form.chiTiet || "").replace(/\[MAP:[^\]]*\]/g, "").trim();
       const mapLinkClean = String(form.mapLink || "").trim();
@@ -2717,8 +2816,9 @@
     }
 
     if (action === "saveCategoriesToSheet") {
+      if (!cleanAuth) return { success: false };
       const cats = args[0];
-      await fetch(`${dbUrl}/categories.json`, {
+      await fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(cleanAuth)}.json`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cats)
@@ -3334,7 +3434,7 @@
     const thoiGianStr = parsed.thoiGian || 'Chưa cập nhật';
     const diaChiText = parsed.diaChi || 'Chưa cập nhật';
     const khachHangStr = j.khachHang || 'Chưa cập nhật';
-    const nguoiThucHienStr = j.nguoiThucHien || 'Lê Tân';
+    const nguoiThucHienStr = j.nguoiThucHien || 'Chưa phân công';
     const noteText = noteOverride !== null ? String(noteOverride).trim() : getJobNote(j);
 
     const lines = [
@@ -3372,7 +3472,7 @@
     const thoiGianStr = parsed.thoiGian || 'Chưa cập nhật';
     const diaChiText = parsed.diaChi || 'Chưa cập nhật';
     const khachHangStr = j.khachHang || 'Chưa cập nhật';
-    const nguoiThucHienStr = j.nguoiThucHien || 'Lê Tân';
+    const nguoiThucHienStr = j.nguoiThucHien || 'Chưa phân công';
     const savedMapLink = (j.mapLink || '').trim();
 
     document.getElementById('infoPopupNgay').innerText = ngayFull;
@@ -3488,12 +3588,31 @@
     renderMasterTable();
   }
 
+  const DEFAULT_JOB_TYPES = ["Chụp PSC", "Quay PSC", "Chụp SK", "Quay SK", "Ăn hỏi", "Khác"];
+  const DEFAULT_CUSTOMER_LIST = ["Khách lẻ"];
+  const DEFAULT_EXECUTOR_LIST = [];
+  const DEFAULT_STATUS_LIST = ["Chờ", "Chưa thực hiện", "Chưa TT", "Đã TT", "Xong"];
+
+  function getAuthCatSuffix() {
+    return currentAuthCode ? `_${normalizeCodeServer(currentAuthCode)}` : '';
+  }
+
+  function resetCategoriesToDefault() {
+    jobTypes = [...DEFAULT_JOB_TYPES];
+    customerList = [...DEFAULT_CUSTOMER_LIST];
+    executorList = [...DEFAULT_EXECUTOR_LIST];
+    statusList = [...DEFAULT_STATUS_LIST];
+  }
+
   function loadCategoriesPrefs() {
+    resetCategoriesToDefault();
+    const sfx = getAuthCatSuffix();
+    if (!sfx) return;
     try {
-      const savedJobTypes = localStorage.getItem('pref_job_types');
-      const savedCustomers = localStorage.getItem('pref_customer_list');
-      const savedExecutors = localStorage.getItem('pref_executor_list');
-      const savedStatuses = localStorage.getItem('pref_status_list');
+      const savedJobTypes = localStorage.getItem('pref_job_types' + sfx);
+      const savedCustomers = localStorage.getItem('pref_customer_list' + sfx);
+      const savedExecutors = localStorage.getItem('pref_executor_list' + sfx);
+      const savedStatuses = localStorage.getItem('pref_status_list' + sfx);
       if (savedJobTypes) jobTypes = JSON.parse(savedJobTypes);
       if (savedCustomers) customerList = JSON.parse(savedCustomers);
       if (savedExecutors) executorList = JSON.parse(savedExecutors);
@@ -3502,11 +3621,13 @@
   }
 
   function saveCategoriesPrefs() {
+    const sfx = getAuthCatSuffix();
+    if (!sfx) return;
     try {
-      localStorage.setItem('pref_job_types', JSON.stringify(jobTypes));
-      localStorage.setItem('pref_customer_list', JSON.stringify(customerList));
-      localStorage.setItem('pref_executor_list', JSON.stringify(executorList));
-      localStorage.setItem('pref_status_list', JSON.stringify(statusList));
+      localStorage.setItem('pref_job_types' + sfx, JSON.stringify(jobTypes));
+      localStorage.setItem('pref_customer_list' + sfx, JSON.stringify(customerList));
+      localStorage.setItem('pref_executor_list' + sfx, JSON.stringify(executorList));
+      localStorage.setItem('pref_status_list' + sfx, JSON.stringify(statusList));
     } catch(e) {}
 
     const cats = {
@@ -3692,21 +3813,35 @@
         if (menuBadge) menuBadge.innerText = currentAuthCode;
 
         document.getElementById('adminOwnerCodeGroup').classList.toggle('d-none', !isAdminAccount);
-        // Mặc định ẩn cột Mã ĐN (người dùng có thể bật trong Cột hiển thị nếu cần)
-        
+        const btnManageAuth = document.getElementById('btnMenuManageAuthCodes');
+        if (btnManageAuth) btnManageAuth.classList.toggle('d-none', !isAdminAccount);
+        const filterAuthSelect = document.getElementById('filterAuthCodeTable');
+        if (filterAuthSelect) filterAuthSelect.classList.toggle('d-none', !isAdminAccount);
+
+        // Tự động hiển thị cột Mã ĐN nếu là ADMINLETAN để dễ tổng hợp công việc các mã khác
+        const maDnCol = tableColumns.find(c => c.id === 'maDangNhap');
+        if (maDnCol && isAdminAccount && localStorage.getItem('pref_table_col_vis_v2') === null) {
+          maDnCol.visible = true;
+        }
+
+        // Nạp danh mục riêng của mã đăng nhập hiện tại
+        resetCategoriesToDefault();
         if (res && res.categories) {
           if (Array.isArray(res.categories.jobTypes)) jobTypes = res.categories.jobTypes;
           if (Array.isArray(res.categories.customerList)) customerList = res.categories.customerList;
           if (Array.isArray(res.categories.executorList)) executorList = res.categories.executorList;
           if (Array.isArray(res.categories.statusList)) statusList = res.categories.statusList;
+          const sfx = getAuthCatSuffix();
           try {
-            localStorage.setItem('pref_job_types', JSON.stringify(jobTypes));
-            localStorage.setItem('pref_customer_list', JSON.stringify(customerList));
-            localStorage.setItem('pref_executor_list', JSON.stringify(executorList));
-            localStorage.setItem('pref_status_list', JSON.stringify(statusList));
+            localStorage.setItem('pref_job_types' + sfx, JSON.stringify(jobTypes));
+            localStorage.setItem('pref_customer_list' + sfx, JSON.stringify(customerList));
+            localStorage.setItem('pref_executor_list' + sfx, JSON.stringify(executorList));
+            localStorage.setItem('pref_status_list' + sfx, JSON.stringify(statusList));
           } catch(e) {}
         } else {
-          allJobs.forEach(j => {
+          // Chỉ trích xuất danh mục từ các công việc thuộc chính mã đăng nhập hiện tại
+          const ownJobs = allJobs.filter(j => normalizeCodeServer(j.maDangNhap || "ADMINLETAN") === normalizeCodeServer(currentAuthCode));
+          ownJobs.forEach(j => {
             if (j.congViec && !jobTypes.includes(j.congViec.trim())) jobTypes.push(j.congViec.trim());
             if (j.khachHang && !customerList.includes(j.khachHang.trim())) customerList.push(j.khachHang.trim());
             if (j.nguoiThucHien && !executorList.includes(j.nguoiThucHien.trim())) executorList.push(j.nguoiThucHien.trim());
@@ -3914,7 +4049,7 @@
         ${timeAndAddrHtml}
         ${ghiChuDayHtml}
         <div class="mt-2">
-          <span class="event-card-exec">👤 ${j.nguoiThucHien || 'Lê Tân'}</span>
+          <span class="event-card-exec">👤 ${j.nguoiThucHien || 'Chưa phân công'}</span>
         </div>
       </div>`;
     });
@@ -3936,7 +4071,7 @@
     document.getElementById('formKhachHang').value = selectedCust || "";
 
     let execOpts = [...executorList];
-    const targetExec = selectedExec !== undefined && selectedExec !== null ? selectedExec : "Lê Tân";
+    const targetExec = selectedExec !== undefined && selectedExec !== null ? selectedExec : "";
     if (targetExec && !execOpts.includes(targetExec)) execOpts.push(targetExec);
     document.getElementById('listNguoiThucHien').innerHTML = execOpts.map(e => `<option value="${e}">`).join('');
     document.getElementById('formNguoiThucHien').value = targetExec;
@@ -4205,7 +4340,7 @@
         let p = j.ngay.split('/');
         if (p.length !== 3 || `${p[1].padStart(2, '0')}/${p[2]}` !== reportMonth) return;
       }
-      if (selectedExecutor && (j.nguoiThucHien || 'Lê Tân').trim().toLowerCase() !== selectedExecutor.toLowerCase()) return;
+      if (selectedExecutor && (j.nguoiThucHien || '').trim().toLowerCase() !== selectedExecutor.toLowerCase()) return;
 
       filteredJobCount++;
       let gVal = j.luuTruGiaTri || parseMoney(j.giaTri);
@@ -4237,6 +4372,8 @@
   function clearAllFilters() {
     document.getElementById('searchTableInput').value = '';
     document.getElementById('filterMonthTable').value = '';
+    const authSel = document.getElementById('filterAuthCodeTable');
+    if (authSel) authSel.value = '';
     filterJobTypeVal = "";
     filterCustomerVal = "";
     filterExecutorVal = "";
@@ -4480,6 +4617,21 @@
     const keyword = document.getElementById('searchTableInput').value.toLowerCase().trim();
     const monthSelectEl = document.getElementById('filterMonthTable');
     let selectedMonth = monthSelectEl.value;
+    const authCodeSelectEl = document.getElementById('filterAuthCodeTable');
+    let selectedAuthCodeFilter = (isAdminAccount && authCodeSelectEl) ? authCodeSelectEl.value : '';
+
+    if (isAdminAccount && authCodeSelectEl) {
+      const codeSet = new Set(['ADMINLETAN']);
+      Object.keys(authorizedCodesMap || {}).forEach(c => codeSet.add(normalizeCodeServer(c)));
+      allJobs.forEach(j => { if (j.maDangNhap) codeSet.add(normalizeCodeServer(j.maDangNhap)); });
+      const sortedCodes = Array.from(codeSet).sort();
+      let authOptsHtml = `<option value="">🔑 Tất cả Mã ĐN (${sortedCodes.length})</option>`;
+      sortedCodes.forEach(c => {
+        const note = authorizedCodesMap[c] && authorizedCodesMap[c].note ? ` - ${authorizedCodesMap[c].note}` : '';
+        authOptsHtml += `<option value="${c}" ${c === selectedAuthCodeFilter ? 'selected' : ''}>${c}${note}</option>`;
+      });
+      authCodeSelectEl.innerHTML = authOptsHtml;
+    }
 
     const selectedJobType = filterJobTypeVal;
     const selectedCust = filterCustomerVal;
@@ -4514,7 +4666,7 @@
     });
     monthSelectEl.innerHTML = monthOpts;
 
-    const hasAnyFilter = Boolean(keyword || selectedMonth || selectedJobType || selectedCust || selectedExecutor || selectedStatus || missingTimeOrAddress);
+    const hasAnyFilter = Boolean(keyword || selectedMonth || selectedAuthCodeFilter || selectedJobType || selectedCust || selectedExecutor || selectedStatus || missingTimeOrAddress);
     const clearBtn = document.getElementById('btnClearAllFilters');
     if (clearBtn) {
       if (hasAnyFilter) clearBtn.classList.add('has-active-filter');
@@ -4530,6 +4682,9 @@
         const hasAddr = Boolean(parsed.diaChi && parsed.diaChi.trim() !== '');
         if (hasTime && hasAddr) return false;
       }
+      if (selectedAuthCodeFilter) {
+        if (normalizeCodeServer(j.maDangNhap || 'ADMINLETAN') !== selectedAuthCodeFilter) return false;
+      }
       if (selectedMonth) {
         let p = j.ngay.split('/');
         if (p.length !== 3 || `${p[1].padStart(2, '0')}/${p[2]}` !== selectedMonth) return false;
@@ -4539,7 +4694,7 @@
           !j.congViec.toLowerCase().includes(keyword) &&
           !j.chiTiet.toLowerCase().includes(keyword) &&
           !j.ngay.toLowerCase().includes(keyword) &&
-          !(j.nguoiThucHien || 'Lê Tân').toLowerCase().includes(keyword)) {
+          !(j.nguoiThucHien || '').toLowerCase().includes(keyword)) {
         return false;
       }
       return true;
@@ -4547,7 +4702,7 @@
 
     const matchJT = (j) => !selectedJobType || j.congViec.trim().toLowerCase() === selectedJobType.toLowerCase();
     const matchCust = (j) => !selectedCust || j.khachHang.trim().toLowerCase() === selectedCust.toLowerCase();
-    const matchExec = (j) => !selectedExecutor || (j.nguoiThucHien || "Lê Tân").trim().toLowerCase() === selectedExecutor.toLowerCase();
+    const matchExec = (j) => !selectedExecutor || (j.nguoiThucHien || "").trim().toLowerCase() === selectedExecutor.toLowerCase();
     const matchSt = (j) => !selectedStatus || j.tinhTrang.trim() === selectedStatus;
 
     const extractUniqueOptions = (jobsSubset, getterFn, catalogOrder) => {
@@ -4570,7 +4725,7 @@
       return arr;
     };
 
-    const isFilteringSpecific = (keyword !== '' || selectedJobType !== '' || selectedCust !== '' || selectedExecutor !== '' || selectedStatus !== '' || missingTimeOrAddress);
+    const isFilteringSpecific = (keyword !== '' || selectedAuthCodeFilter !== '' || selectedJobType !== '' || selectedCust !== '' || selectedExecutor !== '' || selectedStatus !== '' || missingTimeOrAddress);
     const effectiveBaseJobs = (onlyEmptyDays && !isFilteringSpecific && !hideCompleted) ? [] : baseFilteredJobs;
 
     const activeJobTypes = extractUniqueOptions(
@@ -4795,7 +4950,7 @@
         }
 
         let execOpts = [...executorList];
-        const execName = j.nguoiThucHien || 'Lê Tân';
+        const execName = j.nguoiThucHien || 'Chưa chọn';
         if (execName && !execOpts.includes(execName)) execOpts.push(execName);
         let execOptionsHtml = execOpts.map(e => `<li><a class="dropdown-item ${execName === e ? 'active fw-bold' : ''}" href="javascript:void(0)" onclick="changeExecutorValue(${j.rowNumber}, '${escapeJsQuotes(e)}')">${e}</a></li>`).join('');
 
@@ -4920,7 +5075,7 @@
             : '';
 
           let execOpts = [...executorList];
-          const execName = j.nguoiThucHien || 'Lê Tân';
+          const execName = j.nguoiThucHien || 'Chưa chọn';
           if (execName && !execOpts.includes(execName)) execOpts.push(execName);
           let execOptionsHtml = execOpts.map(e => `<li><a class="dropdown-item ${execName === e ? 'active fw-bold' : ''}" href="javascript:void(0)" onclick="changeExecutorValue(${j.rowNumber}, '${escapeJsQuotes(e)}')">${e}</a></li>`).join('');
 
@@ -5029,7 +5184,7 @@
     document.getElementById('modalTitle').innerText = 'Thêm công việc mới';
     const delBtn = document.getElementById('btnDeleteInModal');
     if (delBtn) delBtn.classList.add('d-none');
-    populateModalDropdowns("", "", "Lê Tân", "Chờ");
+    populateModalDropdowns("", "", "", "Chờ");
     jobModalInstance.show();
   }
 
@@ -5056,7 +5211,7 @@
     document.getElementById('formDaCoc').value = cCocVal > 0 ? cCocVal.toLocaleString('vi-VN') + " đ" : '';
     document.getElementById('formChiPhi').value = cVal > 0 ? cVal.toLocaleString('vi-VN') + " đ" : '';
 
-    populateModalDropdowns(j.congViec || "", j.khachHang || "", j.nguoiThucHien || "Lê Tân", j.tinhTrang || "Chờ");
+    populateModalDropdowns(j.congViec || "", j.khachHang || "", j.nguoiThucHien || "", j.tinhTrang || "Chờ");
 
     document.getElementById('modalTitle').innerText = `Sửa công việc ngày ${j.ngay}`;
     const delBtn = document.getElementById('btnDeleteInModal');
@@ -5205,7 +5360,7 @@
         const cName = j.khachHang.trim();
         custMap.set(cName, (custMap.get(cName) || 0) + 1);
       }
-      const execName = (j.nguoiThucHien || 'Lê Tân').trim();
+      const execName = (j.nguoiThucHien || '').trim();
       if (execName && (j.congViec || j.khachHang) && j.ttChiPhi !== 'Đã trả') {
         execMap.set(execName, (execMap.get(execName) || 0) + 1);
       }
@@ -5343,7 +5498,7 @@
 
   function generateExecutorSalaryStatement(execName, selectedMonth) {
     const filteredJobs = allJobs.filter(j => {
-      const jExec = (j.nguoiThucHien || 'Lê Tân').trim();
+      const jExec = (j.nguoiThucHien || '').trim();
       if (jExec.toLowerCase() !== execName.toLowerCase()) return false;
       if (!j.congViec && !j.khachHang) return false;
       if (j.ttChiPhi === 'Đã trả') return false;
@@ -5437,6 +5592,7 @@
     }
 
     currentAuthCode = rawCode;
+    loadCategoriesPrefs();
     const remember = document.getElementById('rememberLoginCheck').checked;
     try {
       if (remember) localStorage.setItem('letan_saved_auth_code', currentAuthCode);
@@ -5470,10 +5626,131 @@
     showToast("Đã tải file sao lưu JSON");
   }
 
+  function openManageAuthCodesModal() {
+    if (!isAdminAccount) {
+      showToast('Chỉ ADMINLETAN mới có quyền này!', true);
+      return;
+    }
+    renderAuthCodesList();
+    manageAuthCodesModalInstance.show();
+  }
+
+  function renderAuthCodesList() {
+    const container = document.getElementById('authCodesListContainer');
+    if (!container) return;
+
+    const codes = Object.keys(authorizedCodesMap || {}).filter(c => !isAdminCode(c)).sort();
+    let html = `
+      <div class="catalog-item-row" style="background: #fff1f2; border-color: #fecdd3;">
+        <div>
+          <span class="fw-bold text-danger" style="font-size: 13.5px;">ADMINLETAN</span>
+          <span class="badge bg-danger ms-1" style="font-size: 10px;">Quản trị tối cao</span>
+          <div class="small text-muted">Toàn quyền xem, tổng hợp & cấp phép mã</div>
+        </div>
+        <span class="badge bg-success">Luôn hoạt động</span>
+      </div>
+    `;
+
+    if (codes.length === 0) {
+      html += `<div class="text-center text-muted small py-3">Chưa có mã đăng nhập phụ nào được cấp phép.</div>`;
+    } else {
+      codes.forEach(code => {
+        const info = authorizedCodesMap[code] || {};
+        const isActive = info.active !== false;
+        const jobCount = allJobs.filter(j => normalizeCodeServer(j.maDangNhap) === code).length;
+        html += `
+          <div class="catalog-item-row">
+            <div>
+              <div class="d-flex align-items-center gap-1.5">
+                <span class="fw-bold text-dark" style="font-size: 13.5px;">${code}</span>
+                <span class="badge ${isActive ? 'bg-success' : 'bg-secondary'}" style="font-size: 10px;">${isActive ? 'Đang mở' : 'Đã khóa'}</span>
+                <span class="badge bg-light text-dark border" style="font-size: 10px;">${jobCount} công việc</span>
+              </div>
+              ${info.note ? `<div class="small text-muted">${info.note}</div>` : ''}
+            </div>
+            <div class="d-flex gap-1.5">
+              <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 11px;" onclick="toggleAuthCodeActive('${code}')">${isActive ? 'Khóa' : 'Mở'}</button>
+              <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px;" onclick="removeAuthorizedCode('${code}')">Xóa</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+    container.innerHTML = html;
+  }
+
+  function addAuthorizedCode() {
+    const codeInp = document.getElementById('newAuthCodeInput');
+    const noteInp = document.getElementById('newAuthNoteInput');
+    const code = normalizeCodeServer(codeInp.value);
+    const note = noteInp.value.trim();
+
+    if (!code) {
+      showToast('Vui lòng nhập mã đăng nhập cần cấp!', true);
+      codeInp.focus();
+      return;
+    }
+    if (!/^[A-Z0-9_-]{3,24}$/.test(code)) {
+      showToast('Mã chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!', true);
+      codeInp.focus();
+      return;
+    }
+    if (isAdminCode(code)) {
+      showToast('Mã này thuộc quyền quản trị mặc định!', true);
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.authCodes) authorizedCodesMap = res.authCodes;
+        codeInp.value = '';
+        noteInp.value = '';
+        renderAuthCodesList();
+        renderMasterTable();
+        showToast(`Đã cấp phép mã "${code}"`);
+      })
+      .withFailureHandler(function(err) {
+        showToast('Lỗi cấp mã: ' + (err.message || err), true);
+      })
+      .saveAuthCodeAdmin(code, note, true);
+  }
+
+  function toggleAuthCodeActive(code) {
+    const info = authorizedCodesMap[code] || {};
+    const nextState = info.active === false;
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.authCodes) authorizedCodesMap = res.authCodes;
+        renderAuthCodesList();
+        showToast(nextState ? `Đã mở khóa mã "${code}"` : `Đã tạm khóa mã "${code}"`);
+      })
+      .withFailureHandler(function(err) {
+        showToast('Lỗi cập nhật trạng thái mã', true);
+      })
+      .saveAuthCodeAdmin(code, info.note || '', nextState);
+  }
+
+  function removeAuthorizedCode(code) {
+    showConfirmDialog(`Xóa quyền truy cập của mã "${code}"? (Dữ liệu công việc đã tạo vẫn được giữ lại)`, () => {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.authCodes) authorizedCodesMap = res.authCodes;
+          renderAuthCodesList();
+          renderMasterTable();
+          showToast(`Đã xóa mã "${code}"`);
+        })
+        .withFailureHandler(function(err) {
+          showToast('Lỗi xóa mã', true);
+        })
+        .deleteAuthCodeAdmin(code);
+    });
+  }
+
   function logoutCode() {
     currentAuthCode = "";
     isAdminAccount = false;
     allJobs = [];
+    resetCategoriesToDefault();
     try { localStorage.removeItem('letan_saved_auth_code'); } catch (e) {}
     document.getElementById('loginCodeInput').value = '';
     document.getElementById('loginOverlay').classList.remove('d-none');
@@ -5547,6 +5824,7 @@
     jobModalInstance = new bootstrap.Modal(document.getElementById('jobModal'));
     debtQrModalInstance = new bootstrap.Modal(document.getElementById('debtQrModal'));
     manageCatalogsModalInstance = new bootstrap.Modal(document.getElementById('manageCatalogsModal'));
+    manageAuthCodesModalInstance = new bootstrap.Modal(document.getElementById('manageAuthCodesModal'));
     reportModalInstance = new bootstrap.Modal(document.getElementById('reportModal'));
     jobInfoPopupModalInstance = new bootstrap.Modal(document.getElementById('jobInfoPopupModal'));
     loadTablePrefs();
@@ -5561,6 +5839,7 @@
       const savedCode = localStorage.getItem('letan_saved_auth_code');
       if (savedCode && savedCode.trim() !== '') {
         currentAuthCode = savedCode.trim().toUpperCase();
+        loadCategoriesPrefs();
         document.getElementById('loginCodeInput').value = currentAuthCode;
         loadData();
       } else {
