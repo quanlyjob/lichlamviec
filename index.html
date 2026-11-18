@@ -1838,23 +1838,54 @@
 <div id="loginOverlay" class="login-overlay">
   <div class="login-card">
     <div class="login-logo">LT</div>
-    <h5 class="fw-bold text-dark mb-1">Xác Thực Truy Cập</h5>
-    <p class="text-muted small mb-3">Nhập mã đăng nhập của bạn để trích xuất dữ liệu lịch làm việc từ hệ thống</p>
+    <h5 class="fw-bold text-dark mb-1" id="loginCardTitle">Xác Thực Truy Cập</h5>
+    <p class="text-muted small mb-3" id="loginCardSubtitle">Nhập mã đăng nhập của bạn để truy cập lịch làm việc</p>
 
-    <div class="mb-3 text-start">
-      <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập:</label>
-      <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mã truy cập..." style="letter-spacing: 1.5px; height: 42px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitLoginCode()">
-    </div>
-    <div class="d-flex align-items-center justify-content-between mb-3 px-1">
-      <div class="form-check text-start mb-0">
-        <input class="form-check-input" type="checkbox" id="rememberLoginCheck" checked>
-        <label class="form-check-label small text-muted" for="rememberLoginCheck" style="cursor:pointer;">Ghi nhớ trên máy này</label>
+    <!-- Tab chuyển đổi Đăng nhập / Tạo mã mới -->
+    <div class="statement-mode-tabs mb-3">
+      <div class="statement-mode-tab">
+        <input type="radio" name="loginModeRadio" id="loginTabSignIn" checked onchange="switchLoginCardMode('login')">
+        <label class="statement-mode-label" for="loginTabSignIn">🔓 Đăng nhập</label>
       </div>
-      <a href="javascript:void(0)" class="small text-decoration-none text-secondary" onclick="toggleShowLoginPass()">👁️ Hiện mã</a>
+      <div class="statement-mode-tab">
+        <input type="radio" name="loginModeRadio" id="loginTabRegister" onchange="switchLoginCardMode('register')">
+        <label class="statement-mode-label" for="loginTabRegister">➕ Tạo mã ĐN mới</label>
+      </div>
     </div>
-    <button type="button" id="btnSubmitLogin" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitLoginCode()">
-      🔓 Đăng nhập
-    </button>
+
+    <!-- Form Đăng nhập -->
+    <div id="loginSignInForm">
+      <div class="mb-3 text-start">
+        <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập:</label>
+        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mã truy cập..." style="letter-spacing: 1.5px; height: 42px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitLoginCode()">
+      </div>
+      <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+        <div class="form-check text-start mb-0">
+          <input class="form-check-input" type="checkbox" id="rememberLoginCheck" checked>
+          <label class="form-check-label small text-muted" for="rememberLoginCheck" style="cursor:pointer;">Ghi nhớ trên máy này</label>
+        </div>
+        <a href="javascript:void(0)" class="small text-decoration-none text-secondary" onclick="toggleShowLoginPass()">👁️ Hiện mã</a>
+      </div>
+      <button type="button" id="btnSubmitLogin" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitLoginCode()">
+        🔓 Đăng nhập
+      </button>
+    </div>
+
+    <!-- Form Tạo mã đăng nhập mới (chờ ADMINLETAN duyệt) -->
+    <div id="loginRegisterForm" class="d-none text-start">
+      <div class="mb-2.5">
+        <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập muốn tạo:</label>
+        <input type="text" id="regAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="VD: STUDIOA, JUNE..." autocomplete="off" style="height: 40px; border-radius: 10px;">
+      </div>
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị:</label>
+        <input type="text" id="regDisplayNameInput" class="form-control" placeholder="VD: Studio Ánh Dương, Lê Tân..." autocomplete="off" style="height: 40px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitRegisterAuthCode()">
+      </div>
+      <div id="regStatusBanner" class="alert alert-info py-2 px-3 small d-none mb-3" style="border-radius: 10px;"></div>
+      <button type="button" id="btnSubmitRegister" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitRegisterAuthCode()">
+        📩 Gửi yêu cầu tạo mã
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2065,16 +2096,21 @@
       <span>Quản lý Mã đăng nhập</span>
     </button>
 
-    <button type="button" class="menu-action-item" onclick="exportFirebaseBackupJson(); closeAssistiveMenu();">
+    <button type="button" class="menu-action-item d-none" id="btnMenuExportBackup" onclick="exportFirebaseBackupJson(); closeAssistiveMenu();">
       <span class="menu-icon-wrap"><i data-lucide="download"></i></span>
       <span>Sao lưu dữ liệu (JSON)</span>
+    </button>
+
+    <button type="button" class="menu-action-item" id="btnMenuSelfAccount" onclick="openSelfAccountModal(); closeAssistiveMenu();">
+      <span class="menu-icon-wrap"><i data-lucide="user-cog"></i></span>
+      <span>Đổi mã & Tên hiển thị</span>
     </button>
 
     <div class="menu-divider"></div>
 
     <button type="button" class="menu-action-item danger" onclick="logoutCode(); closeAssistiveMenu();">
-      <span class="menu-icon-wrap"><i data-lucide="key-round"></i></span>
-      <span>Đổi mã truy cập</span>
+      <span class="menu-icon-wrap"><i data-lucide="log-out"></i></span>
+      <span>Đăng xuất</span>
     </button>
   </div>
 </div>
@@ -2442,18 +2478,14 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <div class="alert alert-warning py-2 px-3 small mb-3" style="border-radius: 10px;">
-          🛡️ Chỉ những mã đăng nhập được <strong>ADMINLETAN</strong> cấp phép dưới đây mới có quyền truy cập hệ thống. Mỗi mã sử dụng dữ liệu Khách hàng, Công việc, Người thực hiện riêng biệt.
-        </div>
-
         <div class="statement-filter-card mb-3">
-          <label class="form-label small fw-bold text-secondary mb-1.5">Cấp phép Mã đăng nhập mới:</label>
+          <label class="form-label small fw-bold text-secondary mb-1.5">Cấp phép trực tiếp Mã đăng nhập mới:</label>
           <div class="row g-2">
-            <div class="col-5">
-              <input type="text" id="newAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="VD: STUDIOA" autocomplete="off">
-            </div>
             <div class="col-4">
-              <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tên / Ghi chú...">
+              <input type="text" id="newAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="Mã ĐN..." autocomplete="off">
+            </div>
+            <div class="col-5">
+              <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tên hiển thị...">
             </div>
             <div class="col-3">
               <button type="button" class="btn btn-brand-primary w-100 h-100" onclick="addAuthorizedCode()">+ Cấp mã</button>
@@ -2461,11 +2493,43 @@
           </div>
         </div>
 
-        <label class="form-label small fw-bold text-secondary mb-1.5">Danh sách Mã đăng nhập đang hoạt động:</label>
+        <div id="pendingAuthCodesSection" class="mb-3 d-none">
+          <label class="form-label small fw-bold text-danger mb-1.5">⏳ Yêu cầu tạo mã mới đang chờ duyệt (<span id="pendingAuthCount">0</span>):</label>
+          <div id="pendingAuthCodesContainer" class="catalog-list-box" style="background: #fffbeb !important; border-color: #fde68a !important;"></div>
+        </div>
+
+        <label class="form-label small fw-bold text-secondary mb-1.5">Danh sách Mã đăng nhập đã duyệt:</label>
         <div id="authCodesListContainer" class="catalog-list-box"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tự Đổi Mã Đăng Nhập & Tên Hiển Thị -->
+<div class="modal fade" id="selfAccountModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title">Tài Khoản & Hiển Thị</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2.5">
+          <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị (Tiêu đề Lịch):</label>
+          <input type="text" id="selfDisplayNameInput" class="form-control fw-semibold" placeholder="VD: Lê Tân, Studio June...">
+        </div>
+        <div class="mb-2" id="selfChangeCodeGroup">
+          <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập của bạn:</label>
+          <input type="text" id="selfNewCodeInput" class="form-control text-uppercase fw-bold" placeholder="Nhập mã mới..." autocomplete="off">
+          <small class="text-muted d-block mt-1" style="font-size: 11px;">Khi đổi mã mới, toàn bộ công việc và danh mục hiện tại sẽ tự động chuyển sang mã mới.</small>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-end gap-2">
+        <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-brand-primary btn-sm px-3" id="btnSaveSelfAccount" onclick="submitSelfAccountChange()">Lưu thay đổi</button>
       </div>
     </div>
   </div>
@@ -2485,11 +2549,13 @@
   }
 
   let currentAuthCode = "";
+  let currentDisplayName = "";
   let isAdminAccount = false;
   let firebaseJobsMap = {}; // id -> job object
-  let authorizedCodesMap = {}; // code -> { code, note, active, createdAt }
+  let authorizedCodesMap = {}; // code -> { code, displayName, note, status, active, createdAt }
   let firebaseEventSource = null;
   let manageAuthCodesModalInstance;
+  let selfAccountModalInstance;
 
   function normalizeCodeServer(code) {
     return String(code || "").trim().toUpperCase();
@@ -2631,17 +2697,27 @@
       const authCodesData = (authCodesRes && authCodesRes.ok ? (await authCodesRes.json()) : null) || {};
       authorizedCodesMap = authCodesData;
 
-      // Kiểm tra quyền truy cập: ADMINLETAN luôn được phép; các mã khác phải được ADMINLETAN cấp phép trước
-      if (!isAdminCode(cleanAuth)) {
+      // Kiểm tra quyền truy cập: ADMINLETAN luôn được phép; các mã khác phải được ADMINLETAN duyệt
+      let resolvedDisplayName = "";
+      if (isAdminCode(cleanAuth)) {
+        const adminEntry = authorizedCodesMap["ADMINLETAN"] || {};
+        resolvedDisplayName = (adminEntry.displayName || adminEntry.note || "Lê Tân").trim();
+      } else {
         const entry = authorizedCodesMap[cleanAuth];
-        if (!entry || entry.active === false) {
-          throw new Error(`Mã "${cleanAuth}" chưa được ADMINLETAN cấp phép hoặc đã bị khóa!`);
+        if (!entry) {
+          throw new Error(`Mã "${cleanAuth}" chưa tồn tại hoặc chưa được ADMINLETAN cấp phép!`);
         }
+        if (entry.status === "pending") {
+          throw new Error(`Mã "${cleanAuth}" đang chờ ADMINLETAN phê duyệt!`);
+        }
+        if (entry.active === false || entry.status === "locked") {
+          throw new Error(`Mã "${cleanAuth}" đã bị tạm khóa bởi quản trị viên!`);
+        }
+        resolvedDisplayName = (entry.displayName || entry.note || cleanAuth).trim();
       }
 
       const jobsData = (await jobsRes.json()) || {};
       let catsData = catsRes && catsRes.ok ? (await catsRes.json()) : null;
-      // Fallback sang categories cũ cho ADMINLETAN nếu chưa có categories_by_code/ADMINLETAN
       if (!catsData && isAdminCode(cleanAuth) && legacyCatsRes && legacyCatsRes.ok) {
         catsData = await legacyCatsRes.json();
       }
@@ -2650,19 +2726,55 @@
       const result = buildFilteredJobsFromMap(firebaseJobsMap, cleanAuth);
       result.categories = catsData;
       result.authCodes = authorizedCodesMap;
+      result.displayName = resolvedDisplayName;
       return result;
+    }
+
+    if (action === "registerAuthCodeRequest") {
+      const regCode = normalizeCodeServer(args[0]);
+      const regDisplay = String(args[1] || "").trim();
+      if (!regCode || !regDisplay) throw new Error("Vui lòng nhập đầy đủ Mã đăng nhập và Tên hiển thị!");
+      if (isAdminCode(regCode)) throw new Error("Mã này đã tồn tại trong hệ thống!");
+
+      const checkRes = await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(regCode)}.json`);
+      const existing = checkRes.ok ? (await checkRes.json()) : null;
+      if (existing) {
+        if (existing.status === "pending") {
+          throw new Error(`Mã "${regCode}" đã được gửi yêu cầu và đang chờ ADMINLETAN duyệt!`);
+        }
+        throw new Error(`Mã "${regCode}" đã được đăng ký trước đó. Vui lòng chọn mã khác!`);
+      }
+
+      const payload = {
+        code: regCode,
+        displayName: regDisplay,
+        note: regDisplay,
+        status: "pending",
+        active: false,
+        createdAt: Date.now()
+      };
+      await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(regCode)}.json`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      return { success: true, code: regCode, displayName: regDisplay };
     }
 
     if (action === "saveAuthCodeAdmin") {
       if (!isAdminCode(cleanAuth)) throw new Error("Chỉ ADMINLETAN mới có quyền quản lý mã đăng nhập!");
       const codeToSave = normalizeCodeServer(args[0]);
-      const noteStr = String(args[1] || "").trim();
+      const displayStr = String(args[1] || "").trim();
       const isActive = args[2] !== false;
       if (!codeToSave) throw new Error("Mã đăng nhập không hợp lệ!");
+      const prev = authorizedCodesMap[codeToSave] || {};
       const payload = {
         code: codeToSave,
-        note: noteStr,
+        displayName: displayStr || prev.displayName || prev.note || codeToSave,
+        note: displayStr || prev.note || codeToSave,
+        status: isActive ? "approved" : "locked",
         active: isActive,
+        createdAt: prev.createdAt || Date.now(),
         updatedAt: Date.now()
       };
       await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(codeToSave)}.json`, {
@@ -2681,6 +2793,88 @@
       await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(codeToDel)}.json`, { method: "DELETE" });
       delete authorizedCodesMap[codeToDel];
       return { success: true, authCodes: authorizedCodesMap };
+    }
+
+    if (action === "selfUpdateAuthAccount") {
+      if (!cleanAuth) throw new Error("Chưa đăng nhập!");
+      const newDisplay = String(args[0] || "").trim();
+      const requestedNewCode = normalizeCodeServer(args[1]);
+      if (!newDisplay) throw new Error("Tên hiển thị không được để trống!");
+
+      const targetCode = isAdminCode(cleanAuth) ? cleanAuth : (requestedNewCode || cleanAuth);
+      if (!/^[A-Z0-9_-]{3,24}$/.test(targetCode)) {
+        throw new Error("Mã đăng nhập chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!");
+      }
+
+      if (targetCode !== cleanAuth) {
+        if (isAdminCode(targetCode) || authorizedCodesMap[targetCode]) {
+          throw new Error(`Mã "${targetCode}" đã được sử dụng. Vui lòng chọn mã khác!`);
+        }
+        const oldEntry = authorizedCodesMap[cleanAuth] || {};
+        const newEntry = {
+          code: targetCode,
+          displayName: newDisplay,
+          note: newDisplay,
+          status: "approved",
+          active: true,
+          createdAt: oldEntry.createdAt || Date.now(),
+          updatedAt: Date.now()
+        };
+
+        // 1. Tạo bản ghi mã mới và xóa mã cũ trong auth_codes
+        await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(targetCode)}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEntry)
+        });
+        await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" });
+        delete authorizedCodesMap[cleanAuth];
+        authorizedCodesMap[targetCode] = newEntry;
+
+        // 2. Di chuyển danh mục riêng sang mã mới
+        const catsPayload = { jobTypes, customerList, executorList, statusList };
+        await fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(targetCode)}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(catsPayload)
+        });
+        await fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" });
+
+        // 3. Cập nhật maDangNhap của tất cả công việc thuộc mã cũ sang mã mới
+        const patchObj = {};
+        Object.entries(firebaseJobsMap).forEach(([k, v]) => {
+          if (v && normalizeCodeServer(v.maDangNhap) === cleanAuth) {
+            v.maDangNhap = targetCode;
+            patchObj[`${k}/maDangNhap`] = targetCode;
+          }
+        });
+        if (Object.keys(patchObj).length > 0) {
+          await fetch(`${dbUrl}/jobs.json`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(patchObj)
+          });
+        }
+      } else {
+        const prev = authorizedCodesMap[cleanAuth] || {};
+        const updatedEntry = {
+          code: cleanAuth,
+          displayName: newDisplay,
+          note: newDisplay,
+          status: "approved",
+          active: true,
+          createdAt: prev.createdAt || Date.now(),
+          updatedAt: Date.now()
+        };
+        await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedEntry)
+        });
+        authorizedCodesMap[cleanAuth] = updatedEntry;
+      }
+
+      return { success: true, code: targetCode, displayName: newDisplay };
     }
 
     if (action === "saveJobData") {
@@ -3805,6 +3999,7 @@
           google.script.run.batchUpdateStatus(overdueWaitRows, 'Chưa TT');
         }
 
+        currentDisplayName = (res && res.displayName) ? res.displayName : (isAdminAccount ? 'Lê Tân' : currentAuthCode);
         document.getElementById('loginOverlay').classList.add('d-none');
         const menuBadge = document.getElementById('menuAuthCodeBadge');
         if (menuBadge) menuBadge.innerText = currentAuthCode;
@@ -3813,6 +4008,8 @@
         document.getElementById('adminOwnerCodeGroup').classList.toggle('d-none', !isAdminAccount);
         const btnManageAuth = document.getElementById('btnMenuManageAuthCodes');
         if (btnManageAuth) btnManageAuth.classList.toggle('d-none', !isAdminAccount);
+        const btnExportBackup = document.getElementById('btnMenuExportBackup');
+        if (btnExportBackup) btnExportBackup.classList.toggle('d-none', !isAdminAccount);
         const filterAuthSelect = document.getElementById('filterAuthCodeTable');
         if (filterAuthSelect) filterAuthSelect.classList.toggle('d-none', !isAdminAccount);
 
@@ -4622,7 +4819,8 @@
       const sortedCodes = Array.from(codeSet).sort();
       let authOptsHtml = `<option value="">🔑 Tất cả Mã ĐN (${sortedCodes.length})</option>`;
       sortedCodes.forEach(c => {
-        const note = authorizedCodesMap[c] && authorizedCodesMap[c].note ? ` - ${authorizedCodesMap[c].note}` : '';
+        const dName = authorizedCodesMap[c] ? (authorizedCodesMap[c].displayName || authorizedCodesMap[c].note || '') : '';
+        const note = dName ? ` - ${dName}` : '';
         authOptsHtml += `<option value="${c}" ${c === selectedAuthCodeFilter ? 'selected' : ''}>${c}${note}</option>`;
       });
       authCodeSelectEl.innerHTML = authOptsHtml;
@@ -5611,28 +5809,199 @@
     manageAuthCodesModalInstance.show();
   }
 
+  function switchLoginCardMode(mode) {
+    const isReg = (mode === 'register');
+    document.getElementById('loginSignInForm').classList.toggle('d-none', isReg);
+    document.getElementById('loginRegisterForm').classList.toggle('d-none', !isReg);
+    document.getElementById('loginCardTitle').innerText = isReg ? 'Đăng Ký Mã Mới' : 'Xác Thực Truy Cập';
+    document.getElementById('loginCardSubtitle').innerText = isReg
+      ? 'Tạo mã đăng nhập và tên hiển thị (sẽ gửi tới ADMINLETAN phê duyệt)'
+      : 'Nhập mã đăng nhập của bạn để truy cập lịch làm việc';
+    const banner = document.getElementById('regStatusBanner');
+    if (banner) banner.classList.add('d-none');
+    setTimeout(() => {
+      const targetInp = document.getElementById(isReg ? 'regAuthCodeInput' : 'loginCodeInput');
+      if (targetInp) targetInp.focus();
+    }, 100);
+  }
+
+  function submitRegisterAuthCode() {
+    const codeInp = document.getElementById('regAuthCodeInput');
+    const nameInp = document.getElementById('regDisplayNameInput');
+    const banner = document.getElementById('regStatusBanner');
+    const code = normalizeCodeServer(codeInp.value);
+    const displayName = capitalizeAllWords(nameInp.value);
+
+    if (!code) {
+      showToast('Vui lòng nhập Mã đăng nhập muốn tạo!', true);
+      codeInp.focus();
+      return;
+    }
+    if (!/^[A-Z0-9_-]{3,24}$/.test(code)) {
+      showToast('Mã chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!', true);
+      codeInp.focus();
+      return;
+    }
+    if (!displayName) {
+      showToast('Vui lòng nhập Tên hiển thị!', true);
+      nameInp.focus();
+      return;
+    }
+
+    const btn = document.getElementById('btnSubmitRegister');
+    const oldHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Đang gửi yêu cầu...';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+        codeInp.value = '';
+        nameInp.value = '';
+        banner.className = 'alert alert-success py-2 px-3 small mb-3';
+        banner.innerHTML = `✅ Đã gửi yêu cầu tạo mã <strong>${res.code}</strong> (${res.displayName}). Vui lòng chờ <strong>ADMINLETAN</strong> duyệt để đăng nhập!`;
+        banner.classList.remove('d-none');
+        showToast('Đã gửi yêu cầu tạo mã chờ duyệt');
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+        banner.className = 'alert alert-danger py-2 px-3 small mb-3';
+        banner.innerText = err.message || 'Không thể gửi yêu cầu tạo mã';
+        banner.classList.remove('d-none');
+      })
+      .registerAuthCodeRequest(code, displayName);
+  }
+
+  function openSelfAccountModal() {
+    if (!currentAuthCode) return;
+    document.getElementById('selfDisplayNameInput').value = currentDisplayName || currentAuthCode;
+    const codeInp = document.getElementById('selfNewCodeInput');
+    codeInp.value = currentAuthCode;
+    codeInp.disabled = isAdminAccount;
+    document.getElementById('selfChangeCodeGroup').classList.toggle('d-none', isAdminAccount);
+    selfAccountModalInstance.show();
+  }
+
+  function submitSelfAccountChange() {
+    const newDisplay = capitalizeAllWords(document.getElementById('selfDisplayNameInput').value);
+    const newCode = normalizeCodeServer(document.getElementById('selfNewCodeInput').value);
+
+    if (!newDisplay) {
+      showToast('Vui lòng nhập Tên hiển thị!', true);
+      return;
+    }
+    if (!isAdminAccount && (!newCode || !/^[A-Z0-9_-]{3,24}$/.test(newCode))) {
+      showToast('Mã đăng nhập mới không hợp lệ (3-24 ký tự không dấu)!', true);
+      return;
+    }
+
+    const btn = document.getElementById('btnSaveSelfAccount');
+    const oldText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = 'Đang lưu...';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.innerText = oldText;
+        const oldCode = currentAuthCode;
+        currentAuthCode = res.code;
+        currentDisplayName = res.displayName;
+        if (oldCode !== currentAuthCode) {
+          // Chuyển cache danh mục cục bộ sang key mới
+          try {
+            const newSfx = `_${currentAuthCode}`;
+            localStorage.setItem('pref_job_types' + newSfx, JSON.stringify(jobTypes));
+            localStorage.setItem('pref_customer_list' + newSfx, JSON.stringify(customerList));
+            localStorage.setItem('pref_executor_list' + newSfx, JSON.stringify(executorList));
+            localStorage.setItem('pref_status_list' + newSfx, JSON.stringify(statusList));
+            localStorage.removeItem('pref_job_types_' + oldCode);
+            localStorage.removeItem('pref_customer_list_' + oldCode);
+            localStorage.removeItem('pref_executor_list_' + oldCode);
+            localStorage.removeItem('pref_status_list_' + oldCode);
+            if (localStorage.getItem('letan_saved_auth_code')) {
+              localStorage.setItem('letan_saved_auth_code', currentAuthCode);
+            }
+          } catch (e) {}
+        }
+        const menuBadge = document.getElementById('menuAuthCodeBadge');
+        if (menuBadge) menuBadge.innerText = currentAuthCode;
+        updateCalendarPageTitle();
+        selfAccountModalInstance.hide();
+        loadData();
+        showToast('Đã cập nhật Mã & Tên hiển thị');
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.innerText = oldText;
+        showToast(err.message || 'Lỗi cập nhật tài khoản', true);
+      })
+      .selfUpdateAuthAccount(newDisplay, newCode);
+  }
+
   function renderAuthCodesList() {
     const container = document.getElementById('authCodesListContainer');
+    const pendingSection = document.getElementById('pendingAuthCodesSection');
+    const pendingContainer = document.getElementById('pendingAuthCodesContainer');
+    const pendingCountEl = document.getElementById('pendingAuthCount');
     if (!container) return;
 
-    const codes = Object.keys(authorizedCodesMap || {}).filter(c => !isAdminCode(c)).sort();
+    const allNonAdminCodes = Object.keys(authorizedCodesMap || {}).filter(c => !isAdminCode(c)).sort();
+    const pendingCodes = allNonAdminCodes.filter(c => authorizedCodesMap[c] && authorizedCodesMap[c].status === 'pending');
+    const approvedCodes = allNonAdminCodes.filter(c => !authorizedCodesMap[c] || authorizedCodesMap[c].status !== 'pending');
+
+    if (pendingSection && pendingContainer) {
+      if (pendingCodes.length > 0) {
+        pendingSection.classList.remove('d-none');
+        if (pendingCountEl) pendingCountEl.innerText = pendingCodes.length;
+        let pHtml = '';
+        pendingCodes.forEach(code => {
+          const info = authorizedCodesMap[code] || {};
+          const dName = info.displayName || info.note || code;
+          pHtml += `
+            <div class="catalog-item-row" style="border-color: #fcd34d;">
+              <div>
+                <div class="d-flex align-items-center gap-1.5">
+                  <span class="fw-bold text-dark" style="font-size: 13.5px;">${code}</span>
+                  <span class="badge bg-warning text-dark" style="font-size: 10px;">Chờ duyệt</span>
+                </div>
+                <div class="small text-secondary fw-semibold">Tên: ${dName}</div>
+              </div>
+              <div class="d-flex gap-1.5">
+                <button type="button" class="btn btn-success btn-sm py-1 px-2.5 fw-bold" style="font-size: 11px;" onclick="approvePendingAuthCode('${code}')">✓ Duyệt</button>
+                <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px;" onclick="removeAuthorizedCode('${code}')">Từ chối</button>
+              </div>
+            </div>
+          `;
+        });
+        pendingContainer.innerHTML = pHtml;
+      } else {
+        pendingSection.classList.add('d-none');
+      }
+    }
+
+    const adminInfo = authorizedCodesMap["ADMINLETAN"] || {};
+    const adminName = adminInfo.displayName || adminInfo.note || "Lê Tân";
     let html = `
       <div class="catalog-item-row" style="background: #fff1f2; border-color: #fecdd3;">
         <div>
           <span class="fw-bold text-danger" style="font-size: 13.5px;">ADMINLETAN</span>
-          <span class="badge bg-danger ms-1" style="font-size: 10px;">Quản trị tối cao</span>
-          <div class="small text-muted">Toàn quyền xem, tổng hợp & cấp phép mã</div>
+          <span class="badge bg-danger ms-1" style="font-size: 10px;">Quản trị</span>
+          <div class="small text-secondary fw-semibold">Tên: ${adminName}</div>
         </div>
         <span class="badge bg-success">Luôn hoạt động</span>
       </div>
     `;
 
-    if (codes.length === 0) {
-      html += `<div class="text-center text-muted small py-3">Chưa có mã đăng nhập phụ nào được cấp phép.</div>`;
+    if (approvedCodes.length === 0) {
+      html += `<div class="text-center text-muted small py-3">Chưa có mã đăng nhập phụ nào được duyệt.</div>`;
     } else {
-      codes.forEach(code => {
+      approvedCodes.forEach(code => {
         const info = authorizedCodesMap[code] || {};
-        const isActive = info.active !== false;
+        const isActive = info.active !== false && info.status !== 'locked';
+        const dName = info.displayName || info.note || code;
         const jobCount = allJobs.filter(j => normalizeCodeServer(j.maDangNhap) === code).length;
         html += `
           <div class="catalog-item-row">
@@ -5642,7 +6011,7 @@
                 <span class="badge ${isActive ? 'bg-success' : 'bg-secondary'}" style="font-size: 10px;">${isActive ? 'Đang mở' : 'Đã khóa'}</span>
                 <span class="badge bg-light text-dark border" style="font-size: 10px;">${jobCount} công việc</span>
               </div>
-              ${info.note ? `<div class="small text-muted">${info.note}</div>` : ''}
+              <div class="small text-secondary">Tên: <strong>${dName}</strong></div>
             </div>
             <div class="d-flex gap-1.5">
               <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 11px;" onclick="toggleAuthCodeActive('${code}')">${isActive ? 'Khóa' : 'Mở'}</button>
@@ -5653,6 +6022,22 @@
       });
     }
     container.innerHTML = html;
+  }
+
+  function approvePendingAuthCode(code) {
+    const info = authorizedCodesMap[code] || {};
+    const dName = info.displayName || info.note || code;
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.authCodes) authorizedCodesMap = res.authCodes;
+        renderAuthCodesList();
+        renderMasterTable();
+        showToast(`Đã duyệt mã "${code}" (${dName})`);
+      })
+      .withFailureHandler(function(err) {
+        showToast('Lỗi duyệt mã: ' + (err.message || err), true);
+      })
+      .saveAuthCodeAdmin(code, dName, true);
   }
 
   function addAuthorizedCode() {
@@ -5693,7 +6078,7 @@
 
   function toggleAuthCodeActive(code) {
     const info = authorizedCodesMap[code] || {};
-    const nextState = info.active === false;
+    const nextState = !(info.active !== false && info.status !== 'locked');
     google.script.run
       .withSuccessHandler(function(res) {
         if (res && res.authCodes) authorizedCodesMap = res.authCodes;
@@ -5703,7 +6088,7 @@
       .withFailureHandler(function(err) {
         showToast('Lỗi cập nhật trạng thái mã', true);
       })
-      .saveAuthCodeAdmin(code, info.note || '', nextState);
+      .saveAuthCodeAdmin(code, info.displayName || info.note || code, nextState);
   }
 
   function removeAuthorizedCode(code) {
@@ -5725,8 +6110,9 @@
   function updateCalendarPageTitle() {
     const titleEl = document.getElementById('calendarPageTitle');
     if (!titleEl) return;
-    if (currentAuthCode && currentAuthCode.trim() !== '') {
-      titleEl.innerText = `Lịch của ${currentAuthCode.trim().toUpperCase()}`;
+    const nameToShow = (currentDisplayName || currentAuthCode || '').trim();
+    if (nameToShow !== '') {
+      titleEl.innerText = `Lịch của ${nameToShow}`;
     } else {
       titleEl.innerText = 'Lịch làm việc';
     }
@@ -5734,9 +6120,14 @@
 
   function logoutCode() {
     currentAuthCode = "";
+    currentDisplayName = "";
     isAdminAccount = false;
     allJobs = [];
     resetCategoriesToDefault();
+    const btnBackup = document.getElementById('btnMenuExportBackup');
+    if (btnBackup) btnBackup.classList.add('d-none');
+    const btnManageAuth = document.getElementById('btnMenuManageAuthCodes');
+    if (btnManageAuth) btnManageAuth.classList.add('d-none');
     try { localStorage.removeItem('letan_saved_auth_code'); } catch (e) {}
     document.getElementById('loginCodeInput').value = '';
     updateCalendarPageTitle();
@@ -5752,7 +6143,7 @@
     const el = e.target;
     if ((el.tagName === 'INPUT' && el.type === 'text') || el.tagName === 'TEXTAREA') {
       // Avoid modifying password, date, number inputs
-      if (el.id === 'loginCodeInput' || el.id === 'formMaDangNhap' || el.classList.contains('font-monospace')) return;
+      if (el.id === 'loginCodeInput' || el.id === 'regAuthCodeInput' || el.id === 'newAuthCodeInput' || el.id === 'selfNewCodeInput' || el.id === 'formMaDangNhap' || el.classList.contains('font-monospace')) return;
       const val = el.value;
       if (val.length === 1) {
         el.value = val.charAt(0).toLocaleUpperCase('vi-VN');
@@ -5812,6 +6203,7 @@
     debtQrModalInstance = new bootstrap.Modal(document.getElementById('debtQrModal'));
     manageCatalogsModalInstance = new bootstrap.Modal(document.getElementById('manageCatalogsModal'));
     manageAuthCodesModalInstance = new bootstrap.Modal(document.getElementById('manageAuthCodesModal'));
+    selfAccountModalInstance = new bootstrap.Modal(document.getElementById('selfAccountModal'));
     reportModalInstance = new bootstrap.Modal(document.getElementById('reportModal'));
     jobInfoPopupModalInstance = new bootstrap.Modal(document.getElementById('jobInfoPopupModal'));
     loadTablePrefs();
