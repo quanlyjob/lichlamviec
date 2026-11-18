@@ -2562,10 +2562,22 @@
 
     if (action === "getAllJobsData") {
       if (!cleanAuth) throw new Error("Vui lòng nhập mã đăng nhập!");
-      const [jobsRes, catsRes] = await Promise.all([
-        fetch(dbUrl + "/jobs.json"),
-        fetch(dbUrl + "/categories.json")
-      ]);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      let jobsRes, catsRes;
+      try {
+        [jobsRes, catsRes] = await Promise.all([
+          fetch(dbUrl + "/jobs.json", { signal: controller.signal }),
+          fetch(dbUrl + "/categories.json", { signal: controller.signal })
+        ]);
+      } catch (fetchErr) {
+        if (fetchErr && fetchErr.name === 'AbortError') {
+          throw new Error("Kết nối Firebase quá thời gian (12s). Vui lòng kiểm tra mạng hoặc link Database!");
+        }
+        throw fetchErr;
+      } finally {
+        clearTimeout(timeoutId);
+      }
       if (!jobsRes.ok) throw new Error("Không thể kết nối Firebase (" + jobsRes.status + "). Kiểm tra lại URL hoặc Rules!");
       const jobsData = (await jobsRes.json()) || {};
       const catsData = catsRes.ok ? (await catsRes.json()) : null;
@@ -3594,9 +3606,11 @@
       return;
     }
 
-    if (APPS_SCRIPT_URL.includes("DÁN_LINK_WEB_APP")) {
-      errBanner.innerText = "Chưa cấu hình APPS_SCRIPT_URL!";
+    const dbUrlCheck = getFirebaseDbUrl();
+    if (!dbUrlCheck || dbUrlCheck.includes("DÁN_LINK_FIREBASE")) {
+      errBanner.innerText = "Chưa cấu hình Link Firebase Database!";
       errBanner.classList.remove('d-none');
+      document.getElementById('loginOverlay').classList.remove('d-none');
       if (doneCallback) doneCallback();
       return;
     }
@@ -3657,8 +3671,11 @@
         if (doneCallback) doneCallback();
       })
       .withFailureHandler(function(err) {
-        errBanner.innerText = "Lỗi tải dữ liệu từ Google Sheet: " + (err.message || err);
+        const msg = "Lỗi tải dữ liệu từ Firebase: " + (err.message || err);
+        errBanner.innerText = msg;
         errBanner.classList.remove('d-none');
+        document.getElementById('loginOverlay').classList.remove('d-none');
+        showToast(msg, true);
         if (doneCallback) doneCallback();
       })
       .getAllJobsData();
