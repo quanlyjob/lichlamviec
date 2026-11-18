@@ -1866,6 +1866,7 @@
         </div>
         <a href="javascript:void(0)" class="small text-decoration-none text-secondary" onclick="toggleShowLoginPass()">👁️ Hiện mã</a>
       </div>
+      <div id="loginErrorInline" class="alert alert-danger py-2 px-3 small d-none mb-3 text-start" style="border-radius: 10px;"></div>
       <button type="button" id="btnSubmitLogin" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitLoginCode()">
         🔓 Đăng nhập
       </button>
@@ -2572,13 +2573,81 @@
     return String(code || "").trim().toUpperCase();
   }
 
+  function sha256PureJs(ascii) {
+    function rightRotate(value, amount) {
+      return (value >>> amount) | (value << (32 - amount));
+    }
+    const mathPow = Math.pow;
+    const maxWord = mathPow(2, 32);
+    let result = '';
+    const words = [];
+    const asciiBitLength = ascii.length * 8;
+    const hash = [];
+    const k = [];
+    let primeCounter = 0;
+    const isComposite = {};
+    for (let candidate = 2; primeCounter < 64; candidate++) {
+      if (!isComposite[candidate]) {
+        for (let i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+        hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+        k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+      }
+    }
+    ascii += '\x80';
+    while (ascii.length % 64 - 56) ascii += '\x00';
+    for (let i = 0; i < ascii.length; i++) {
+      const j = ascii.charCodeAt(i);
+      words[i >> 2] |= j << ((3 - i) % 4) * 8;
+    }
+    words[words.length] = ((asciiBitLength / maxWord) | 0);
+    words[words.length] = (asciiBitLength);
+    for (let j = 0; j < words.length;) {
+      const w = words.slice(j, j += 16);
+      const oldHash = hash.slice(0);
+      for (let i = 0; i < 64; i++) {
+        const w15 = w[i - 15], w2 = w[i - 2];
+        const a = hash[0], e = hash[4];
+        const temp1 = hash[7]
+          + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+          + ((e & hash[5]) ^ ((~e) & hash[6]))
+          + k[i]
+          + (w[i] = (i < 16) ? w[i] : (
+              w[i - 16]
+              + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+              + w[i - 7]
+              + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+            ) | 0
+          );
+        const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+          + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+        hash.unshift((temp1 + temp2) | 0);
+        hash.pop();
+        hash[4] = (hash[4] + temp1) | 0;
+      }
+      for (let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+    }
+    for (let i = 0; i < 8; i++) {
+      for (let j = 3; j + 1; j--) {
+        const b = (hash[i] >> (j * 8)) & 255;
+        result += ((b < 16) ? 0 : '') + b.toString(16);
+      }
+    }
+    return result;
+  }
+
   async function computeCodeSha256(rawCode) {
     const clean = normalizeCodeServer(rawCode);
     if (!clean) return "";
-    const msgUint8 = new TextEncoder().encode(AUTH_HASH_PEPPER + "::" + clean);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    const inputStr = AUTH_HASH_PEPPER + "::" + clean;
+    try {
+      if (typeof crypto !== 'undefined' && crypto.subtle && typeof TextEncoder !== 'undefined') {
+        const msgUint8 = new TextEncoder().encode(inputStr);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+      }
+    } catch (e) {}
+    return sha256PureJs(unescape(encodeURIComponent(inputStr)));
   }
 
   function isAdminCode(code) {
@@ -2720,12 +2789,18 @@
         }
         authEntry = await hashRes.json();
 
-        // Tương thích ngược lần đầu nếu admin cũ chưa được hash sang /auth_hashes
+        // Tương thích ngược & khởi tạo Admin lần đầu nếu database chưa có bản ghi trong /auth_hashes
         if (!authEntry) {
-          const legacyRes = await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { signal: controller.signal });
-          const legacyEntry = legacyRes.ok ? (await legacyRes.json()) : null;
-          const legacyAdminRes = await fetch(`${dbUrl}/system_config/admin_code.json`, { signal: controller.signal });
-          const legacyAdminCode = legacyAdminRes.ok ? (await legacyAdminRes.json()) : null;
+          let legacyEntry = null;
+          let legacyAdminCode = null;
+          try {
+            const legacyRes = await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { signal: controller.signal });
+            if (legacyRes.ok) legacyEntry = await legacyRes.json();
+          } catch (e) {}
+          try {
+            const legacyAdminRes = await fetch(`${dbUrl}/system_config/admin_code.json`, { signal: controller.signal });
+            if (legacyAdminRes.ok) legacyAdminCode = await legacyAdminRes.json();
+          } catch (e) {}
 
           if (legacyAdminCode && normalizeCodeServer(legacyAdminCode) === cleanAuth) {
             authEntry = {
@@ -2742,6 +2817,11 @@
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(authEntry)
             });
+            await fetch(`${dbUrl}/system_config/initialized.json`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(true)
+            }).catch(() => {});
           } else if (legacyEntry) {
             authEntry = {
               role: legacyEntry.isAdmin ? "admin" : "user",
@@ -2757,6 +2837,38 @@
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(authEntry)
             });
+          } else {
+            // Kiểm tra xem hệ thống đã từng khởi tạo Admin lần đầu chưa
+            let isInitialized = false;
+            try {
+              const initRes = await fetch(`${dbUrl}/system_config/initialized.json`, { signal: controller.signal });
+              if (initRes.ok) isInitialized = Boolean(await initRes.json());
+            } catch (e) {}
+
+            if (!isInitialized) {
+              // Khởi tạo tài khoản quản trị đầu tiên (không lưu cứng mã trong source code)
+              const initLockRes = await fetch(`${dbUrl}/system_config/initialized.json`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(true)
+              });
+              if (initLockRes.ok) {
+                authEntry = {
+                  role: "admin",
+                  code: cleanAuth,
+                  codeHash: codeHash,
+                  displayName: "Lê Tân",
+                  status: "approved",
+                  active: true,
+                  createdAt: Date.now()
+                };
+                await fetch(`${dbUrl}/auth_hashes/${codeHash}.json`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(authEntry)
+                });
+              }
+            }
           }
         }
       } catch (fetchErr) {
@@ -4189,9 +4301,14 @@
         if (doneCallback) doneCallback();
       })
       .withFailureHandler(function(err) {
-        const msg = "Lỗi tải dữ liệu từ Firebase: " + (err.message || err);
+        const msg = err.message || String(err);
         errBanner.innerText = msg;
         errBanner.classList.remove('d-none');
+        const inlineErr = document.getElementById('loginErrorInline');
+        if (inlineErr) {
+          inlineErr.innerText = "⚠️ " + msg;
+          inlineErr.classList.remove('d-none');
+        }
         document.getElementById('loginOverlay').classList.remove('d-none');
         showToast(msg, true);
         if (doneCallback) doneCallback();
@@ -5960,16 +6077,20 @@
       else localStorage.removeItem('letan_saved_auth_code');
     } catch (e) {}
 
+    const inlineErr = document.getElementById('loginErrorInline');
+    if (inlineErr) inlineErr.classList.add('d-none');
+
     const btn = document.getElementById('btnSubmitLogin');
     const oldText = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '⏳ Đang trích xuất dữ liệu...';
 
     loadData(function() {
-      startRealtimeSync();
       btn.disabled = false;
       btn.innerHTML = oldText;
-      showToast(isAdminCode(currentAuthCode) ? `Đã mở khóa toàn quyền ${currentAuthCode}` : `Xin chào: ${currentAuthCode}`);
+      if (!document.getElementById('loginOverlay').classList.contains('d-none')) return;
+      startRealtimeSync();
+      showToast(isAdminAccount ? `Đã mở khóa toàn quyền ${currentAuthCode}` : `Xin chào: ${currentAuthCode}`);
     });
   }
 
