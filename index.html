@@ -2921,15 +2921,55 @@
         catsData = await responses[2].json();
       }
 
+      const prevAuthorizedCache = { ...authorizedCodesMap };
       authorizedCodesMap = {};
       pendingRequestsMap = {};
       if (isUserAdmin) {
-        const allHashes = (responses[3] && responses[3].ok ? (await responses[3].json()) : null) || {};
-        Object.entries(allHashes).forEach(([hKey, val]) => {
-          if (val && val.code) {
-            authorizedCodesMap[normalizeCodeServer(val.code)] = { ...val, codeHash: hKey };
+        // Cập nhật admin_hash hiện tại để Firebase Rules luôn nhận diện đúng Admin mới nhất
+        fetch(`${dbUrl}/system_config/admin_hash.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(codeHash)
+        }).catch(() => {});
+
+        const allHashesOk = responses[3] && responses[3].ok;
+        const allHashes = (allHashesOk ? (await responses[3].json()) : null) || {};
+        if (allHashesOk && Object.keys(allHashes).length > 0) {
+          Object.entries(allHashes).forEach(([hKey, val]) => {
+            if (val && val.code) {
+              authorizedCodesMap[normalizeCodeServer(val.code)] = { ...val, codeHash: hKey };
+            }
+          });
+        } else {
+          // Giữ lại danh sách mã đã nạp trong phiên nếu nhánh tổng /auth_hashes bị chặn đọc bởi Rules
+          Object.assign(authorizedCodesMap, prevAuthorizedCache);
+        }
+
+        // Đồng bộ bổ sung các mã đã có công việc trong /jobs (tránh tình trạng mã cũ bị ẩn khỏi danh sách đã duyệt)
+        Object.values(jobsData || {}).forEach(jobItem => {
+          if (jobItem && jobItem.maDangNhap) {
+            const jCode = normalizeCodeServer(jobItem.maDangNhap);
+            if (jCode && !authorizedCodesMap[jCode]) {
+              authorizedCodesMap[jCode] = {
+                role: jCode === cleanAuth ? "admin" : "user",
+                code: jCode,
+                codeHash: jobItem.ownerHash || "",
+                displayName: jCode,
+                status: "approved",
+                active: true
+              };
+            }
           }
         });
+
+        // Luôn đảm bảo chính tài khoản Admin hiện tại có mặt trong authorizedCodesMap
+        authorizedCodesMap[cleanAuth] = {
+          ...authEntry,
+          code: cleanAuth,
+          codeHash: codeHash,
+          displayName: resolvedDisplayName
+        };
+
         pendingRequestsMap = (responses[4] && responses[4].ok ? (await responses[4].json()) : null) || {};
       }
 
@@ -3057,18 +3097,43 @@
           updatedAt: Date.now()
         };
 
-        // 1. Ghi node hash mới và xóa node hash cũ
-        await fetch(`${dbUrl}/auth_hashes/${newHash}.json`, {
+        // 1. Ghi node hash mới trước, chỉ xóa đúng node hash cũ của tài khoản đang đổi (giữ nguyên toàn bộ các mã khác)
+        const putNewRes = await fetch(`${dbUrl}/auth_hashes/${newHash}.json`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEntry)
         });
+        if (!putNewRes.ok) {
+          throw new Error("Không thể cập nhật mã mới trên máy chủ (" + putNewRes.status + ").");
+        }
         await fetch(`${dbUrl}/auth_hashes/${currentAuthHash}.json`, { method: "DELETE" });
 
-        // Xóa dữ liệu legacy nếu còn tồn tại
+        // Xóa dữ liệu legacy của riêng mã cũ nếu còn tồn tại
         fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" }).catch(() => {});
         if (isAdminAccount) {
           fetch(`${dbUrl}/system_config/admin_code.json`, { method: "DELETE" }).catch(() => {});
+          // Bảo toàn toàn bộ các mã phụ khác: đảm bảo mọi mã trong authorizedCodesMap đều được lưu giữ nguyên vẹn trong /auth_hashes
+          const otherCodes = Object.entries(authorizedCodesMap || {}).filter(([c]) => normalizeCodeServer(c) !== cleanAuth);
+          for (const [otherCode, otherInfo] of otherCodes) {
+            const normOther = normalizeCodeServer(otherCode);
+            const otherHash = otherInfo.codeHash || (await computeCodeSha256(normOther));
+            const preservedEntry = {
+              role: "user",
+              code: normOther,
+              codeHash: otherHash,
+              displayName: otherInfo.displayName || otherInfo.note || normOther,
+              status: otherInfo.status || "approved",
+              active: otherInfo.active !== false,
+              createdAt: otherInfo.createdAt || Date.now(),
+              updatedAt: otherInfo.updatedAt || Date.now()
+            };
+            authorizedCodesMap[normOther] = preservedEntry;
+            fetch(`${dbUrl}/auth_hashes/${otherHash}.json`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(preservedEntry)
+            }).catch(() => {});
+          }
         }
 
         delete authorizedCodesMap[cleanAuth];
@@ -3083,7 +3148,7 @@
         });
         await fetch(`${dbUrl}/categories_by_hash/${currentAuthHash}.json`, { method: "DELETE" });
 
-        // 3. Cập nhật maDangNhap và ownerHash của tất cả công việc thuộc mã cũ sang mã mới
+        // 3. Chỉ cập nhật maDangNhap và ownerHash của các công việc thuộc chính mã cũ sang mã mới (không đụng đến công việc của mã khác)
         const patchObj = {};
         Object.entries(firebaseJobsMap).forEach(([k, v]) => {
           if (v && (normalizeCodeServer(v.maDangNhap) === cleanAuth || v.ownerHash === currentAuthHash)) {
@@ -6220,11 +6285,16 @@
             }
           } catch (e) {}
         }
+        if (oldCode !== currentAuthCode && isAdminAccount) {
+          adminDefaultFilterInitialized = false;
+        }
         const menuBadge = document.getElementById('menuAuthCodeBadge');
         if (menuBadge) menuBadge.innerText = currentAuthCode;
         updateCalendarPageTitle();
         selfAccountModalInstance.hide();
-        loadData();
+        loadData(function() {
+          startRealtimeSync();
+        });
         showToast('Đã cập nhật Mã & Tên hiển thị');
       })
       .withFailureHandler(function(err) {
