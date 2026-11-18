@@ -1857,14 +1857,14 @@
     <div id="loginSignInForm">
       <div class="mb-3 text-start">
         <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập:</label>
-        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold text-uppercase" placeholder="NHẬP MÃ TRUY CẬP..." autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" style="letter-spacing: 1.5px; height: 42px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitLoginCode()">
+        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mã truy cập..." autocomplete="current-password" style="letter-spacing: 1px; height: 42px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitLoginCode()">
       </div>
       <div class="d-flex align-items-center justify-content-between mb-3 px-1">
         <div class="form-check text-start mb-0">
           <input class="form-check-input" type="checkbox" id="rememberLoginCheck" checked>
           <label class="form-check-label small text-muted" for="rememberLoginCheck" style="cursor:pointer;">Ghi nhớ trên máy này</label>
         </div>
-        <a href="javascript:void(0)" class="small text-decoration-none text-secondary" onclick="toggleShowLoginPass()">👁️ Hiện mã</a>
+        <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleLoginPassLink" onclick="toggleShowLoginPass()">👁️ Hiện mã</a>
       </div>
       <div id="loginErrorInline" class="alert alert-danger py-2 px-3 small d-none mb-3 text-start" style="border-radius: 10px;"></div>
       <button type="button" id="btnSubmitLogin" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitLoginCode()">
@@ -1872,15 +1872,19 @@
       </button>
     </div>
 
-    <!-- Form Tạo mã đăng nhập mới (chờ ADMINLETAN duyệt) -->
+    <!-- Form Tạo mã đăng nhập mới (chờ Admin duyệt) -->
     <div id="loginRegisterForm" class="d-none text-start">
-      <div class="mb-2.5">
-        <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập muốn tạo:</label>
-        <input type="text" id="regAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="VD: STUDIOA, JUNE..." autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" autocomplete="off" style="height: 40px; border-radius: 10px;">
-      </div>
-      <div class="mb-3">
+      <div class="mb-2">
         <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị:</label>
-        <input type="text" id="regDisplayNameInput" class="form-control" placeholder="VD: Studio Ánh Dương, Lê Tân..." autocomplete="off" style="height: 40px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitRegisterAuthCode()">
+        <input type="text" id="regDisplayNameInput" class="form-control" placeholder="VD: Studio Ánh Dương, Lê Tân..." autocomplete="off" style="height: 40px; border-radius: 10px;">
+      </div>
+      <div class="mb-2.5">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label small fw-bold text-secondary mb-0">Mã đăng nhập muốn tạo:</label>
+          <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleRegPassLink" onclick="toggleShowInputPass('regAuthCodeInput', 'toggleRegPassLink')">👁️ Hiện</a>
+        </div>
+        <input type="password" id="regAuthCodeInput" class="form-control fw-bold" placeholder="VD: Studio@123" autocomplete="new-password" style="height: 40px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitRegisterAuthCode()">
+        <small class="text-muted d-block mt-1" style="font-size: 11px;">🔒 Bắt buộc gồm: chữ HOA, chữ thường, số và ký tự đặc biệt (tối thiểu 6 ký tự).</small>
       </div>
       <div id="regStatusBanner" class="alert alert-info py-2 px-3 small d-none mb-3" style="border-radius: 10px;"></div>
       <button type="button" id="btnSubmitRegister" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitRegisterAuthCode()">
@@ -1899,8 +1903,8 @@
     <div id="tabLich">
       <div class="mb-3 top-header-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div class="page-title mb-0" id="calendarPageTitle">Lịch làm việc</div>
-        <select id="filterAuthCodeCalendar" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 195px; border-radius: 10px; height: 36px;" onchange="onCalendarAuthFilterChange()" title="Lọc lịch làm việc theo Mã đăng nhập">
-          <option value="">🔑 Tất cả Mã ĐN</option>
+        <select id="filterAuthCodeCalendar" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 195px; border-radius: 10px; height: 36px;" onchange="onCalendarAuthFilterChange()" title="Lọc lịch làm việc theo Tài khoản">
+          <option value="">👤 Tất cả tài khoản</option>
         </select>
       </div>
 
@@ -1967,8 +1971,8 @@
               <option value="">📅 Tất cả tháng</option>
             </select>
 
-            <select id="filterAuthCodeTable" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 170px; border-radius: 8px; height: 36px;" onchange="renderMasterTable(false)" title="Lọc công việc theo Mã đăng nhập">
-              <option value="">🔑 Tất cả Mã ĐN</option>
+            <select id="filterAuthCodeTable" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 170px; border-radius: 8px; height: 36px;" onchange="renderMasterTable(false)" title="Lọc công việc theo Tài khoản">
+              <option value="">👤 Tất cả tài khoản</option>
             </select>
             
             <div class="search-filter-box shadow-sm">
@@ -2229,8 +2233,8 @@
           
           <div class="row g-2.5 mb-2.5">
             <div class="col-12 d-none mb-2" id="adminOwnerCodeGroup">
-              <label class="form-label text-danger">🔑 Mã đăng nhập</label>
-              <input type="text" class="form-control form-control-sm fw-bold text-uppercase" name="maDangNhap" id="formMaDangNhap">
+              <label class="form-label text-danger">👤 Tài khoản (Tên hiển thị)</label>
+              <select class="form-select form-select-sm fw-bold" name="maDangNhap" id="formMaDangNhap"></select>
             </div>
             <div class="col-12 mb-2">
               <label class="form-label">Ngày thực hiện</label>
@@ -2464,6 +2468,10 @@
       <div class="modal-body text-center">
         <div id="customDialogMessage" class="mb-2 fw-semibold text-dark" style="font-size: 13.5px;"></div>
         <input type="text" id="customDialogInput" class="form-control text-center mt-2 d-none" autocomplete="off">
+        <div id="customDialogCheckboxWrap" class="form-check text-start mt-3 p-2.5 rounded-3 d-none" style="background: #fff1f2; border: 1px solid #fecdd3;">
+          <input class="form-check-input ms-0 me-2" type="checkbox" id="customDialogCheckbox" style="cursor: pointer;">
+          <label class="form-check-label small fw-bold text-danger" for="customDialogCheckbox" id="customDialogCheckboxLabel" style="cursor: pointer;"></label>
+        </div>
       </div>
       <div class="modal-footer justify-content-center gap-2">
         <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal" id="customDialogCancelBtn">Hủy</button>
@@ -2473,36 +2481,37 @@
   </div>
 </div>
 
-<!-- Modal Quản lý Mã Đăng Nhập (Chỉ ADMINLETAN) -->
+<!-- Modal Quản lý Tài khoản & Mã Đăng Nhập (Chỉ Admin) -->
 <div class="modal fade" id="manageAuthCodesModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h6 class="modal-title">Quản Lý Mã Đăng Nhập</h6>
+        <h6 class="modal-title">Quản Lý Tài Khoản & Mã Đăng Nhập</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <div class="statement-filter-card mb-3">
-          <label class="form-label small fw-bold text-secondary mb-1.5">Cấp phép trực tiếp Mã đăng nhập mới:</label>
+          <label class="form-label small fw-bold text-secondary mb-1.5">Cấp phép trực tiếp tài khoản mới:</label>
           <div class="row g-2">
-            <div class="col-4">
-              <input type="text" id="newAuthCodeInput" class="form-control text-uppercase fw-bold" placeholder="Mã ĐN..." autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" autocomplete="off">
-            </div>
             <div class="col-5">
               <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tên hiển thị...">
+            </div>
+            <div class="col-4">
+              <input type="password" id="newAuthCodeInput" class="form-control fw-bold" placeholder="Mã ĐN..." autocomplete="new-password">
             </div>
             <div class="col-3">
               <button type="button" class="btn btn-brand-primary w-100 h-100" onclick="addAuthorizedCode()">+ Cấp mã</button>
             </div>
           </div>
+          <small class="text-muted d-block mt-1.5" style="font-size: 11px;">🔒 Mã ĐN bắt buộc gồm chữ HOA, chữ thường, số và ký tự đặc biệt (tối thiểu 6 ký tự).</small>
         </div>
 
         <div id="pendingAuthCodesSection" class="mb-3 d-none">
-          <label class="form-label small fw-bold text-danger mb-1.5">⏳ Yêu cầu tạo mã mới đang chờ duyệt (<span id="pendingAuthCount">0</span>):</label>
+          <label class="form-label small fw-bold text-danger mb-1.5">⏳ Yêu cầu tạo tài khoản đang chờ duyệt (<span id="pendingAuthCount">0</span>):</label>
           <div id="pendingAuthCodesContainer" class="catalog-list-box" style="background: #fffbeb !important; border-color: #fde68a !important;"></div>
         </div>
 
-        <label class="form-label small fw-bold text-secondary mb-1.5">Danh sách Mã đăng nhập đã duyệt:</label>
+        <label class="form-label small fw-bold text-secondary mb-1.5">Danh sách tài khoản đã duyệt:</label>
         <div id="authCodesListContainer" class="catalog-list-box"></div>
       </div>
       <div class="modal-footer">
@@ -2526,9 +2535,12 @@
           <input type="text" id="selfDisplayNameInput" class="form-control fw-semibold" placeholder="VD: Lê Tân, Studio June...">
         </div>
         <div class="mb-2" id="selfChangeCodeGroup">
-          <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập của bạn:</label>
-          <input type="text" id="selfNewCodeInput" class="form-control text-uppercase fw-bold" placeholder="Nhập mã mới..." autocapitalize="characters" oninput="this.value = this.value.toUpperCase()" autocomplete="off">
-          <small class="text-muted d-block mt-1" style="font-size: 11px;">Khi đổi mã mới, toàn bộ công việc và danh mục hiện tại sẽ tự động chuyển sang mã mới.</small>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label small fw-bold text-secondary mb-0">Mã đăng nhập của bạn:</label>
+            <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleSelfCodeLink" onclick="toggleShowInputPass('selfNewCodeInput', 'toggleSelfCodeLink')">👁️ Hiện mã</a>
+          </div>
+          <input type="password" id="selfNewCodeInput" class="form-control fw-bold" placeholder="Nhập mã mới..." autocomplete="new-password">
+          <small class="text-muted d-block mt-1" style="font-size: 11px;">🔒 Bắt buộc có: <strong>chữ HOA, chữ thường, số và ký tự đặc biệt</strong> (tối thiểu 6 ký tự). Khi đổi mã mới, toàn bộ dữ liệu hiện tại sẽ tự động chuyển sang mã mới.</small>
         </div>
       </div>
       <div class="modal-footer justify-content-end gap-2">
@@ -2570,7 +2582,49 @@
   let loginLockoutUntil = 0;
 
   function normalizeCodeServer(code) {
-    return String(code || "").trim().toUpperCase();
+    return String(code || "").trim();
+  }
+
+  function validateStrongAuthCode(rawCode) {
+    const code = normalizeCodeServer(rawCode);
+    if (!code || code.length < 6 || code.length > 32) {
+      return { valid: false, message: "Mã đăng nhập phải từ 6 đến 32 ký tự!" };
+    }
+    if (/\s/.test(code)) {
+      return { valid: false, message: "Mã đăng nhập không được chứa khoảng trắng!" };
+    }
+    if (!/[A-Z]/.test(code)) {
+      return { valid: false, message: "Mã đăng nhập bắt buộc có ít nhất 1 chữ cái VIẾT HOA (A-Z)!" };
+    }
+    if (!/[a-z]/.test(code)) {
+      return { valid: false, message: "Mã đăng nhập bắt buộc có ít nhất 1 chữ cái viết thường (a-z)!" };
+    }
+    if (!/[0-9]/.test(code)) {
+      return { valid: false, message: "Mã đăng nhập bắt buộc có ít nhất 1 chữ số (0-9)!" };
+    }
+    if (!/[^A-Za-z0-9]/.test(code)) {
+      return { valid: false, message: "Mã đăng nhập bắt buộc có ít nhất 1 ký tự đặc biệt (VD: @, #, $, !, _...)!" };
+    }
+    return { valid: true, code: code };
+  }
+
+  function getDisplayNameForCode(code) {
+    const clean = normalizeCodeServer(code);
+    if (!clean) return currentDisplayName || "Người dùng";
+    if (clean === normalizeCodeServer(currentAuthCode) && currentDisplayName) {
+      return currentDisplayName;
+    }
+    const foundExact = authorizedCodesMap[clean];
+    if (foundExact && (foundExact.displayName || foundExact.note)) {
+      return String(foundExact.displayName || foundExact.note).trim();
+    }
+    const foundIgnoreCase = Object.values(authorizedCodesMap || {}).find(
+      item => item && normalizeCodeServer(item.code).toLowerCase() === clean.toLowerCase()
+    );
+    if (foundIgnoreCase && (foundIgnoreCase.displayName || foundIgnoreCase.note)) {
+      return String(foundIgnoreCase.displayName || foundIgnoreCase.note).trim();
+    }
+    return "Tài khoản";
   }
 
   function sha256PureJs(ascii) {
@@ -2775,19 +2829,37 @@
         throw new Error(`Thao tác quá nhanh. Vui lòng thử lại sau ${waitSec} giây.`);
       }
 
-      const codeHash = await computeCodeSha256(cleanAuth);
+      let effectiveAuthCode = cleanAuth;
+      let codeHash = await computeCodeSha256(effectiveAuthCode);
       currentAuthHash = codeHash;
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 12000);
       let authEntry = null;
       try {
-        // Chỉ truy vấn đúng 1 node hash duy nhất của mã vừa nhập (không tải danh sách toàn bộ mã)
+        // Chỉ truy vấn đúng 1 node hash duy nhất của mã vừa nhập (phân biệt chữ hoa/thường)
         const hashRes = await fetch(`${dbUrl}/auth_hashes/${codeHash}.json`, { signal: controller.signal });
         if (!hashRes.ok) {
           throw new Error("Không thể xác thực truy cập (" + hashRes.status + ").");
         }
         authEntry = await hashRes.json();
+
+        // Tương thích ngược nếu tài khoản cũ được lưu dạng IN HOA toàn bộ trước khi nâng cấp bảo mật
+        if (!authEntry && cleanAuth !== cleanAuth.toUpperCase()) {
+          const upperCandidate = cleanAuth.toUpperCase();
+          const upperHash = await computeCodeSha256(upperCandidate);
+          const upperRes = await fetch(`${dbUrl}/auth_hashes/${upperHash}.json`, { signal: controller.signal });
+          if (upperRes.ok) {
+            const upperEntry = await upperRes.json();
+            if (upperEntry) {
+              authEntry = upperEntry;
+              effectiveAuthCode = upperCandidate;
+              codeHash = upperHash;
+              currentAuthHash = upperHash;
+              currentAuthCode = upperCandidate;
+            }
+          }
+        }
 
         // Tương thích ngược & khởi tạo Admin lần đầu nếu database chưa có bản ghi trong /auth_hashes
         if (!authEntry) {
@@ -2886,7 +2958,10 @@
         if (failedLoginAttempts >= 5) {
           loginLockoutUntil = Date.now() + Math.min(60000, failedLoginAttempts * 5000);
         }
-        throw new Error("Mã đăng nhập không hợp lệ, chưa được duyệt hoặc đã bị khóa!");
+        if (failedLoginAttempts >= 3) {
+          throw new Error("Mã đăng nhập không hợp lệ! Nếu bạn quên hãy liên hệ LETAN - 0966.220.002.");
+        }
+        throw new Error(`Mã đăng nhập không hợp lệ, chưa được duyệt hoặc đã bị khóa! (Sai ${failedLoginAttempts}/3 lần)`);
       }
 
       failedLoginAttempts = 0;
@@ -2984,9 +3059,10 @@
     if (action === "registerAuthCodeRequest") {
       const regCode = normalizeCodeServer(args[0]);
       const regDisplay = String(args[1] || "").trim();
-      if (!regCode || !regDisplay) throw new Error("Vui lòng nhập đầy đủ Mã đăng nhập và Tên hiển thị!");
-      if (!/^[A-Z0-9_-]{3,24}$/.test(regCode)) {
-        throw new Error("Mã chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!");
+      if (!regCode || !regDisplay) throw new Error("Vui lòng nhập đầy đủ Tên hiển thị và Mã đăng nhập!");
+      const strongCheck = validateStrongAuthCode(regCode);
+      if (!strongCheck.valid) {
+        throw new Error(strongCheck.message);
       }
 
       const regHash = await computeCodeSha256(regCode);
@@ -3023,6 +3099,10 @@
       const isActive = args[2] !== false;
       const reqIdToDelete = args[3] || null;
       if (!codeToSave) throw new Error("Mã đăng nhập không hợp lệ!");
+      if (!reqIdToDelete && !authorizedCodesMap[codeToSave]) {
+        const strongCheck = validateStrongAuthCode(codeToSave);
+        if (!strongCheck.valid) throw new Error(strongCheck.message);
+      }
 
       const targetHash = await computeCodeSha256(codeToSave);
       const prev = authorizedCodesMap[codeToSave] || {};
@@ -3030,7 +3110,7 @@
         role: isAdminCode(codeToSave) ? "admin" : "user",
         code: codeToSave,
         codeHash: targetHash,
-        displayName: displayStr || prev.displayName || prev.note || codeToSave,
+        displayName: displayStr || prev.displayName || prev.note || "Tài khoản",
         status: isActive ? "approved" : "locked",
         active: isActive,
         createdAt: prev.createdAt || Date.now(),
@@ -3053,16 +3133,41 @@
       if (!isAdminAccount) throw new Error("Không có quyền thực hiện thao tác này!");
       const codeToDel = normalizeCodeServer(args[0]);
       const reqIdToDel = args[1] || null;
+      const deleteDataAlso = Boolean(args[2]);
       if (reqIdToDel) {
         await fetch(`${dbUrl}/auth_requests/${encodeURIComponent(reqIdToDel)}.json`, { method: "DELETE" });
         delete pendingRequestsMap[reqIdToDel];
         return { success: true, authCodes: authorizedCodesMap };
       }
-      if (!codeToDel || isAdminCode(codeToDel)) throw new Error("Không thể xóa mã quản trị!");
-      const delHash = await computeCodeSha256(codeToDel);
+      if (!codeToDel || isAdminCode(codeToDel)) throw new Error("Không thể xóa tài khoản quản trị!");
+      const existingInfo = authorizedCodesMap[codeToDel] || {};
+      const delHash = existingInfo.codeHash || (await computeCodeSha256(codeToDel));
       await fetch(`${dbUrl}/auth_hashes/${delHash}.json`, { method: "DELETE" });
       delete authorizedCodesMap[codeToDel];
-      return { success: true, authCodes: authorizedCodesMap };
+
+      let deletedJobsCount = 0;
+      if (deleteDataAlso) {
+        await fetch(`${dbUrl}/categories_by_hash/${delHash}.json`, { method: "DELETE" }).catch(() => {});
+        await fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(codeToDel)}.json`, { method: "DELETE" }).catch(() => {});
+
+        const delPatch = {};
+        Object.entries(firebaseJobsMap || {}).forEach(([k, v]) => {
+          if (v && (normalizeCodeServer(v.maDangNhap) === codeToDel || (delHash && v.ownerHash === delHash))) {
+            delPatch[k] = null;
+            delete firebaseJobsMap[k];
+            deletedJobsCount++;
+          }
+        });
+        if (Object.keys(delPatch).length > 0) {
+          await fetch(`${dbUrl}/jobs.json`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(delPatch)
+          });
+        }
+      }
+      const refreshedJobs = buildFilteredJobsFromMap(firebaseJobsMap, cleanAuth);
+      return { success: true, authCodes: authorizedCodesMap, deletedJobsCount: deletedJobsCount, jobs: refreshedJobs.jobs };
     }
 
     if (action === "selfUpdateAuthAccount") {
@@ -3072,8 +3177,11 @@
       if (!newDisplay) throw new Error("Tên hiển thị không được để trống!");
 
       const targetCode = requestedNewCode || cleanAuth;
-      if (!/^[A-Z0-9_-]{3,24}$/.test(targetCode)) {
-        throw new Error("Mã đăng nhập chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!");
+      if (targetCode !== cleanAuth) {
+        const strongCheck = validateStrongAuthCode(targetCode);
+        if (!strongCheck.valid) {
+          throw new Error(strongCheck.message);
+        }
       }
 
       const newHash = await computeCodeSha256(targetCode);
@@ -3464,7 +3572,7 @@
     { id: 'daCoc', label: 'Đã cọc', removable: true, visible: true, align: 'end' },
     { id: 'chiPhi', label: 'Chi phí', removable: true, visible: true, align: 'end' },
     { id: 'ttChiPhi', label: 'TT Chi phí', removable: true, visible: true },
-    { id: 'maDangNhap', label: 'Mã ĐN', removable: true, visible: false, width: '95px' }
+    { id: 'maDangNhap', label: 'Tài khoản', removable: true, visible: false, width: '125px' }
   ];
 
   function loadTableColumnSettings() {
@@ -3736,10 +3844,14 @@
     
     document.getElementById('customDialogConfirmBtn').addEventListener('click', function() {
        const inputEl = document.getElementById('customDialogInput');
+       const cbWrap = document.getElementById('customDialogCheckboxWrap');
+       const cbEl = document.getElementById('customDialogCheckbox');
        let val = true;
        if (!inputEl.classList.contains('d-none')) {
            val = inputEl.value;
            if (val === null || val.trim() === '') return;
+       } else if (cbWrap && !cbWrap.classList.contains('d-none')) {
+           val = Boolean(cbEl && cbEl.checked);
        }
        customDialogModalInstance.hide();
        if (customDialogCallback) customDialogCallback(val);
@@ -3750,12 +3862,24 @@
     });
   }
 
-  function showConfirmDialog(message, onConfirm) {
+  function showConfirmDialog(message, onConfirm, checkboxLabel = "") {
     document.getElementById('customDialogTitle').innerText = 'Xác nhận thao tác';
     document.getElementById('customDialogMessage').innerText = message;
     
     document.getElementById('customDialogInput').classList.add('d-none');
     document.getElementById('customDialogInput').value = '';
+    const cbWrap = document.getElementById('customDialogCheckboxWrap');
+    const cbEl = document.getElementById('customDialogCheckbox');
+    const cbLabelEl = document.getElementById('customDialogCheckboxLabel');
+    if (cbWrap && cbEl && cbLabelEl) {
+      cbEl.checked = false;
+      if (checkboxLabel) {
+        cbLabelEl.innerText = checkboxLabel;
+        cbWrap.classList.remove('d-none');
+      } else {
+        cbWrap.classList.add('d-none');
+      }
+    }
     document.getElementById('customDialogCancelBtn').classList.remove('d-none');
     
     const btnConfirm = document.getElementById('customDialogConfirmBtn');
@@ -3773,6 +3897,8 @@
     const inputEl = document.getElementById('customDialogInput');
     inputEl.classList.remove('d-none');
     inputEl.value = defaultValue || '';
+    const cbWrap = document.getElementById('customDialogCheckboxWrap');
+    if (cbWrap) cbWrap.classList.add('d-none');
     
     document.getElementById('customDialogCancelBtn').classList.remove('d-none');
     
@@ -4299,10 +4425,10 @@
           google.script.run.batchUpdateStatus(overdueWaitRows, 'Chưa TT');
         }
 
-        currentDisplayName = (res && res.displayName) ? res.displayName : (isAdminAccount ? 'Lê Tân' : currentAuthCode);
+        currentDisplayName = (res && res.displayName) ? res.displayName : (isAdminAccount ? 'Lê Tân' : 'Người dùng');
         document.getElementById('loginOverlay').classList.add('d-none');
         const menuBadge = document.getElementById('menuAuthCodeBadge');
-        if (menuBadge) menuBadge.innerText = currentAuthCode;
+        if (menuBadge) menuBadge.innerText = currentDisplayName;
         updateCalendarPageTitle();
 
         document.getElementById('adminOwnerCodeGroup').classList.toggle('d-none', !isAdminAccount);
@@ -5132,7 +5258,9 @@
     const codeSet = new Set([ownCode]);
     Object.keys(authorizedCodesMap || {}).forEach(c => codeSet.add(normalizeCodeServer(c)));
     allJobs.forEach(j => { if (j.maDangNhap) codeSet.add(normalizeCodeServer(j.maDangNhap)); });
-    const sortedCodes = Array.from(codeSet).filter(Boolean).sort();
+    const sortedCodes = Array.from(codeSet).filter(Boolean).sort((a, b) =>
+      getDisplayNameForCode(a).localeCompare(getDisplayNameForCode(b), 'vi')
+    );
 
     const calSel = document.getElementById('filterAuthCodeCalendar');
     const tblSel = document.getElementById('filterAuthCodeTable');
@@ -5140,11 +5268,10 @@
     const prevTblVal = applyDefaultOwnCode ? ownCode : (tblSel ? tblSel.value : ownCode);
 
     const buildOpts = (selectedVal) => {
-      let opts = `<option value="">🔑 Tất cả Mã ĐN (${sortedCodes.length})</option>`;
+      let opts = `<option value="">👤 Tất cả tài khoản (${sortedCodes.length})</option>`;
       sortedCodes.forEach(c => {
-        const dName = authorizedCodesMap[c] ? (authorizedCodesMap[c].displayName || authorizedCodesMap[c].note || '') : '';
-        const note = dName ? ` - ${dName}` : '';
-        opts += `<option value="${c}" ${c === selectedVal ? 'selected' : ''}>${c}${note}</option>`;
+        const dName = getDisplayNameForCode(c);
+        opts += `<option value="${c}" ${c === selectedVal ? 'selected' : ''}>${dName}</option>`;
       });
       return opts;
     };
@@ -5157,6 +5284,23 @@
       tblSel.innerHTML = buildOpts(prevTblVal);
       if (applyDefaultOwnCode) tblSel.value = ownCode;
     }
+  }
+
+  function populateOwnerCodeSelect(selectedCode) {
+    const sel = document.getElementById('formMaDangNhap');
+    if (!sel) return;
+    const ownCode = normalizeCodeServer(currentAuthCode);
+    const targetCode = normalizeCodeServer(selectedCode) || ownCode;
+    const codeSet = new Set([ownCode, targetCode]);
+    Object.keys(authorizedCodesMap || {}).forEach(c => codeSet.add(normalizeCodeServer(c)));
+    const sortedCodes = Array.from(codeSet).filter(Boolean).sort((a, b) =>
+      getDisplayNameForCode(a).localeCompare(getDisplayNameForCode(b), 'vi')
+    );
+    sel.innerHTML = sortedCodes.map(c => {
+      const dName = getDisplayNameForCode(c);
+      return `<option value="${c}" ${c === targetCode ? 'selected' : ''}>${dName}</option>`;
+    }).join('');
+    sel.value = targetCode;
   }
 
   function onCalendarAuthFilterChange() {
@@ -5562,7 +5706,7 @@
           } else if (col.id === 'ttChiPhi') {
             html += `<td class="text-center"><input type="checkbox" class="cost-checkbox" ${j.ttChiPhi === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)" title="Tích chọn nếu đã thanh toán chi phí"></td>`;
           } else if (col.id === 'maDangNhap') {
-            html += `<td class="text-center"><span class="badge bg-dark bg-opacity-10 text-dark border">${j.maDangNhap || ''}</span></td>`;
+            html += `<td class="text-center"><span class="badge bg-dark bg-opacity-10 text-dark border">${getDisplayNameForCode(j.maDangNhap)}</span></td>`;
           }
         });
         html += `</tr>`;
@@ -5686,7 +5830,7 @@
                   <input type="checkbox" class="cost-checkbox m-0" ${j.ttChiPhi === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)">
                   <span>TT Chi phí (${j.ttChiPhi === 'Đã trả' ? 'Đã trả' : 'Chưa trả'})</span>
                 </label>
-                ${isAdminAccount ? `<span class="badge bg-light text-secondary border">Mã: ${j.maDangNhap || ''}</span>` : ''}
+                ${isAdminAccount ? `<span class="badge bg-light text-secondary border">👤 ${getDisplayNameForCode(j.maDangNhap)}</span>` : ''}
               </div>
             </div>`;
         }
@@ -5714,14 +5858,11 @@
     document.getElementById('jobForm').reset();
     document.getElementById('formRowNumber').value = '';
     document.getElementById('formChiTiet').value = '';
-    const maDnInput = document.getElementById('formMaDangNhap');
-    if (maDnInput) {
-      const isTabLichActive = !document.getElementById('tabLich').classList.contains('d-none');
-      const activeAuthFilter = isTabLichActive
-        ? (document.getElementById('filterAuthCodeCalendar')?.value || '')
-        : (document.getElementById('filterAuthCodeTable')?.value || '');
-      maDnInput.value = activeAuthFilter || currentAuthCode;
-    }
+    const isTabLichActive = !document.getElementById('tabLich').classList.contains('d-none');
+    const activeAuthFilter = isTabLichActive
+      ? (document.getElementById('filterAuthCodeCalendar')?.value || '')
+      : (document.getElementById('filterAuthCodeTable')?.value || '');
+    populateOwnerCodeSelect(activeAuthFilter || currentAuthCode);
     document.getElementById('formThoiGian').value = '';
     document.getElementById('formDiaChi').value = '';
     document.getElementById('formGhiChu').value = '';
@@ -5743,8 +5884,7 @@
 
     document.getElementById('formRowNumber').value = j.rowNumber;
     document.getElementById('formNgay').value = toInputDate(j.ngay);
-    const maDnInput = document.getElementById('formMaDangNhap');
-    if (maDnInput) maDnInput.value = j.maDangNhap || '';
+    populateOwnerCodeSelect(j.maDangNhap || currentAuthCode);
     document.getElementById('formChiTiet').value = j.chiTiet || '';
     document.getElementById('formThoiGian').value = parsedDetail.thoiGian || '';
     document.getElementById('formDiaChi').value = parsedDetail.diaChi || '';
@@ -6099,9 +6239,19 @@
   });
 
 
+  function toggleShowInputPass(inputId, linkId) {
+    const inp = document.getElementById(inputId);
+    const link = linkId ? document.getElementById(linkId) : null;
+    if (!inp) return;
+    const isHidden = (inp.type === 'password');
+    inp.type = isHidden ? 'text' : 'password';
+    if (link) {
+      link.innerText = isHidden ? '🙈 Ẩn mã' : '👁️ Hiện mã';
+    }
+  }
+
   function toggleShowLoginPass() {
-    const inp = document.getElementById('loginCodeInput');
-    inp.type = (inp.type === 'password') ? 'text' : 'password';
+    toggleShowInputPass('loginCodeInput', 'toggleLoginPassLink');
   }
 
   function submitLoginCode() {
@@ -6112,7 +6262,7 @@
     }
 
     const inp = document.getElementById('loginCodeInput');
-    const rawCode = inp.value.trim().toUpperCase();
+    const rawCode = inp.value.trim();
     if (!rawCode) {
       showToast('Vui lòng nhập mã đăng nhập!', true);
       inp.focus();
@@ -6141,7 +6291,8 @@
       btn.innerHTML = oldText;
       if (!document.getElementById('loginOverlay').classList.contains('d-none')) return;
       startRealtimeSync();
-      showToast(isAdminAccount ? `Đã mở khóa toàn quyền ${currentAuthCode}` : `Xin chào: ${currentAuthCode}`);
+      const welcomeName = currentDisplayName || 'Bạn';
+      showToast(isAdminAccount ? `Đã mở khóa toàn quyền (${welcomeName})` : `Xin chào: ${welcomeName}`);
     });
   }
 
@@ -6191,19 +6342,20 @@
     const code = normalizeCodeServer(codeInp.value);
     const displayName = capitalizeAllWords(nameInp.value);
 
+    if (!displayName) {
+      showToast('Vui lòng nhập Tên hiển thị!', true);
+      nameInp.focus();
+      return;
+    }
     if (!code) {
       showToast('Vui lòng nhập Mã đăng nhập muốn tạo!', true);
       codeInp.focus();
       return;
     }
-    if (!/^[A-Z0-9_-]{3,24}$/.test(code)) {
-      showToast('Mã chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!', true);
+    const strongCheck = validateStrongAuthCode(code);
+    if (!strongCheck.valid) {
+      showToast(strongCheck.message, true);
       codeInp.focus();
-      return;
-    }
-    if (!displayName) {
-      showToast('Vui lòng nhập Tên hiển thị!', true);
-      nameInp.focus();
       return;
     }
 
@@ -6219,9 +6371,9 @@
         codeInp.value = '';
         nameInp.value = '';
         banner.className = 'alert alert-success py-2 px-3 small mb-3';
-        banner.innerHTML = `✅ Đã gửi yêu cầu tạo mã <strong>${res.code}</strong> (${res.displayName}). Vui lòng liên hệ <strong>LETAN (0966.220.002)</strong> để phê duyệt !`;
+        banner.innerHTML = `✅ Đã gửi yêu cầu tạo tài khoản <strong>${res.displayName}</strong>. Vui lòng liên hệ <strong>LETAN (0966.220.002)</strong> để phê duyệt!`;
         banner.classList.remove('d-none');
-        showToast('Đã gửi yêu cầu tạo mã chờ duyệt');
+        showToast('Đã gửi yêu cầu tạo tài khoản chờ duyệt');
       })
       .withFailureHandler(function(err) {
         btn.disabled = false;
@@ -6235,10 +6387,13 @@
 
   function openSelfAccountModal() {
     if (!currentAuthCode) return;
-    document.getElementById('selfDisplayNameInput').value = currentDisplayName || currentAuthCode;
+    document.getElementById('selfDisplayNameInput').value = currentDisplayName || '';
     const codeInp = document.getElementById('selfNewCodeInput');
     codeInp.value = currentAuthCode;
+    codeInp.type = 'password';
     codeInp.disabled = false;
+    const toggleLink = document.getElementById('toggleSelfCodeLink');
+    if (toggleLink) toggleLink.innerText = '👁️ Hiện mã';
     document.getElementById('selfChangeCodeGroup').classList.remove('d-none');
     selfAccountModalInstance.show();
   }
@@ -6251,9 +6406,16 @@
       showToast('Vui lòng nhập Tên hiển thị!', true);
       return;
     }
-    if (!newCode || !/^[A-Z0-9_-]{3,24}$/.test(newCode)) {
-      showToast('Mã đăng nhập mới không hợp lệ (3-24 ký tự không dấu)!', true);
+    if (!newCode) {
+      showToast('Vui lòng nhập Mã đăng nhập!', true);
       return;
+    }
+    if (newCode !== currentAuthCode) {
+      const strongCheck = validateStrongAuthCode(newCode);
+      if (!strongCheck.valid) {
+        showToast(strongCheck.message, true);
+        return;
+      }
     }
 
     const btn = document.getElementById('btnSaveSelfAccount');
@@ -6289,13 +6451,13 @@
           adminDefaultFilterInitialized = false;
         }
         const menuBadge = document.getElementById('menuAuthCodeBadge');
-        if (menuBadge) menuBadge.innerText = currentAuthCode;
+        if (menuBadge) menuBadge.innerText = currentDisplayName;
         updateCalendarPageTitle();
         selfAccountModalInstance.hide();
         loadData(function() {
           startRealtimeSync();
         });
-        showToast('Đã cập nhật Mã & Tên hiển thị');
+        showToast('Đã cập nhật Tài khoản & Tên hiển thị');
       })
       .withFailureHandler(function(err) {
         btn.disabled = false;
@@ -6312,16 +6474,18 @@
     const pendingCountEl = document.getElementById('pendingAuthCount');
     if (!container) return;
 
-    const allNonAdminCodes = Object.keys(authorizedCodesMap || {}).filter(c => !isAdminCode(c)).sort();
+    const allNonAdminCodes = Object.keys(authorizedCodesMap || {}).filter(c => !isAdminCode(c)).sort((a, b) =>
+      getDisplayNameForCode(a).localeCompare(getDisplayNameForCode(b), 'vi')
+    );
     const pendingList = [];
     Object.entries(pendingRequestsMap || {}).forEach(([reqId, req]) => {
       if (req && req.code && !authorizedCodesMap[normalizeCodeServer(req.code)]) {
-        pendingList.push({ reqId: reqId, code: normalizeCodeServer(req.code), displayName: req.displayName || req.code });
+        pendingList.push({ reqId: reqId, code: normalizeCodeServer(req.code), displayName: req.displayName || "Tài khoản mới" });
       }
     });
     allNonAdminCodes.forEach(c => {
       if (authorizedCodesMap[c] && authorizedCodesMap[c].status === 'pending') {
-        pendingList.push({ reqId: null, code: c, displayName: authorizedCodesMap[c].displayName || authorizedCodesMap[c].note || c });
+        pendingList.push({ reqId: null, code: c, displayName: authorizedCodesMap[c].displayName || authorizedCodesMap[c].note || "Tài khoản mới" });
       }
     });
     const approvedCodes = allNonAdminCodes.filter(c => !authorizedCodesMap[c] || authorizedCodesMap[c].status !== 'pending');
@@ -6337,10 +6501,10 @@
             <div class="catalog-item-row" style="border-color: #fcd34d;">
               <div>
                 <div class="d-flex align-items-center gap-1.5">
-                  <span class="fw-bold text-dark" style="font-size: 13.5px;">${item.code}</span>
+                  <span class="fw-bold text-dark" style="font-size: 13.5px;">${item.displayName}</span>
                   <span class="badge bg-warning text-dark" style="font-size: 10px;">Chờ duyệt</span>
                 </div>
-                <div class="small text-secondary fw-semibold">Tên: ${item.displayName}</div>
+                <div class="small text-muted">Mã truy cập: ••••••••</div>
               </div>
               <div class="d-flex gap-1.5">
                 <button type="button" class="btn btn-success btn-sm py-1 px-2.5 fw-bold" style="font-size: 11px;" onclick="approvePendingAuthCode('${escapeJsQuotes(item.code)}', ${reqArg})">✓ Duyệt</button>
@@ -6361,35 +6525,35 @@
     let html = `
       <div class="catalog-item-row" style="background: #fff1f2; border-color: #fecdd3;">
         <div>
-          <span class="fw-bold text-danger" style="font-size: 13.5px;">${adminCodeLabel}</span>
+          <span class="fw-bold text-danger" style="font-size: 13.5px;">${adminName}</span>
           <span class="badge bg-danger ms-1" style="font-size: 10px;">Quản trị</span>
-          <div class="small text-secondary fw-semibold">Tên: ${adminName}</div>
+          <div class="small text-muted">Mã truy cập: ••••••••</div>
         </div>
         <span class="badge bg-success">Luôn hoạt động</span>
       </div>
     `;
 
     if (approvedCodes.length === 0) {
-      html += `<div class="text-center text-muted small py-3">Chưa có mã đăng nhập phụ nào được duyệt.</div>`;
+      html += `<div class="text-center text-muted small py-3">Chưa có tài khoản phụ nào được duyệt.</div>`;
     } else {
       approvedCodes.forEach(code => {
         const info = authorizedCodesMap[code] || {};
         const isActive = info.active !== false && info.status !== 'locked';
-        const dName = info.displayName || info.note || code;
+        const dName = info.displayName || info.note || "Tài khoản";
         const jobCount = allJobs.filter(j => normalizeCodeServer(j.maDangNhap) === code).length;
         html += `
           <div class="catalog-item-row">
             <div>
               <div class="d-flex align-items-center gap-1.5">
-                <span class="fw-bold text-dark" style="font-size: 13.5px;">${code}</span>
+                <span class="fw-bold text-dark" style="font-size: 13.5px;">${dName}</span>
                 <span class="badge ${isActive ? 'bg-success' : 'bg-secondary'}" style="font-size: 10px;">${isActive ? 'Đang mở' : 'Đã khóa'}</span>
                 <span class="badge bg-light text-dark border" style="font-size: 10px;">${jobCount} công việc</span>
               </div>
-              <div class="small text-secondary">Tên: <strong>${dName}</strong></div>
+              <div class="small text-muted">Mã truy cập: ••••••••</div>
             </div>
             <div class="d-flex gap-1.5">
-              <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 11px;" onclick="toggleAuthCodeActive('${code}')">${isActive ? 'Khóa' : 'Mở'}</button>
-              <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px;" onclick="removeAuthorizedCode('${code}')">Xóa</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 11px;" onclick="toggleAuthCodeActive('${escapeJsQuotes(code)}')">${isActive ? 'Khóa' : 'Mở'}</button>
+              <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px;" onclick="removeAuthorizedCode('${escapeJsQuotes(code)}')">Xóa</button>
             </div>
           </div>
         `;
@@ -6400,17 +6564,17 @@
 
   function approvePendingAuthCode(code, reqId = null) {
     const reqObj = reqId && pendingRequestsMap[reqId] ? pendingRequestsMap[reqId] : (authorizedCodesMap[code] || {});
-    const dName = reqObj.displayName || reqObj.note || code;
+    const dName = reqObj.displayName || reqObj.note || "Tài khoản";
     google.script.run
       .withSuccessHandler(function(res) {
         if (res && res.authCodes) authorizedCodesMap = res.authCodes;
         renderAuthCodesList();
         populateAdminAuthFilterDropdowns(false);
         renderMasterTable();
-        showToast(`Đã duyệt mã "${code}" (${dName})`);
+        showToast(`Đã duyệt tài khoản "${dName}"`);
       })
       .withFailureHandler(function(err) {
-        showToast('Lỗi duyệt mã: ' + (err.message || err), true);
+        showToast('Lỗi duyệt tài khoản: ' + (err.message || err), true);
       })
       .saveAuthCodeAdmin(code, dName, true, reqId);
   }
@@ -6419,20 +6583,26 @@
     const codeInp = document.getElementById('newAuthCodeInput');
     const noteInp = document.getElementById('newAuthNoteInput');
     const code = normalizeCodeServer(codeInp.value);
-    const note = noteInp.value.trim();
+    const note = capitalizeAllWords(noteInp.value);
 
+    if (!note) {
+      showToast('Vui lòng nhập Tên hiển thị!', true);
+      noteInp.focus();
+      return;
+    }
     if (!code) {
       showToast('Vui lòng nhập mã đăng nhập cần cấp!', true);
       codeInp.focus();
       return;
     }
-    if (!/^[A-Z0-9_-]{3,24}$/.test(code)) {
-      showToast('Mã chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!', true);
+    const strongCheck = validateStrongAuthCode(code);
+    if (!strongCheck.valid) {
+      showToast(strongCheck.message, true);
       codeInp.focus();
       return;
     }
     if (isAdminCode(code)) {
-      showToast('Mã này thuộc quyền quản trị mặc định!', true);
+      showToast('Mã này đang được tài khoản quản trị sử dụng!', true);
       return;
     }
 
@@ -6442,8 +6612,9 @@
         codeInp.value = '';
         noteInp.value = '';
         renderAuthCodesList();
+        populateAdminAuthFilterDropdowns(false);
         renderMasterTable();
-        showToast(`Đã cấp phép mã "${code}"`);
+        showToast(`Đã cấp phép tài khoản "${note}"`);
       })
       .withFailureHandler(function(err) {
         showToast('Lỗi cấp mã: ' + (err.message || err), true);
@@ -6453,43 +6624,57 @@
 
   function toggleAuthCodeActive(code) {
     const info = authorizedCodesMap[code] || {};
+    const dName = info.displayName || info.note || "Tài khoản";
     const nextState = !(info.active !== false && info.status !== 'locked');
     google.script.run
       .withSuccessHandler(function(res) {
         if (res && res.authCodes) authorizedCodesMap = res.authCodes;
         renderAuthCodesList();
-        showToast(nextState ? `Đã mở khóa mã "${code}"` : `Đã tạm khóa mã "${code}"`);
+        showToast(nextState ? `Đã mở khóa tài khoản "${dName}"` : `Đã tạm khóa tài khoản "${dName}"`);
       })
       .withFailureHandler(function(err) {
-        showToast('Lỗi cập nhật trạng thái mã', true);
+        showToast('Lỗi cập nhật trạng thái tài khoản', true);
       })
-      .saveAuthCodeAdmin(code, info.displayName || info.note || code, nextState);
+      .saveAuthCodeAdmin(code, dName, nextState);
   }
 
   function removeAuthorizedCode(code, reqId = null) {
+    const dName = getDisplayNameForCode(code);
     const promptMsg = reqId
-      ? `Từ chối và xóa yêu cầu tạo mã "${code}"?`
-      : `Xóa quyền truy cập của mã "${code}"? (Dữ liệu công việc đã tạo vẫn được giữ lại)`;
-    showConfirmDialog(promptMsg, () => {
+      ? `Từ chối và xóa yêu cầu tạo tài khoản "${dName}"?`
+      : `Bạn có chắc muốn xóa tài khoản "${dName}"?`;
+    const checkboxText = reqId ? "" : "Xóa toàn bộ dữ liệu (công việc & danh mục) của tài khoản này";
+    showConfirmDialog(promptMsg, (deleteDataAlso) => {
       google.script.run
         .withSuccessHandler(function(res) {
           if (res && res.authCodes) authorizedCodesMap = res.authCodes;
+          if (res && Array.isArray(res.jobs)) {
+            allJobs = res.jobs;
+            renderCalendar();
+            renderSelectedDayJobs();
+          }
           renderAuthCodesList();
           populateAdminAuthFilterDropdowns(false);
           renderMasterTable();
-          showToast(reqId ? `Đã từ chối yêu cầu "${code}"` : `Đã xóa mã "${code}"`);
+          if (reqId) {
+            showToast(`Đã từ chối yêu cầu "${dName}"`);
+          } else if (deleteDataAlso) {
+            showToast(`Đã xóa tài khoản "${dName}" và ${res.deletedJobsCount || 0} công việc liên quan`);
+          } else {
+            showToast(`Đã xóa tài khoản "${dName}" (giữ lại dữ liệu)`);
+          }
         })
         .withFailureHandler(function(err) {
-          showToast('Lỗi thao tác mã', true);
+          showToast('Lỗi thao tác tài khoản: ' + (err.message || err), true);
         })
-        .deleteAuthCodeAdmin(code, reqId);
-    });
+        .deleteAuthCodeAdmin(code, reqId, Boolean(deleteDataAlso));
+    }, checkboxText);
   }
 
   function updateCalendarPageTitle() {
     const titleEl = document.getElementById('calendarPageTitle');
     if (!titleEl) return;
-    const nameToShow = (currentDisplayName || currentAuthCode || '').trim();
+    const nameToShow = (currentDisplayName || '').trim();
     if (nameToShow !== '') {
       titleEl.innerText = `Lịch của ${nameToShow}`;
     } else {
@@ -6611,7 +6796,7 @@
 
       const savedCode = localStorage.getItem('letan_saved_auth_code');
       if (savedCode && savedCode.trim() !== '') {
-        currentAuthCode = savedCode.trim().toUpperCase();
+        currentAuthCode = savedCode.trim();
         updateCalendarPageTitle();
         loadCategoriesPrefs();
         document.getElementById('loginCodeInput').value = currentAuthCode;
