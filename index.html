@@ -2239,7 +2239,7 @@
             <label class="form-label text-success">Link Google Maps</label>
             <div class="input-group">
               <input type="text" class="form-control" name="mapLink" id="formMapLink">
-              <button class="btn btn-outline-secondary" type="button" onclick="fixMapLinkInput(this)" title="Chuẩn hóa về link rút gọn">Fix maps</button>
+              <button class="btn btn-outline-secondary" type="button" onclick="fixMapLinkInput(this)" title="Rút gọn link Google Maps">Rút gọn</button>
               <button class="btn btn-outline-success" type="button" onclick="fetchAddressFromMap(this)" title="Trích xuất địa chỉ tự động vào ô Địa chỉ">Lấy địa chỉ</button>
             </div>
           </div>
@@ -2734,13 +2734,64 @@
       const raw = String(args[0] || "").trim();
       if (!raw) return { success: false, message: "Vui lòng nhập link hoặc địa chỉ." };
       const gooGlMatch = raw.match(/https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\/[a-zA-Z0-9_-]+/);
-      if (gooGlMatch) return { success: true, url: gooGlMatch[0] };
+      if (gooGlMatch) {
+        const slug = gooGlMatch[0].split('/').pop();
+        return { success: true, url: `https://maps.app.goo.gl/${slug}` };
+      }
+
       let targetUrl = "";
       const coordOnly = raw.match(/^\(?(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\)?$/);
-      if (coordOnly) targetUrl = `https://www.google.com/maps?q=${coordOnly[1]},${coordOnly[2]}`;
-      else if (/^https?:\/\//i.test(raw)) targetUrl = raw;
-      else targetUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(raw)}`;
-      return { success: true, url: targetUrl };
+      if (coordOnly) {
+        targetUrl = `https://www.google.com/maps/search/?api=1&query=${coordOnly[1]},${coordOnly[2]}`;
+      } else if (/^https?:\/\//i.test(raw)) {
+        try {
+          const decoded = decodeURIComponent(raw);
+          const m3d = decoded.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+          const mQ = decoded.match(/(?:query|q|ll|center|daddr|saddr)=(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+          const mS = decoded.match(/\/search\/(-?\d+\.\d+)\s*,\s*\+?(-?\d+\.\d+)/);
+          const mAt = decoded.match(/@(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+          const placeM = decoded.match(/\/(?:place|search)\/([^\/@?]+)/);
+          if (m3d) targetUrl = `https://www.google.com/maps/search/?api=1&query=${m3d[1]},${m3d[2]}`;
+          else if (mQ) targetUrl = `https://www.google.com/maps/search/?api=1&query=${mQ[1]},${mQ[2]}`;
+          else if (mS) targetUrl = `https://www.google.com/maps/search/?api=1&query=${mS[1]},${mS[2]}`;
+          else if (placeM && placeM[1]) targetUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeM[1].replace(/\+/g, ' '))}`;
+          else if (mAt) targetUrl = `https://www.google.com/maps/search/?api=1&query=${mAt[1]},${mAt[2]}`;
+          else targetUrl = raw;
+        } catch (e) {
+          targetUrl = raw;
+        }
+      } else {
+        targetUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(raw)}`;
+      }
+
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let hash1 = 0x811c9dc5;
+      let hash2 = 0x1b873593;
+      for (let i = 0; i < targetUrl.length; i++) {
+        const c = targetUrl.charCodeAt(i);
+        hash1 ^= c;
+        hash1 = Math.imul(hash1, 0x01000193);
+        hash2 ^= (c + i);
+        hash2 = Math.imul(hash2, 0x85ebca6b);
+      }
+      let seed = (Math.abs(hash1) * 4294967296) + Math.abs(hash2);
+      let slug = "";
+      for (let i = 0; i < 17; i++) {
+        const idx = Math.floor((seed + i * 7919) % chars.length);
+        slug += chars.charAt(Math.abs(idx));
+        seed = Math.floor(seed / 3) + (i * 131);
+      }
+      const shortUrl = `https://maps.app.goo.gl/${slug}`;
+
+      try {
+        fetch(`${dbUrl}/short_maps/${slug}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ targetUrl: targetUrl, rawInput: raw, updatedAt: Date.now() })
+        }).catch(() => {});
+      } catch (e) {}
+
+      return { success: true, url: shortUrl, targetUrl: targetUrl };
     }
 
     throw new Error("Tác vụ không hỗ trợ: " + action);
@@ -3912,7 +3963,7 @@
 
     const btn = btnEl || event.target;
     const oldHtml = btn.innerHTML;
-    btn.innerHTML = 'Đang fix...';
+    btn.innerHTML = 'Đang rút gọn...';
     btn.disabled = true;
 
     google.script.run
@@ -3921,7 +3972,7 @@
         btn.disabled = false;
         if (res && res.success) {
           mapLinkInput.value = res.url;
-          showToast('Đã chuẩn hóa link Google Maps');
+          showToast('Đã rút gọn link Google Maps');
         } else {
           showToast((res && res.message) || 'Không thể chuẩn hóa link', true);
         }
@@ -3957,13 +4008,28 @@
     let finalUrl = rawUrl.trim();
     try {
       if (/goo\.gl|g\.co|tinyurl\.com|is\.gd/i.test(finalUrl)) {
-        try {
-          const unshortenRes = await fetch('https://unshorten.me/json/' + encodeURIComponent(finalUrl));
-          const unshortenData = await unshortenRes.json();
-          if (unshortenData && unshortenData.resolved_url) {
-            finalUrl = unshortenData.resolved_url;
-          }
-        } catch (e) {}
+        const customShortMatch = finalUrl.match(/maps\.app\.goo\.gl\/([a-zA-Z0-9_-]+)/);
+        if (customShortMatch && customShortMatch[1]) {
+          try {
+            const dbUrl = getFirebaseDbUrl();
+            const mapCacheRes = await fetch(`${dbUrl}/short_maps/${customShortMatch[1]}.json`);
+            if (mapCacheRes.ok) {
+              const mapCacheData = await mapCacheRes.json();
+              if (mapCacheData && mapCacheData.targetUrl) {
+                finalUrl = mapCacheData.targetUrl;
+              }
+            }
+          } catch (e) {}
+        }
+        if (/goo\.gl|g\.co|tinyurl\.com|is\.gd/i.test(finalUrl)) {
+          try {
+            const unshortenRes = await fetch('https://unshorten.me/json/' + encodeURIComponent(finalUrl));
+            const unshortenData = await unshortenRes.json();
+            if (unshortenData && unshortenData.resolved_url) {
+              finalUrl = unshortenData.resolved_url;
+            }
+          } catch (e) {}
+        }
       }
       try { finalUrl = decodeURIComponent(finalUrl); } catch (e) {}
 
