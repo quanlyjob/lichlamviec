@@ -1896,8 +1896,11 @@
 
     <!-- TAB 1 -->
     <div id="tabLich">
-      <div class="mb-3 top-header-bar">
+      <div class="mb-3 top-header-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div class="page-title mb-0" id="calendarPageTitle">Lịch làm việc</div>
+        <select id="filterAuthCodeCalendar" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 195px; border-radius: 10px; height: 36px;" onchange="onCalendarAuthFilterChange()" title="Lọc lịch làm việc theo Mã đăng nhập">
+          <option value="">🔑 Tất cả Mã ĐN</option>
+        </select>
       </div>
 
       <div class="row g-4 align-items-start">
@@ -2474,7 +2477,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h6 class="modal-title">Quản Lý Mã Đăng Nhập (ADMIN)</h6>
+        <h6 class="modal-title">Quản Lý Mã Đăng Nhập</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -2537,8 +2540,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // === CẤU HÌNH FIREBASE REALTIME DATABASE (KHÔNG QUA SCRIPT.GOOGLE.COM) ===
+  // === CẤU HÌNH FIREBASE & KIẾN TRÚC BẢO MẬT SHA-256 CHỐNG DÒ MÃ ===
   const DEFAULT_FIREBASE_DB_URL = "https://lichlamviecletan-default-rtdb.asia-southeast1.firebasedatabase.app/";
+  const AUTH_HASH_PEPPER = "LETAN_SECURE_V29_#9821_SALT";
 
   function getFirebaseDbUrl() {
     try {
@@ -2549,23 +2553,37 @@
   }
 
   let currentAuthCode = "";
+  let currentAuthHash = "";
   let currentDisplayName = "";
   let isAdminAccount = false;
+  let adminDefaultFilterInitialized = false;
   let firebaseJobsMap = {}; // id -> job object
-  let authorizedCodesMap = {}; // code -> { code, displayName, note, status, active, createdAt }
+  let authorizedCodesMap = {}; // code -> { code, codeHash, displayName, note, status, active, createdAt }
+  let pendingRequestsMap = {}; // reqId -> { code, codeHash, displayName, createdAt }
   let firebaseEventSource = null;
   let manageAuthCodesModalInstance;
   let selfAccountModalInstance;
 
-  let currentAdminAuthCode = "ADMINLETAN";
+  // Anti-bruteforce rate limiter phía client
+  let failedLoginAttempts = 0;
+  let loginLockoutUntil = 0;
 
   function normalizeCodeServer(code) {
     return String(code || "").trim().toUpperCase();
   }
 
+  async function computeCodeSha256(rawCode) {
+    const clean = normalizeCodeServer(rawCode);
+    if (!clean) return "";
+    const msgUint8 = new TextEncoder().encode(AUTH_HASH_PEPPER + "::" + clean);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
   function isAdminCode(code) {
-    const clean = normalizeCodeServer(code);
-    return clean !== "" && clean === normalizeCodeServer(currentAdminAuthCode);
+    if (!isAdminAccount || !currentAuthCode) return false;
+    return normalizeCodeServer(code) === normalizeCodeServer(currentAuthCode);
   }
 
   function formatMoneyVn(val) {
@@ -2584,7 +2602,7 @@
 
   function buildFilteredJobsFromMap(mapObj, authCode) {
     const cleanAuth = normalizeCodeServer(authCode);
-    const admin = isAdminCode(cleanAuth);
+    const admin = isAdminAccount;
     const todayStr = getTodayFormatted();
     const todayParts = todayStr.split('/');
     const todayNum = parseInt(todayParts[2] + todayParts[1] + todayParts[0], 10);
@@ -2600,8 +2618,13 @@
       const khachHangStr = String(item.khachHang || "").trim();
       if (!ngayStr && !congViecStr && !khachHangStr) return;
 
-      const ownerCode = normalizeCodeServer(item.maDangNhap || "ADMINLETAN");
-      if (!admin && ownerCode !== cleanAuth) return;
+      const ownerCode = normalizeCodeServer(item.maDangNhap || "");
+      const ownerHash = String(item.ownerHash || "").trim();
+      if (!admin) {
+        const matchByHash = ownerHash && currentAuthHash && ownerHash === currentAuthHash;
+        const matchByCode = ownerCode && ownerCode === cleanAuth;
+        if (!matchByHash && !matchByCode) return;
+      }
 
       let tinhTrangStr = String(item.tinhTrang || "Chờ").trim();
       if (tinhTrangStr === "Chờ" && ngayStr.includes('/')) {
@@ -2642,7 +2665,8 @@
         luuTruDaCoc: cCoc,
         luuTruChiPhi: cVal,
         loiNhuan: formatMoneyVn(lVal),
-        maDangNhap: ownerCode
+        maDangNhap: ownerCode || cleanAuth,
+        ownerHash: ownerHash
       });
     });
 
@@ -2670,67 +2694,131 @@
   async function firebaseApiHandler(action, args) {
     const dbUrl = getFirebaseDbUrl();
     if (!dbUrl || dbUrl.includes("DÁN_LINK_FIREBASE")) {
-      throw new Error("Chưa cấu hình Link Firebase Realtime Database!");
+      throw new Error("Chưa cấu hình hệ thống dữ liệu!");
     }
 
     const cleanAuth = normalizeCodeServer(currentAuthCode);
 
     if (action === "getAllJobsData") {
       if (!cleanAuth) throw new Error("Vui lòng nhập mã đăng nhập!");
+      if (Date.now() < loginLockoutUntil) {
+        const waitSec = Math.ceil((loginLockoutUntil - Date.now()) / 1000);
+        throw new Error(`Thao tác quá nhanh. Vui lòng thử lại sau ${waitSec} giây.`);
+      }
+
+      const codeHash = await computeCodeSha256(cleanAuth);
+      currentAuthHash = codeHash;
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 12000);
-      let jobsRes, catsRes, authCodesRes, legacyCatsRes;
+      let authEntry = null;
       try {
-        let adminCfgRes;
-        [jobsRes, catsRes, authCodesRes, legacyCatsRes, adminCfgRes] = await Promise.all([
-          fetch(dbUrl + "/jobs.json", { signal: controller.signal }),
-          fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(cleanAuth)}.json`, { signal: controller.signal }),
-          fetch(dbUrl + "/auth_codes.json", { signal: controller.signal }),
-          fetch(dbUrl + "/categories.json", { signal: controller.signal }),
-          fetch(dbUrl + "/system_config/admin_code.json", { signal: controller.signal })
-        ]);
-        if (adminCfgRes && adminCfgRes.ok) {
-          const remoteAdminCode = await adminCfgRes.json();
-          if (remoteAdminCode && typeof remoteAdminCode === "string" && remoteAdminCode.trim() !== "") {
-            currentAdminAuthCode = normalizeCodeServer(remoteAdminCode);
+        // Chỉ truy vấn đúng 1 node hash duy nhất của mã vừa nhập (không tải danh sách toàn bộ mã)
+        const hashRes = await fetch(`${dbUrl}/auth_hashes/${codeHash}.json`, { signal: controller.signal });
+        if (!hashRes.ok) {
+          throw new Error("Không thể xác thực truy cập (" + hashRes.status + ").");
+        }
+        authEntry = await hashRes.json();
+
+        // Tương thích ngược lần đầu nếu admin cũ chưa được hash sang /auth_hashes
+        if (!authEntry) {
+          const legacyRes = await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { signal: controller.signal });
+          const legacyEntry = legacyRes.ok ? (await legacyRes.json()) : null;
+          const legacyAdminRes = await fetch(`${dbUrl}/system_config/admin_code.json`, { signal: controller.signal });
+          const legacyAdminCode = legacyAdminRes.ok ? (await legacyAdminRes.json()) : null;
+
+          if (legacyAdminCode && normalizeCodeServer(legacyAdminCode) === cleanAuth) {
+            authEntry = {
+              role: "admin",
+              code: cleanAuth,
+              codeHash: codeHash,
+              displayName: (legacyEntry && (legacyEntry.displayName || legacyEntry.note)) || "Lê Tân",
+              status: "approved",
+              active: true,
+              createdAt: Date.now()
+            };
+            await fetch(`${dbUrl}/auth_hashes/${codeHash}.json`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(authEntry)
+            });
+          } else if (legacyEntry) {
+            authEntry = {
+              role: legacyEntry.isAdmin ? "admin" : "user",
+              code: cleanAuth,
+              codeHash: codeHash,
+              displayName: legacyEntry.displayName || legacyEntry.note || cleanAuth,
+              status: legacyEntry.status || "approved",
+              active: legacyEntry.active !== false,
+              createdAt: legacyEntry.createdAt || Date.now()
+            };
+            await fetch(`${dbUrl}/auth_hashes/${codeHash}.json`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(authEntry)
+            });
           }
         }
       } catch (fetchErr) {
         if (fetchErr && fetchErr.name === 'AbortError') {
-          throw new Error("Kết nối Firebase quá thời gian (12s). Vui lòng kiểm tra mạng hoặc link Database!");
+          throw new Error("Kết nối máy chủ quá thời gian (12s). Vui lòng kiểm tra mạng!");
         }
         throw fetchErr;
       } finally {
         clearTimeout(timeoutId);
       }
-      if (!jobsRes.ok) throw new Error("Không thể kết nối Firebase (" + jobsRes.status + "). Kiểm tra lại URL hoặc Rules!");
 
-      const authCodesData = (authCodesRes && authCodesRes.ok ? (await authCodesRes.json()) : null) || {};
-      authorizedCodesMap = authCodesData;
-
-      // Kiểm tra quyền truy cập: ADMINLETAN luôn được phép; các mã khác phải được ADMINLETAN duyệt
-      let resolvedDisplayName = "";
-      if (isAdminCode(cleanAuth)) {
-        const adminEntry = authorizedCodesMap[currentAdminAuthCode] || authorizedCodesMap["ADMINLETAN"] || {};
-        resolvedDisplayName = (adminEntry.displayName || adminEntry.note || "Lê Tân").trim();
-      } else {
-        const entry = authorizedCodesMap[cleanAuth];
-        if (!entry) {
-          throw new Error(`Mã "${cleanAuth}" chưa tồn tại hoặc chưa được ADMINLETAN cấp phép!`);
+      // Thông báo lỗi đồng nhất chống dò quét mã tồn tại hay không
+      if (!authEntry || authEntry.status === "pending" || authEntry.active === false || authEntry.status === "locked") {
+        failedLoginAttempts++;
+        if (failedLoginAttempts >= 5) {
+          loginLockoutUntil = Date.now() + Math.min(60000, failedLoginAttempts * 5000);
         }
-        if (entry.status === "pending") {
-          throw new Error(`Mã "${cleanAuth}" đang chờ ADMINLETAN phê duyệt!`);
-        }
-        if (entry.active === false || entry.status === "locked") {
-          throw new Error(`Mã "${cleanAuth}" đã bị tạm khóa bởi quản trị viên!`);
-        }
-        resolvedDisplayName = (entry.displayName || entry.note || cleanAuth).trim();
+        throw new Error("Mã đăng nhập không hợp lệ, chưa được duyệt hoặc đã bị khóa!");
       }
 
+      failedLoginAttempts = 0;
+      loginLockoutUntil = 0;
+      const isUserAdmin = (authEntry.role === "admin");
+      isAdminAccount = isUserAdmin;
+      const resolvedDisplayName = String(authEntry.displayName || authEntry.note || cleanAuth).trim();
+
+      // Cách ly dữ liệu ở tầng mạng: User thường CHỈ tải các job thuộc mã của chính mình, KHÔNG bao giờ tải toàn bộ /jobs.json
+      const jobsQueryUrl = isUserAdmin
+        ? `${dbUrl}/jobs.json`
+        : `${dbUrl}/jobs.json?orderBy="maDangNhap"&equalTo="${encodeURIComponent(cleanAuth)}"`;
+
+      const fetchPromises = [
+        fetch(jobsQueryUrl),
+        fetch(`${dbUrl}/categories_by_hash/${codeHash}.json`),
+        fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(cleanAuth)}.json`)
+      ];
+
+      if (isUserAdmin) {
+        fetchPromises.push(fetch(`${dbUrl}/auth_hashes.json`));
+        fetchPromises.push(fetch(`${dbUrl}/auth_requests.json`));
+      }
+
+      const responses = await Promise.all(fetchPromises);
+      const jobsRes = responses[0];
+      if (!jobsRes.ok) throw new Error("Lỗi tải dữ liệu công việc (" + jobsRes.status + ").");
+
       const jobsData = (await jobsRes.json()) || {};
-      let catsData = catsRes && catsRes.ok ? (await catsRes.json()) : null;
-      if (!catsData && isAdminCode(cleanAuth) && legacyCatsRes && legacyCatsRes.ok) {
-        catsData = await legacyCatsRes.json();
+      let catsData = responses[1] && responses[1].ok ? (await responses[1].json()) : null;
+      if (!catsData && responses[2] && responses[2].ok) {
+        catsData = await responses[2].json();
+      }
+
+      authorizedCodesMap = {};
+      pendingRequestsMap = {};
+      if (isUserAdmin) {
+        const allHashes = (responses[3] && responses[3].ok ? (await responses[3].json()) : null) || {};
+        Object.entries(allHashes).forEach(([hKey, val]) => {
+          if (val && val.code) {
+            authorizedCodesMap[normalizeCodeServer(val.code)] = { ...val, codeHash: hKey };
+          }
+        });
+        pendingRequestsMap = (responses[4] && responses[4].ok ? (await responses[4].json()) : null) || {};
       }
 
       firebaseJobsMap = jobsData;
@@ -2745,150 +2833,152 @@
       const regCode = normalizeCodeServer(args[0]);
       const regDisplay = String(args[1] || "").trim();
       if (!regCode || !regDisplay) throw new Error("Vui lòng nhập đầy đủ Mã đăng nhập và Tên hiển thị!");
-      if (isAdminCode(regCode)) throw new Error("Mã này đã tồn tại trong hệ thống!");
-
-      const checkRes = await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(regCode)}.json`);
-      const existing = checkRes.ok ? (await checkRes.json()) : null;
-      if (existing) {
-        if (existing.status === "pending") {
-          throw new Error(`Mã "${regCode}" đã được gửi yêu cầu và đang chờ ADMINLETAN duyệt!`);
-        }
-        throw new Error(`Mã "${regCode}" đã được đăng ký trước đó. Vui lòng chọn mã khác!`);
+      if (!/^[A-Z0-9_-]{3,24}$/.test(regCode)) {
+        throw new Error("Mã chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!");
       }
 
+      const regHash = await computeCodeSha256(regCode);
+      // Kiểm tra sự tồn tại bằng đúng 1 node hash (không đọc danh sách)
+      const checkRes = await fetch(`${dbUrl}/auth_hashes/${regHash}.json`);
+      const existing = checkRes.ok ? (await checkRes.json()) : null;
+      if (existing) {
+        throw new Error("Mã đăng nhập này không khả dụng. Vui lòng chọn một mã khác!");
+      }
+
+      // Ghi vào hàng đợi chỉ-ghi `/auth_requests/{randomId}` (không cho phép đọc danh sách từ client thường)
+      const reqId = "req_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
       const payload = {
+        reqId: reqId,
         code: regCode,
+        codeHash: regHash,
         displayName: regDisplay,
-        note: regDisplay,
         status: "pending",
-        active: false,
         createdAt: Date.now()
       };
-      await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(regCode)}.json`, {
+      const putRes = await fetch(`${dbUrl}/auth_requests/${reqId}.json`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+      if (!putRes.ok) throw new Error("Không thể gửi yêu cầu tạo mã lúc này.");
       return { success: true, code: regCode, displayName: regDisplay };
     }
 
     if (action === "saveAuthCodeAdmin") {
-      if (!isAdminCode(cleanAuth)) throw new Error("Chỉ ADMINLETAN mới có quyền quản lý mã đăng nhập!");
+      if (!isAdminAccount) throw new Error("Không có quyền thực hiện thao tác này!");
       const codeToSave = normalizeCodeServer(args[0]);
       const displayStr = String(args[1] || "").trim();
       const isActive = args[2] !== false;
+      const reqIdToDelete = args[3] || null;
       if (!codeToSave) throw new Error("Mã đăng nhập không hợp lệ!");
+
+      const targetHash = await computeCodeSha256(codeToSave);
       const prev = authorizedCodesMap[codeToSave] || {};
       const payload = {
+        role: isAdminCode(codeToSave) ? "admin" : "user",
         code: codeToSave,
+        codeHash: targetHash,
         displayName: displayStr || prev.displayName || prev.note || codeToSave,
-        note: displayStr || prev.note || codeToSave,
         status: isActive ? "approved" : "locked",
         active: isActive,
         createdAt: prev.createdAt || Date.now(),
         updatedAt: Date.now()
       };
-      await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(codeToSave)}.json`, {
+      await fetch(`${dbUrl}/auth_hashes/${targetHash}.json`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+      if (reqIdToDelete) {
+        await fetch(`${dbUrl}/auth_requests/${encodeURIComponent(reqIdToDelete)}.json`, { method: "DELETE" });
+        delete pendingRequestsMap[reqIdToDelete];
+      }
       authorizedCodesMap[codeToSave] = payload;
       return { success: true, authCodes: authorizedCodesMap };
     }
 
     if (action === "deleteAuthCodeAdmin") {
-      if (!isAdminCode(cleanAuth)) throw new Error("Chỉ ADMINLETAN mới có quyền xóa mã đăng nhập!");
+      if (!isAdminAccount) throw new Error("Không có quyền thực hiện thao tác này!");
       const codeToDel = normalizeCodeServer(args[0]);
+      const reqIdToDel = args[1] || null;
+      if (reqIdToDel) {
+        await fetch(`${dbUrl}/auth_requests/${encodeURIComponent(reqIdToDel)}.json`, { method: "DELETE" });
+        delete pendingRequestsMap[reqIdToDel];
+        return { success: true, authCodes: authorizedCodesMap };
+      }
       if (!codeToDel || isAdminCode(codeToDel)) throw new Error("Không thể xóa mã quản trị!");
-      await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(codeToDel)}.json`, { method: "DELETE" });
+      const delHash = await computeCodeSha256(codeToDel);
+      await fetch(`${dbUrl}/auth_hashes/${delHash}.json`, { method: "DELETE" });
       delete authorizedCodesMap[codeToDel];
       return { success: true, authCodes: authorizedCodesMap };
     }
 
     if (action === "selfUpdateAuthAccount") {
-      if (!cleanAuth) throw new Error("Chưa đăng nhập!");
+      if (!cleanAuth || !currentAuthHash) throw new Error("Chưa đăng nhập!");
       const newDisplay = String(args[0] || "").trim();
       const requestedNewCode = normalizeCodeServer(args[1]);
       if (!newDisplay) throw new Error("Tên hiển thị không được để trống!");
 
-      const wasAdmin = isAdminCode(cleanAuth);
       const targetCode = requestedNewCode || cleanAuth;
       if (!/^[A-Z0-9_-]{3,24}$/.test(targetCode)) {
         throw new Error("Mã đăng nhập chỉ gồm chữ không dấu, số, gạch ngang (3-24 ký tự)!");
       }
 
+      const newHash = await computeCodeSha256(targetCode);
+
       if (targetCode !== cleanAuth) {
-        if (authorizedCodesMap[targetCode]) {
-          throw new Error(`Mã "${targetCode}" đã được sử dụng. Vui lòng chọn mã khác!`);
-        }
-        if (wasAdmin) {
-          // Cập nhật mã Admin mới lên Firebase /system_config/admin_code
-          await fetch(`${dbUrl}/system_config/admin_code.json`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(targetCode)
-          });
-          currentAdminAuthCode = targetCode;
-          const oldAdminEntry = authorizedCodesMap[cleanAuth] || authorizedCodesMap["ADMINLETAN"] || {};
-          const newAdminEntry = {
-            code: targetCode,
-            displayName: newDisplay,
-            note: newDisplay,
-            status: "approved",
-            active: true,
-            isAdmin: true,
-            createdAt: oldAdminEntry.createdAt || Date.now(),
-            updatedAt: Date.now()
-          };
-          await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(targetCode)}.json`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newAdminEntry)
-          });
-          if (authorizedCodesMap[cleanAuth]) {
-            await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" });
-            delete authorizedCodesMap[cleanAuth];
-          }
-          authorizedCodesMap[targetCode] = newAdminEntry;
-        } else {
-          const oldEntry = authorizedCodesMap[cleanAuth] || {};
-          const newEntry = {
-            code: targetCode,
-            displayName: newDisplay,
-            note: newDisplay,
-            status: "approved",
-            active: true,
-            createdAt: oldEntry.createdAt || Date.now(),
-            updatedAt: Date.now()
-          };
-
-          // 1. Tạo bản ghi mã mới và xóa mã cũ trong auth_codes
-          await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(targetCode)}.json`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newEntry)
-          });
-          await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" });
-          delete authorizedCodesMap[cleanAuth];
-          authorizedCodesMap[targetCode] = newEntry;
+        const checkNewRes = await fetch(`${dbUrl}/auth_hashes/${newHash}.json`);
+        const existNew = checkNewRes.ok ? (await checkNewRes.json()) : null;
+        if (existNew) {
+          throw new Error("Mã đăng nhập này không khả dụng. Vui lòng chọn mã khác!");
         }
 
-        // 2. Di chuyển danh mục riêng sang mã mới
+        const oldEntry = authorizedCodesMap[cleanAuth] || {};
+        const newEntry = {
+          role: isAdminAccount ? "admin" : "user",
+          code: targetCode,
+          codeHash: newHash,
+          displayName: newDisplay,
+          status: "approved",
+          active: true,
+          createdAt: oldEntry.createdAt || Date.now(),
+          updatedAt: Date.now()
+        };
+
+        // 1. Ghi node hash mới và xóa node hash cũ
+        await fetch(`${dbUrl}/auth_hashes/${newHash}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEntry)
+        });
+        await fetch(`${dbUrl}/auth_hashes/${currentAuthHash}.json`, { method: "DELETE" });
+
+        // Xóa dữ liệu legacy nếu còn tồn tại
+        fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" }).catch(() => {});
+        if (isAdminAccount) {
+          fetch(`${dbUrl}/system_config/admin_code.json`, { method: "DELETE" }).catch(() => {});
+        }
+
+        delete authorizedCodesMap[cleanAuth];
+        authorizedCodesMap[targetCode] = newEntry;
+
+        // 2. Di chuyển danh mục riêng sang hash mới
         const catsPayload = { jobTypes, customerList, executorList, statusList };
-        await fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(targetCode)}.json`, {
+        await fetch(`${dbUrl}/categories_by_hash/${newHash}.json`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(catsPayload)
         });
-        await fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(cleanAuth)}.json`, { method: "DELETE" });
+        await fetch(`${dbUrl}/categories_by_hash/${currentAuthHash}.json`, { method: "DELETE" });
 
-        // 3. Cập nhật maDangNhap của tất cả công việc thuộc mã cũ sang mã mới
+        // 3. Cập nhật maDangNhap và ownerHash của tất cả công việc thuộc mã cũ sang mã mới
         const patchObj = {};
         Object.entries(firebaseJobsMap).forEach(([k, v]) => {
-          if (v && normalizeCodeServer(v.maDangNhap) === cleanAuth) {
+          if (v && (normalizeCodeServer(v.maDangNhap) === cleanAuth || v.ownerHash === currentAuthHash)) {
             v.maDangNhap = targetCode;
+            v.ownerHash = newHash;
             patchObj[`${k}/maDangNhap`] = targetCode;
+            patchObj[`${k}/ownerHash`] = newHash;
           }
         });
         if (Object.keys(patchObj).length > 0) {
@@ -2898,18 +2988,20 @@
             body: JSON.stringify(patchObj)
           });
         }
+        currentAuthHash = newHash;
       } else {
         const prev = authorizedCodesMap[cleanAuth] || {};
         const updatedEntry = {
+          role: isAdminAccount ? "admin" : "user",
           code: cleanAuth,
+          codeHash: currentAuthHash,
           displayName: newDisplay,
-          note: newDisplay,
           status: "approved",
           active: true,
           createdAt: prev.createdAt || Date.now(),
           updatedAt: Date.now()
         };
-        await fetch(`${dbUrl}/auth_codes/${encodeURIComponent(cleanAuth)}.json`, {
+        await fetch(`${dbUrl}/auth_hashes/${currentAuthHash}.json`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updatedEntry)
@@ -2947,9 +3039,10 @@
         }
       }
 
-      const ownerCode = isAdminCode(cleanAuth)
-        ? (normalizeCodeServer(form.maDangNhap) || (existingItem && existingItem.maDangNhap) || "ADMINLETAN")
+      const ownerCode = isAdminAccount
+        ? (normalizeCodeServer(form.maDangNhap) || (existingItem && existingItem.maDangNhap) || cleanAuth)
         : ((existingItem && existingItem.maDangNhap) || cleanAuth);
+      const ownerHash = await computeCodeSha256(ownerCode);
 
       const newRowNum = existingItem ? Number(existingItem.rowNumber) : (Date.now());
       const payload = {
@@ -2967,7 +3060,8 @@
         luuTruDaCoc: cCoc,
         luuTruChiPhi: cVal,
         ttChiPhi: existingItem ? (existingItem.ttChiPhi || "Chưa trả") : "Chưa trả",
-        maDangNhap: ownerCode
+        maDangNhap: ownerCode,
+        ownerHash: ownerHash
       };
 
       if (existingKey) {
@@ -3050,9 +3144,9 @@
     }
 
     if (action === "saveCategoriesToSheet") {
-      if (!cleanAuth) return { success: false };
+      if (!cleanAuth || !currentAuthHash) return { success: false };
       const cats = args[0];
-      await fetch(`${dbUrl}/categories_by_code/${encodeURIComponent(cleanAuth)}.json`, {
+      await fetch(`${dbUrl}/categories_by_hash/${currentAuthHash}.json`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cats)
@@ -4055,8 +4149,15 @@
         if (btnExportBackup) btnExportBackup.classList.toggle('d-none', !isAdminAccount);
         const filterAuthSelect = document.getElementById('filterAuthCodeTable');
         if (filterAuthSelect) filterAuthSelect.classList.toggle('d-none', !isAdminAccount);
+        const filterCalAuthSelect = document.getElementById('filterAuthCodeCalendar');
+        if (filterCalAuthSelect) filterCalAuthSelect.classList.toggle('d-none', !isAdminAccount);
 
-        // Tự động hiển thị cột Mã ĐN nếu là ADMINLETAN để dễ tổng hợp công việc các mã khác
+        if (isAdminAccount) {
+          populateAdminAuthFilterDropdowns(!adminDefaultFilterInitialized);
+          adminDefaultFilterInitialized = true;
+        }
+
+        // Tự động hiển thị cột Mã ĐN nếu là Admin để dễ tổng hợp công việc các mã khác
         const maDnCol = tableColumns.find(c => c.id === 'maDangNhap');
         if (maDnCol && isAdminAccount && localStorage.getItem('pref_table_col_vis_v2') === null) {
           maDnCol.visible = true;
@@ -4146,7 +4247,13 @@
       let dateIso = `${year}-${mStr}-${dStr}`;
       let dateFormatted = `${dStr}/${mStr}/${year}`;
 
-      let dayJobs = allJobs.filter(j => j.ngay === dateFormatted && (j.congViec.trim() !== '' || j.khachHang.trim() !== ''));
+      const calAuthSel = document.getElementById('filterAuthCodeCalendar');
+      const selectedCalAuth = (isAdminAccount && calAuthSel) ? calAuthSel.value : '';
+      let dayJobs = allJobs.filter(j => {
+        if (j.ngay !== dateFormatted || (j.congViec.trim() === '' && j.khachHang.trim() === '')) return false;
+        if (selectedCalAuth && normalizeCodeServer(j.maDangNhap || '') !== selectedCalAuth) return false;
+        return true;
+      });
       let hasEvent = dayJobs.length > 0;
       let isAllDone = hasEvent && dayJobs.every(j => String(j.tinhTrang || '').trim() === 'Xong');
       let isToday = (dateIso === todayIso);
@@ -4200,9 +4307,12 @@
     document.getElementById('selectedDateHeader').innerText = `${weekdayNames[dateObj.getDay()]}, ${dNum} tháng ${Number(parts[1])} (${lunarStr})`;
 
     const filterText = document.getElementById('filterCustomerInput').value.toLowerCase();
+    const calAuthSel = document.getElementById('filterAuthCodeCalendar');
+    const selectedCalAuth = (isAdminAccount && calAuthSel) ? calAuthSel.value : '';
     
     const dayJobs = allJobs.filter(j => {
       if (j.ngay !== formatted || (j.congViec.trim() === '' && j.khachHang.trim() === '')) return false;
+      if (selectedCalAuth && normalizeCodeServer(j.maDangNhap || '') !== selectedCalAuth) return false;
       if (filterText && !j.khachHang.toLowerCase().includes(filterText) && !j.congViec.toLowerCase().includes(filterText)) return false;
       return true;
     }).sort(compareJobsChronologically);
@@ -4848,6 +4958,44 @@
       .batchUpdateCostStatus(targetRows, newCostStatus);
   }
 
+  function populateAdminAuthFilterDropdowns(applyDefaultOwnCode = false) {
+    if (!isAdminAccount) return;
+    const ownCode = normalizeCodeServer(currentAuthCode);
+    const codeSet = new Set([ownCode]);
+    Object.keys(authorizedCodesMap || {}).forEach(c => codeSet.add(normalizeCodeServer(c)));
+    allJobs.forEach(j => { if (j.maDangNhap) codeSet.add(normalizeCodeServer(j.maDangNhap)); });
+    const sortedCodes = Array.from(codeSet).filter(Boolean).sort();
+
+    const calSel = document.getElementById('filterAuthCodeCalendar');
+    const tblSel = document.getElementById('filterAuthCodeTable');
+    const prevCalVal = applyDefaultOwnCode ? ownCode : (calSel ? calSel.value : ownCode);
+    const prevTblVal = applyDefaultOwnCode ? ownCode : (tblSel ? tblSel.value : ownCode);
+
+    const buildOpts = (selectedVal) => {
+      let opts = `<option value="">🔑 Tất cả Mã ĐN (${sortedCodes.length})</option>`;
+      sortedCodes.forEach(c => {
+        const dName = authorizedCodesMap[c] ? (authorizedCodesMap[c].displayName || authorizedCodesMap[c].note || '') : '';
+        const note = dName ? ` - ${dName}` : '';
+        opts += `<option value="${c}" ${c === selectedVal ? 'selected' : ''}>${c}${note}</option>`;
+      });
+      return opts;
+    };
+
+    if (calSel) {
+      calSel.innerHTML = buildOpts(prevCalVal);
+      if (applyDefaultOwnCode) calSel.value = ownCode;
+    }
+    if (tblSel) {
+      tblSel.innerHTML = buildOpts(prevTblVal);
+      if (applyDefaultOwnCode) tblSel.value = ownCode;
+    }
+  }
+
+  function onCalendarAuthFilterChange() {
+    renderCalendar();
+    renderSelectedDayJobs();
+  }
+
   function renderMasterTable() {
     const keyword = document.getElementById('searchTableInput').value.toLowerCase().trim();
     const monthSelectEl = document.getElementById('filterMonthTable');
@@ -4856,17 +5004,7 @@
     let selectedAuthCodeFilter = (isAdminAccount && authCodeSelectEl) ? authCodeSelectEl.value : '';
 
     if (isAdminAccount && authCodeSelectEl) {
-      const codeSet = new Set([normalizeCodeServer(currentAdminAuthCode)]);
-      Object.keys(authorizedCodesMap || {}).forEach(c => codeSet.add(normalizeCodeServer(c)));
-      allJobs.forEach(j => { if (j.maDangNhap) codeSet.add(normalizeCodeServer(j.maDangNhap)); });
-      const sortedCodes = Array.from(codeSet).sort();
-      let authOptsHtml = `<option value="">🔑 Tất cả Mã ĐN (${sortedCodes.length})</option>`;
-      sortedCodes.forEach(c => {
-        const dName = authorizedCodesMap[c] ? (authorizedCodesMap[c].displayName || authorizedCodesMap[c].note || '') : '';
-        const note = dName ? ` - ${dName}` : '';
-        authOptsHtml += `<option value="${c}" ${c === selectedAuthCodeFilter ? 'selected' : ''}>${c}${note}</option>`;
-      });
-      authCodeSelectEl.innerHTML = authOptsHtml;
+      populateAdminAuthFilterDropdowns(false);
     }
 
     const selectedJobType = filterJobTypeVal;
@@ -4919,7 +5057,7 @@
         if (hasTime && hasAddr) return false;
       }
       if (selectedAuthCodeFilter) {
-        if (normalizeCodeServer(j.maDangNhap || 'ADMINLETAN') !== selectedAuthCodeFilter) return false;
+        if (normalizeCodeServer(j.maDangNhap || '') !== selectedAuthCodeFilter) return false;
       }
       if (selectedMonth) {
         let p = j.ngay.split('/');
@@ -5256,7 +5394,7 @@
           } else if (col.id === 'ttChiPhi') {
             html += `<td class="text-center"><input type="checkbox" class="cost-checkbox" ${j.ttChiPhi === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)" title="Tích chọn nếu đã thanh toán chi phí"></td>`;
           } else if (col.id === 'maDangNhap') {
-            html += `<td class="text-center"><span class="badge bg-dark bg-opacity-10 text-dark border">${j.maDangNhap || 'ADMINLETAN'}</span></td>`;
+            html += `<td class="text-center"><span class="badge bg-dark bg-opacity-10 text-dark border">${j.maDangNhap || ''}</span></td>`;
           }
         });
         html += `</tr>`;
@@ -5380,7 +5518,7 @@
                   <input type="checkbox" class="cost-checkbox m-0" ${j.ttChiPhi === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)">
                   <span>TT Chi phí (${j.ttChiPhi === 'Đã trả' ? 'Đã trả' : 'Chưa trả'})</span>
                 </label>
-                ${isAdminAccount ? `<span class="badge bg-light text-secondary border">Mã: ${j.maDangNhap || 'ADMINLETAN'}</span>` : ''}
+                ${isAdminAccount ? `<span class="badge bg-light text-secondary border">Mã: ${j.maDangNhap || ''}</span>` : ''}
               </div>
             </div>`;
         }
@@ -5409,7 +5547,13 @@
     document.getElementById('formRowNumber').value = '';
     document.getElementById('formChiTiet').value = '';
     const maDnInput = document.getElementById('formMaDangNhap');
-    if (maDnInput) maDnInput.value = currentAuthCode;
+    if (maDnInput) {
+      const isTabLichActive = !document.getElementById('tabLich').classList.contains('d-none');
+      const activeAuthFilter = isTabLichActive
+        ? (document.getElementById('filterAuthCodeCalendar')?.value || '')
+        : (document.getElementById('filterAuthCodeTable')?.value || '');
+      maDnInput.value = activeAuthFilter || currentAuthCode;
+    }
     document.getElementById('formThoiGian').value = '';
     document.getElementById('formDiaChi').value = '';
     document.getElementById('formGhiChu').value = '';
@@ -5432,7 +5576,7 @@
     document.getElementById('formRowNumber').value = j.rowNumber;
     document.getElementById('formNgay').value = toInputDate(j.ngay);
     const maDnInput = document.getElementById('formMaDangNhap');
-    if (maDnInput) maDnInput.value = j.maDangNhap || 'ADMINLETAN';
+    if (maDnInput) maDnInput.value = j.maDangNhap || '';
     document.getElementById('formChiTiet').value = j.chiTiet || '';
     document.getElementById('formThoiGian').value = parsedDetail.thoiGian || '';
     document.getElementById('formDiaChi').value = parsedDetail.diaChi || '';
@@ -5845,7 +5989,7 @@
 
   function openManageAuthCodesModal() {
     if (!isAdminAccount) {
-      showToast('Chỉ ADMINLETAN mới có quyền này!', true);
+      showToast('Chỉ Quản trị viên mới có quyền này!', true);
       return;
     }
     renderAuthCodesList();
@@ -5858,7 +6002,7 @@
     document.getElementById('loginRegisterForm').classList.toggle('d-none', !isReg);
     document.getElementById('loginCardTitle').innerText = isReg ? 'Đăng Ký Mã Mới' : 'Xác Thực Truy Cập';
     document.getElementById('loginCardSubtitle').innerText = isReg
-      ? 'Tạo mã đăng nhập và tên hiển thị (sẽ gửi tới ADMINLETAN phê duyệt)'
+      ? 'Tạo mã đăng nhập và tên hiển thị (sẽ gửi tới Quản trị viên phê duyệt)'
       : 'Nhập mã đăng nhập của bạn để truy cập lịch làm việc';
     const banner = document.getElementById('regStatusBanner');
     if (banner) banner.classList.add('d-none');
@@ -5992,29 +6136,38 @@
     if (!container) return;
 
     const allNonAdminCodes = Object.keys(authorizedCodesMap || {}).filter(c => !isAdminCode(c)).sort();
-    const pendingCodes = allNonAdminCodes.filter(c => authorizedCodesMap[c] && authorizedCodesMap[c].status === 'pending');
+    const pendingList = [];
+    Object.entries(pendingRequestsMap || {}).forEach(([reqId, req]) => {
+      if (req && req.code && !authorizedCodesMap[normalizeCodeServer(req.code)]) {
+        pendingList.push({ reqId: reqId, code: normalizeCodeServer(req.code), displayName: req.displayName || req.code });
+      }
+    });
+    allNonAdminCodes.forEach(c => {
+      if (authorizedCodesMap[c] && authorizedCodesMap[c].status === 'pending') {
+        pendingList.push({ reqId: null, code: c, displayName: authorizedCodesMap[c].displayName || authorizedCodesMap[c].note || c });
+      }
+    });
     const approvedCodes = allNonAdminCodes.filter(c => !authorizedCodesMap[c] || authorizedCodesMap[c].status !== 'pending');
 
     if (pendingSection && pendingContainer) {
-      if (pendingCodes.length > 0) {
+      if (pendingList.length > 0) {
         pendingSection.classList.remove('d-none');
-        if (pendingCountEl) pendingCountEl.innerText = pendingCodes.length;
+        if (pendingCountEl) pendingCountEl.innerText = pendingList.length;
         let pHtml = '';
-        pendingCodes.forEach(code => {
-          const info = authorizedCodesMap[code] || {};
-          const dName = info.displayName || info.note || code;
+        pendingList.forEach(item => {
+          const reqArg = item.reqId ? `'${escapeJsQuotes(item.reqId)}'` : 'null';
           pHtml += `
             <div class="catalog-item-row" style="border-color: #fcd34d;">
               <div>
                 <div class="d-flex align-items-center gap-1.5">
-                  <span class="fw-bold text-dark" style="font-size: 13.5px;">${code}</span>
+                  <span class="fw-bold text-dark" style="font-size: 13.5px;">${item.code}</span>
                   <span class="badge bg-warning text-dark" style="font-size: 10px;">Chờ duyệt</span>
                 </div>
-                <div class="small text-secondary fw-semibold">Tên: ${dName}</div>
+                <div class="small text-secondary fw-semibold">Tên: ${item.displayName}</div>
               </div>
               <div class="d-flex gap-1.5">
-                <button type="button" class="btn btn-success btn-sm py-1 px-2.5 fw-bold" style="font-size: 11px;" onclick="approvePendingAuthCode('${code}')">✓ Duyệt</button>
-                <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px;" onclick="removeAuthorizedCode('${code}')">Từ chối</button>
+                <button type="button" class="btn btn-success btn-sm py-1 px-2.5 fw-bold" style="font-size: 11px;" onclick="approvePendingAuthCode('${escapeJsQuotes(item.code)}', ${reqArg})">✓ Duyệt</button>
+                <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px;" onclick="removeAuthorizedCode('${escapeJsQuotes(item.code)}', ${reqArg})">Từ chối</button>
               </div>
             </div>
           `;
@@ -6025,9 +6178,9 @@
       }
     }
 
-    const adminCodeLabel = normalizeCodeServer(currentAdminAuthCode);
-    const adminInfo = authorizedCodesMap[adminCodeLabel] || authorizedCodesMap["ADMINLETAN"] || {};
-    const adminName = adminInfo.displayName || adminInfo.note || "Lê Tân";
+    const adminCodeLabel = normalizeCodeServer(currentAuthCode);
+    const adminInfo = authorizedCodesMap[adminCodeLabel] || {};
+    const adminName = adminInfo.displayName || currentDisplayName || "Quản trị viên";
     let html = `
       <div class="catalog-item-row" style="background: #fff1f2; border-color: #fecdd3;">
         <div>
@@ -6068,20 +6221,21 @@
     container.innerHTML = html;
   }
 
-  function approvePendingAuthCode(code) {
-    const info = authorizedCodesMap[code] || {};
-    const dName = info.displayName || info.note || code;
+  function approvePendingAuthCode(code, reqId = null) {
+    const reqObj = reqId && pendingRequestsMap[reqId] ? pendingRequestsMap[reqId] : (authorizedCodesMap[code] || {});
+    const dName = reqObj.displayName || reqObj.note || code;
     google.script.run
       .withSuccessHandler(function(res) {
         if (res && res.authCodes) authorizedCodesMap = res.authCodes;
         renderAuthCodesList();
+        populateAdminAuthFilterDropdowns(false);
         renderMasterTable();
         showToast(`Đã duyệt mã "${code}" (${dName})`);
       })
       .withFailureHandler(function(err) {
         showToast('Lỗi duyệt mã: ' + (err.message || err), true);
       })
-      .saveAuthCodeAdmin(code, dName, true);
+      .saveAuthCodeAdmin(code, dName, true, reqId);
   }
 
   function addAuthorizedCode() {
@@ -6135,19 +6289,23 @@
       .saveAuthCodeAdmin(code, info.displayName || info.note || code, nextState);
   }
 
-  function removeAuthorizedCode(code) {
-    showConfirmDialog(`Xóa quyền truy cập của mã "${code}"? (Dữ liệu công việc đã tạo vẫn được giữ lại)`, () => {
+  function removeAuthorizedCode(code, reqId = null) {
+    const promptMsg = reqId
+      ? `Từ chối và xóa yêu cầu tạo mã "${code}"?`
+      : `Xóa quyền truy cập của mã "${code}"? (Dữ liệu công việc đã tạo vẫn được giữ lại)`;
+    showConfirmDialog(promptMsg, () => {
       google.script.run
         .withSuccessHandler(function(res) {
           if (res && res.authCodes) authorizedCodesMap = res.authCodes;
           renderAuthCodesList();
+          populateAdminAuthFilterDropdowns(false);
           renderMasterTable();
-          showToast(`Đã xóa mã "${code}"`);
+          showToast(reqId ? `Đã từ chối yêu cầu "${code}"` : `Đã xóa mã "${code}"`);
         })
         .withFailureHandler(function(err) {
-          showToast('Lỗi xóa mã', true);
+          showToast('Lỗi thao tác mã', true);
         })
-        .deleteAuthCodeAdmin(code);
+        .deleteAuthCodeAdmin(code, reqId);
     });
   }
 
@@ -6164,14 +6322,27 @@
 
   function logoutCode() {
     currentAuthCode = "";
+    currentAuthHash = "";
     currentDisplayName = "";
     isAdminAccount = false;
+    adminDefaultFilterInitialized = false;
     allJobs = [];
+    firebaseJobsMap = {};
+    authorizedCodesMap = {};
+    pendingRequestsMap = {};
+    if (firebaseEventSource) {
+      try { firebaseEventSource.close(); } catch (e) {}
+      firebaseEventSource = null;
+    }
     resetCategoriesToDefault();
     const btnBackup = document.getElementById('btnMenuExportBackup');
     if (btnBackup) btnBackup.classList.add('d-none');
     const btnManageAuth = document.getElementById('btnMenuManageAuthCodes');
     if (btnManageAuth) btnManageAuth.classList.add('d-none');
+    const calAuthSel = document.getElementById('filterAuthCodeCalendar');
+    if (calAuthSel) { calAuthSel.value = ''; calAuthSel.classList.add('d-none'); }
+    const tblAuthSel = document.getElementById('filterAuthCodeTable');
+    if (tblAuthSel) { tblAuthSel.value = ''; tblAuthSel.classList.add('d-none'); }
     try { localStorage.removeItem('letan_saved_auth_code'); } catch (e) {}
     document.getElementById('loginCodeInput').value = '';
     updateCalendarPageTitle();
@@ -6205,7 +6376,11 @@
     if (!dbUrl || dbUrl.includes("DÁN_LINK_FIREBASE")) return;
 
     try {
-      firebaseEventSource = new EventSource(dbUrl + "/jobs.json");
+      const cleanAuth = normalizeCodeServer(currentAuthCode);
+      const streamUrl = isAdminAccount
+        ? `${dbUrl}/jobs.json`
+        : `${dbUrl}/jobs.json?orderBy="maDangNhap"&equalTo="${encodeURIComponent(cleanAuth)}"`;
+      firebaseEventSource = new EventSource(streamUrl);
       const applyStreamUpdate = function(e) {
         if (!currentAuthCode || noteAutoSaveTimer || !e.data) return;
         try {
