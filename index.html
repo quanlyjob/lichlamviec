@@ -1840,10 +1840,7 @@
     <div class="login-logo">LT</div>
     <h5 class="fw-bold text-dark mb-1">Xác Thực Truy Cập</h5>
     <p class="text-muted small mb-3">Nhập mã đăng nhập của bạn để trích xuất dữ liệu lịch làm việc từ hệ thống</p>
-    <div class="mb-2.5 text-start">
-      <label class="form-label small fw-bold text-secondary mb-1">Link Firebase Realtime Database:</label>
-      <input type="url" id="loginFirebaseUrlInput" class="form-control form-control-sm" placeholder="https://ten-du-an.firebaseio.com" style="font-size: 12px; border-radius: 10px;">
-    </div>
+
     <div class="mb-3 text-start">
       <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập:</label>
       <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mã truy cập..." style="letter-spacing: 1.5px; height: 42px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitLoginCode()">
@@ -3588,8 +3585,8 @@
     renderMasterTable();
   }
 
-  const DEFAULT_JOB_TYPES = ["Chụp PSC", "Quay PSC", "Chụp SK", "Quay SK", "Ăn hỏi", "Khác"];
-  const DEFAULT_CUSTOMER_LIST = ["Khách lẻ"];
+  const DEFAULT_JOB_TYPES = [];
+  const DEFAULT_CUSTOMER_LIST = [];
   const DEFAULT_EXECUTOR_LIST = [];
   const DEFAULT_STATUS_LIST = ["Chờ", "Chưa thực hiện", "Chưa TT", "Đã TT", "Xong"];
 
@@ -3840,15 +3837,8 @@
             localStorage.setItem('pref_status_list' + sfx, JSON.stringify(statusList));
           } catch(e) {}
         } else {
-          // Chỉ trích xuất danh mục từ các công việc thuộc chính mã đăng nhập hiện tại
-          const ownJobs = allJobs.filter(j => normalizeCodeServer(j.maDangNhap || "ADMINLETAN") === normalizeCodeServer(currentAuthCode));
-          ownJobs.forEach(j => {
-            if (j.congViec && !jobTypes.includes(j.congViec.trim())) jobTypes.push(j.congViec.trim());
-            if (j.khachHang && !customerList.includes(j.khachHang.trim())) customerList.push(j.khachHang.trim());
-            if (j.nguoiThucHien && !executorList.includes(j.nguoiThucHien.trim())) executorList.push(j.nguoiThucHien.trim());
-            if (j.tinhTrang && !statusList.includes(j.tinhTrang.trim())) statusList.push(j.tinhTrang.trim());
-          });
-          saveCategoriesPrefs();
+          // Giữ nguyên danh mục đã lưu cục bộ của mã hiện tại (chỉ gồm các mục thêm từ Quản lý danh mục)
+          loadCategoriesPrefs();
         }
 
         renderCalendar();
@@ -4420,15 +4410,19 @@
     else if (catKey === 'statusList') list = statusList;
     
     let html = '';
-    list.forEach((item, idx) => {
-      html += `<div class="catalog-item-row">
-        <span class="fw-semibold text-dark" style="font-size: 13.5px;">${item}</span>
-        <div class="d-flex gap-1.5">
-          <button class="btn btn-outline-secondary btn-sm py-1 px-2.5" style="font-size:11.5px; border-radius: 7px;" onclick="renameCatalogItem('${catKey}', ${idx})">Sửa</button>
-          ${list.length > 1 ? `<button class="btn btn-outline-danger btn-sm py-1 px-2.5" style="font-size:11.5px; border-radius: 7px;" onclick="deleteCatalogItem('${catKey}', ${idx})">Xóa</button>` : ''}
-        </div>
-      </div>`;
-    });
+    if (list.length === 0) {
+      html = `<div class="text-center text-muted small py-3">Chưa có mục mặc định nào. Hãy nhập tên ở trên và bấm <strong>+ Thêm</strong> để lưu làm mặc định.</div>`;
+    } else {
+      list.forEach((item, idx) => {
+        html += `<div class="catalog-item-row">
+          <span class="fw-semibold text-dark" style="font-size: 13.5px;">${item}</span>
+          <div class="d-flex gap-1.5">
+            <button class="btn btn-outline-secondary btn-sm py-1 px-2.5" style="font-size:11.5px; border-radius: 7px;" onclick="renameCatalogItem('${catKey}', ${idx})">Sửa</button>
+            <button class="btn btn-outline-danger btn-sm py-1 px-2.5" style="font-size:11.5px; border-radius: 7px;" onclick="deleteCatalogItem('${catKey}', ${idx})">Xóa</button>
+          </div>
+        </div>`;
+      });
+    }
     document.getElementById('catalogItemsContainer').innerHTML = html;
   }
 
@@ -5237,26 +5231,12 @@
     btn.disabled = true; btn.innerText = 'Đang lưu...';
 
     const formData = Object.fromEntries(new FormData(formEl).entries());
-    let catsChanged = false;
     const cleanJob = capitalizeFirstLetter(formData.congViec || '');
     const cleanCust = capitalizeAllWords(formData.khachHang || '');
     const cleanExec = capitalizeAllWords(formData.nguoiThucHien || '');
     formData.congViec = cleanJob;
     formData.khachHang = cleanCust;
     formData.nguoiThucHien = cleanExec;
-    if (cleanJob && !jobTypes.some(x => x.toLowerCase() === cleanJob.toLowerCase())) {
-      jobTypes.push(cleanJob);
-      catsChanged = true;
-    }
-    if (cleanCust && !customerList.some(x => x.toLowerCase() === cleanCust.toLowerCase())) {
-      customerList.unshift(cleanCust);
-      catsChanged = true;
-    }
-    if (cleanExec && !executorList.some(x => x.toLowerCase() === cleanExec.toLowerCase())) {
-      executorList.push(cleanExec);
-      catsChanged = true;
-    }
-    if (catsChanged) saveCategoriesPrefs();
     google.script.run
       .withSuccessHandler(function(res) {
         allJobs = res.jobs || [];
@@ -5572,15 +5552,9 @@
   }
 
   function submitLoginCode() {
-    const urlInp = document.getElementById('loginFirebaseUrlInput');
-    if (urlInp && urlInp.value.trim()) {
-      const cleanUrl = urlInp.value.trim().replace(/\/+$/, '');
-      try { localStorage.setItem('letan_firebase_db_url', cleanUrl); } catch (e) {}
-    }
     const dbUrl = getFirebaseDbUrl();
     if (!dbUrl || dbUrl.includes("DÁN_LINK_FIREBASE")) {
-      showToast('Vui lòng dán Link Firebase Database!', true);
-      if (urlInp) urlInp.focus();
+      showToast('Lỗi cấu hình hệ thống Database!', true);
       return;
     }
 
@@ -5846,9 +5820,7 @@
     if (window.lucide) lucide.createIcons();
 
     try {
-      const urlInp = document.getElementById('loginFirebaseUrlInput');
-      const curDbUrl = getFirebaseDbUrl();
-      if (urlInp && !curDbUrl.includes("DÁN_LINK_FIREBASE")) urlInp.value = curDbUrl;
+
       const savedCode = localStorage.getItem('letan_saved_auth_code');
       if (savedCode && savedCode.trim() !== '') {
         currentAuthCode = savedCode.trim().toUpperCase();
