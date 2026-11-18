@@ -2073,7 +2073,7 @@
   </button>
   <div class="fixed-dropdown-menu" id="assistiveMenu">
     <div class="menu-header-info">
-      <span class="menu-brand-title">Lịch LETAN</span>
+      <span class="menu-brand-title">Lịch làm việc</span>
       <span class="menu-auth-tag" id="menuAuthCodeBadge">USER</span>
     </div>
 
@@ -2521,6 +2521,37 @@
   </div>
 </div>
 
+<!-- Modal Admin Sửa Tài Khoản & Mã Đăng Nhập -->
+<div class="modal fade" id="adminEditAuthModal" tabindex="-1" style="z-index: 100001;">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title">Sửa Tài Khoản & Mã ĐN</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="adminEditOldCodeInput">
+        <div class="mb-2.5">
+          <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị:</label>
+          <input type="text" id="adminEditDisplayNameInput" class="form-control fw-semibold" placeholder="Nhập tên hiển thị...">
+        </div>
+        <div class="mb-2">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label small fw-bold text-secondary mb-0">Mã đăng nhập:</label>
+            <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleAdminEditCodeLink" onclick="toggleShowInputPass('adminEditNewCodeInput', 'toggleAdminEditCodeLink')">🙈 Ẩn mã</a>
+          </div>
+          <input type="text" id="adminEditNewCodeInput" class="form-control fw-bold" placeholder="Nhập mã mới..." autocomplete="off">
+          <small class="text-muted d-block mt-1" style="font-size: 11px;">🔒 Gồm chữ HOA, chữ thường, số và ký tự đặc biệt (tối thiểu 6 ký tự). Dữ liệu công việc & danh mục sẽ tự động chuyển sang mã mới.</small>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-end gap-2">
+        <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-brand-primary btn-sm px-3" id="btnSaveAdminEditAuth" onclick="submitAdminEditAuth()">Lưu lại</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Tự Đổi Mã Đăng Nhập & Tên Hiển Thị -->
 <div class="modal fade" id="selfAccountModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -2575,6 +2606,7 @@
   let pendingRequestsMap = {}; // reqId -> { code, codeHash, displayName, createdAt }
   let firebaseEventSource = null;
   let manageAuthCodesModalInstance;
+  let adminEditAuthModalInstance;
   let selfAccountModalInstance;
 
   // Anti-bruteforce rate limiter phía client
@@ -3168,6 +3200,114 @@
       }
       const refreshedJobs = buildFilteredJobsFromMap(firebaseJobsMap, cleanAuth);
       return { success: true, authCodes: authorizedCodesMap, deletedJobsCount: deletedJobsCount, jobs: refreshedJobs.jobs };
+    }
+
+    if (action === "adminEditAuthAccount") {
+      if (!isAdminAccount) throw new Error("Chỉ Quản trị viên mới có quyền thực hiện thao tác này!");
+      const oldCode = normalizeCodeServer(args[0]);
+      const newDisplay = String(args[1] || "").trim();
+      const requestedNewCode = normalizeCodeServer(args[2]);
+      if (!oldCode || !newDisplay) throw new Error("Vui lòng nhập đầy đủ Tên hiển thị!");
+
+      // Nếu Admin đang sửa chính tài khoản của mình thì chuyển qua luồng selfUpdateAuthAccount
+      if (oldCode === cleanAuth) {
+        return await firebaseApiHandler("selfUpdateAuthAccount", [newDisplay, requestedNewCode]);
+      }
+
+      const oldEntry = authorizedCodesMap[oldCode];
+      if (!oldEntry) throw new Error("Không tìm thấy tài khoản cần sửa!");
+
+      const targetCode = requestedNewCode || oldCode;
+      if (targetCode !== oldCode) {
+        const strongCheck = validateStrongAuthCode(targetCode);
+        if (!strongCheck.valid) throw new Error(strongCheck.message);
+      }
+
+      const oldHash = oldEntry.codeHash || (await computeCodeSha256(oldCode));
+      const newHash = (targetCode === oldCode) ? oldHash : (await computeCodeSha256(targetCode));
+
+      if (targetCode !== oldCode) {
+        const checkNewRes = await fetch(`${dbUrl}/auth_hashes/${newHash}.json`);
+        const existNew = checkNewRes.ok ? (await checkNewRes.json()) : null;
+        if (existNew || authorizedCodesMap[targetCode]) {
+          throw new Error("Mã đăng nhập mới đã tồn tại. Vui lòng chọn mã khác!");
+        }
+
+        const newEntry = {
+          role: oldEntry.role || "user",
+          code: targetCode,
+          codeHash: newHash,
+          displayName: newDisplay,
+          status: oldEntry.status || "approved",
+          active: oldEntry.active !== false,
+          createdAt: oldEntry.createdAt || Date.now(),
+          updatedAt: Date.now()
+        };
+
+        const putNewRes = await fetch(`${dbUrl}/auth_hashes/${newHash}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEntry)
+        });
+        if (!putNewRes.ok) throw new Error("Không thể cập nhật mã mới trên máy chủ!");
+
+        await fetch(`${dbUrl}/auth_hashes/${oldHash}.json`, { method: "DELETE" });
+        fetch(`${dbUrl}/auth_codes/${encodeURIComponent(oldCode)}.json`, { method: "DELETE" }).catch(() => {});
+
+        // Di chuyển danh mục riêng từ hash cũ sang hash mới
+        try {
+          const oldCatsRes = await fetch(`${dbUrl}/categories_by_hash/${oldHash}.json`);
+          if (oldCatsRes.ok) {
+            const oldCatsData = await oldCatsRes.json();
+            if (oldCatsData) {
+              await fetch(`${dbUrl}/categories_by_hash/${newHash}.json`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(oldCatsData)
+              });
+            }
+          }
+          await fetch(`${dbUrl}/categories_by_hash/${oldHash}.json`, { method: "DELETE" });
+        } catch (e) {}
+
+        // Chuyển quyền sở hữu công việc sang mã mới
+        const patchObj = {};
+        Object.entries(firebaseJobsMap || {}).forEach(([k, v]) => {
+          if (v && (normalizeCodeServer(v.maDangNhap) === oldCode || (oldHash && v.ownerHash === oldHash))) {
+            v.maDangNhap = targetCode;
+            v.ownerHash = newHash;
+            patchObj[`${k}/maDangNhap`] = targetCode;
+            patchObj[`${k}/ownerHash`] = newHash;
+          }
+        });
+        if (Object.keys(patchObj).length > 0) {
+          await fetch(`${dbUrl}/jobs.json`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(patchObj)
+          });
+        }
+
+        delete authorizedCodesMap[oldCode];
+        authorizedCodesMap[targetCode] = newEntry;
+      } else {
+        const updatedEntry = {
+          ...oldEntry,
+          code: oldCode,
+          codeHash: oldHash,
+          displayName: newDisplay,
+          updatedAt: Date.now()
+        };
+        await fetch(`${dbUrl}/auth_hashes/${oldHash}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedEntry)
+        });
+        authorizedCodesMap[oldCode] = updatedEntry;
+      }
+
+      const refreshed = buildFilteredJobsFromMap(firebaseJobsMap, cleanAuth);
+      return { success: true, oldCode: oldCode, code: targetCode, displayName: newDisplay, authCodes: authorizedCodesMap, jobs: refreshed.jobs };
     }
 
     if (action === "selfUpdateAuthAccount") {
@@ -6467,6 +6607,43 @@
       .selfUpdateAuthAccount(newDisplay, newCode);
   }
 
+  function formatCreatedDateVn(ts) {
+    if (!ts || isNaN(Number(ts))) return 'Không rõ';
+    const d = new Date(Number(ts));
+    if (isNaN(d.getTime())) return 'Không rõ';
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+  }
+
+  function escapeHtmlAttr(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function toggleRevealAdminRowCode(idx) {
+    const codeSpan = document.getElementById(`adminRowCodeVal_${idx}`);
+    const eyeBtn = document.getElementById(`adminRowEyeBtn_${idx}`);
+    if (!codeSpan || !eyeBtn) return;
+    const isHidden = codeSpan.getAttribute('data-revealed') !== 'true';
+    if (isHidden) {
+      codeSpan.textContent = codeSpan.getAttribute('data-raw-code') || '';
+      codeSpan.setAttribute('data-revealed', 'true');
+      eyeBtn.textContent = '🙈 Ẩn';
+    } else {
+      codeSpan.textContent = '••••••••';
+      codeSpan.setAttribute('data-revealed', 'false');
+      eyeBtn.textContent = '👁️ Xem';
+    }
+  }
+
   function renderAuthCodesList() {
     const container = document.getElementById('authCodesListContainer');
     const pendingSection = document.getElementById('pendingAuthCodesSection');
@@ -6480,15 +6657,27 @@
     const pendingList = [];
     Object.entries(pendingRequestsMap || {}).forEach(([reqId, req]) => {
       if (req && req.code && !authorizedCodesMap[normalizeCodeServer(req.code)]) {
-        pendingList.push({ reqId: reqId, code: normalizeCodeServer(req.code), displayName: req.displayName || "Tài khoản mới" });
+        pendingList.push({
+          reqId: reqId,
+          code: normalizeCodeServer(req.code),
+          displayName: req.displayName || "Tài khoản mới",
+          createdAt: req.createdAt || null
+        });
       }
     });
     allNonAdminCodes.forEach(c => {
       if (authorizedCodesMap[c] && authorizedCodesMap[c].status === 'pending') {
-        pendingList.push({ reqId: null, code: c, displayName: authorizedCodesMap[c].displayName || authorizedCodesMap[c].note || "Tài khoản mới" });
+        pendingList.push({
+          reqId: null,
+          code: c,
+          displayName: authorizedCodesMap[c].displayName || authorizedCodesMap[c].note || "Tài khoản mới",
+          createdAt: authorizedCodesMap[c].createdAt || null
+        });
       }
     });
     const approvedCodes = allNonAdminCodes.filter(c => !authorizedCodesMap[c] || authorizedCodesMap[c].status !== 'pending');
+
+    let rowCounter = 0;
 
     if (pendingSection && pendingContainer) {
       if (pendingList.length > 0) {
@@ -6496,18 +6685,25 @@
         if (pendingCountEl) pendingCountEl.innerText = pendingList.length;
         let pHtml = '';
         pendingList.forEach(item => {
+          rowCounter++;
+          const rIdx = rowCounter;
           const reqArg = item.reqId ? `'${escapeJsQuotes(item.reqId)}'` : 'null';
+          const createdStr = formatCreatedDateVn(item.createdAt);
           pHtml += `
-            <div class="catalog-item-row" style="border-color: #fcd34d;">
-              <div>
-                <div class="d-flex align-items-center gap-1.5">
-                  <span class="fw-bold text-dark" style="font-size: 13.5px;">${item.displayName}</span>
+            <div class="catalog-item-row align-items-start" style="border-color: #fcd34d;">
+              <div class="pe-2">
+                <div class="d-flex align-items-center flex-wrap gap-1.5">
+                  <span class="fw-bold text-dark" style="font-size: 13.5px;">${escapeHtmlAttr(item.displayName)}</span>
                   <span class="badge bg-warning text-dark" style="font-size: 10px;">Chờ duyệt</span>
                 </div>
-                <div class="small text-muted">Mã truy cập: ••••••••</div>
+                <div class="small text-muted mt-0.5">
+                  Mã ĐN: <code id="adminRowCodeVal_${rIdx}" data-raw-code="${escapeHtmlAttr(item.code)}" data-revealed="true" class="fw-bold text-dark">${escapeHtmlAttr(item.code)}</code>
+                  <button type="button" id="adminRowEyeBtn_${rIdx}" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none text-secondary" style="font-size: 11px;" onclick="toggleRevealAdminRowCode(${rIdx})">🙈 Ẩn</button>
+                </div>
+                <div class="text-muted" style="font-size: 11px;">📅 Ngày tạo: ${createdStr}</div>
               </div>
-              <div class="d-flex gap-1.5">
-                <button type="button" class="btn btn-success btn-sm py-1 px-2.5 fw-bold" style="font-size: 11px;" onclick="approvePendingAuthCode('${escapeJsQuotes(item.code)}', ${reqArg})">✓ Duyệt</button>
+              <div class="d-flex flex-wrap gap-1 flex-shrink-0">
+                <button type="button" class="btn btn-success btn-sm py-1 px-2 fw-bold" style="font-size: 11px;" onclick="approvePendingAuthCode('${escapeJsQuotes(item.code)}', ${reqArg})">✓ Duyệt</button>
                 <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px;" onclick="removeAuthorizedCode('${escapeJsQuotes(item.code)}', ${reqArg})">Từ chối</button>
               </div>
             </div>
@@ -6522,14 +6718,26 @@
     const adminCodeLabel = normalizeCodeServer(currentAuthCode);
     const adminInfo = authorizedCodesMap[adminCodeLabel] || {};
     const adminName = adminInfo.displayName || currentDisplayName || "Quản trị viên";
+    const adminCreatedStr = formatCreatedDateVn(adminInfo.createdAt);
+    rowCounter++;
+    const adminIdx = rowCounter;
     let html = `
-      <div class="catalog-item-row" style="background: #fff1f2; border-color: #fecdd3;">
-        <div>
-          <span class="fw-bold text-danger" style="font-size: 13.5px;">${adminName}</span>
-          <span class="badge bg-danger ms-1" style="font-size: 10px;">Quản trị</span>
-          <div class="small text-muted">Mã truy cập: ••••••••</div>
+      <div class="catalog-item-row align-items-start" style="background: #fff1f2; border-color: #fecdd3;">
+        <div class="pe-2">
+          <div class="d-flex align-items-center flex-wrap gap-1.5">
+            <span class="fw-bold text-danger" style="font-size: 13.5px;">${escapeHtmlAttr(adminName)}</span>
+            <span class="badge bg-danger" style="font-size: 10px;">Quản trị</span>
+            <span class="badge bg-success" style="font-size: 10px;">Luôn hoạt động</span>
+          </div>
+          <div class="small text-muted mt-0.5">
+            Mã ĐN: <code id="adminRowCodeVal_${adminIdx}" data-raw-code="${escapeHtmlAttr(adminCodeLabel)}" data-revealed="false" class="fw-bold text-dark">••••••••</code>
+            <button type="button" id="adminRowEyeBtn_${adminIdx}" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none text-secondary" style="font-size: 11px;" onclick="toggleRevealAdminRowCode(${adminIdx})">👁️ Xem</button>
+          </div>
+          <div class="text-muted" style="font-size: 11px;">📅 Ngày tạo: ${adminCreatedStr}</div>
         </div>
-        <span class="badge bg-success">Luôn hoạt động</span>
+        <div class="d-flex gap-1 flex-shrink-0">
+          <button type="button" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size: 11px;" onclick="openAdminEditAuthModal('${escapeJsQuotes(adminCodeLabel)}')">✏️ Sửa</button>
+        </div>
       </div>
     `;
 
@@ -6537,21 +6745,29 @@
       html += `<div class="text-center text-muted small py-3">Chưa có tài khoản phụ nào được duyệt.</div>`;
     } else {
       approvedCodes.forEach(code => {
+        rowCounter++;
+        const rIdx = rowCounter;
         const info = authorizedCodesMap[code] || {};
         const isActive = info.active !== false && info.status !== 'locked';
         const dName = info.displayName || info.note || "Tài khoản";
+        const createdStr = formatCreatedDateVn(info.createdAt);
         const jobCount = allJobs.filter(j => normalizeCodeServer(j.maDangNhap) === code).length;
         html += `
-          <div class="catalog-item-row">
-            <div>
-              <div class="d-flex align-items-center gap-1.5">
-                <span class="fw-bold text-dark" style="font-size: 13.5px;">${dName}</span>
+          <div class="catalog-item-row align-items-start">
+            <div class="pe-2">
+              <div class="d-flex align-items-center flex-wrap gap-1.5">
+                <span class="fw-bold text-dark" style="font-size: 13.5px;">${escapeHtmlAttr(dName)}</span>
                 <span class="badge ${isActive ? 'bg-success' : 'bg-secondary'}" style="font-size: 10px;">${isActive ? 'Đang mở' : 'Đã khóa'}</span>
-                <span class="badge bg-light text-dark border" style="font-size: 10px;">${jobCount} công việc</span>
+                <span class="badge bg-light text-dark border" style="font-size: 10px;">${jobCount} việc</span>
               </div>
-              <div class="small text-muted">Mã truy cập: ••••••••</div>
+              <div class="small text-muted mt-0.5">
+                Mã ĐN: <code id="adminRowCodeVal_${rIdx}" data-raw-code="${escapeHtmlAttr(code)}" data-revealed="false" class="fw-bold text-dark">••••••••</code>
+                <button type="button" id="adminRowEyeBtn_${rIdx}" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none text-secondary" style="font-size: 11px;" onclick="toggleRevealAdminRowCode(${rIdx})">👁️ Xem</button>
+              </div>
+              <div class="text-muted" style="font-size: 11px;">📅 Ngày tạo: ${createdStr}</div>
             </div>
-            <div class="d-flex gap-1.5">
+            <div class="d-flex flex-wrap gap-1 flex-shrink-0">
+              <button type="button" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size: 11px;" onclick="openAdminEditAuthModal('${escapeJsQuotes(code)}')">✏️ Sửa</button>
               <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 11px;" onclick="toggleAuthCodeActive('${escapeJsQuotes(code)}')">${isActive ? 'Khóa' : 'Mở'}</button>
               <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px;" onclick="removeAuthorizedCode('${escapeJsQuotes(code)}')">Xóa</button>
             </div>
@@ -6560,6 +6776,74 @@
       });
     }
     container.innerHTML = html;
+  }
+
+  function openAdminEditAuthModal(targetCode) {
+    if (!isAdminAccount) return;
+    const cleanTarget = normalizeCodeServer(targetCode);
+    if (cleanTarget === normalizeCodeServer(currentAuthCode)) {
+      openSelfAccountModal();
+      return;
+    }
+    const info = authorizedCodesMap[cleanTarget] || {};
+    document.getElementById('adminEditOldCodeInput').value = cleanTarget;
+    document.getElementById('adminEditDisplayNameInput').value = info.displayName || info.note || '';
+    const codeInp = document.getElementById('adminEditNewCodeInput');
+    codeInp.value = cleanTarget;
+    codeInp.type = 'text';
+    const link = document.getElementById('toggleAdminEditCodeLink');
+    if (link) link.innerText = '🙈 Ẩn mã';
+    adminEditAuthModalInstance.show();
+  }
+
+  function submitAdminEditAuth() {
+    const oldCode = normalizeCodeServer(document.getElementById('adminEditOldCodeInput').value);
+    const newDisplay = capitalizeAllWords(document.getElementById('adminEditDisplayNameInput').value);
+    const newCode = normalizeCodeServer(document.getElementById('adminEditNewCodeInput').value);
+
+    if (!newDisplay) {
+      showToast('Vui lòng nhập Tên hiển thị!', true);
+      return;
+    }
+    if (!newCode) {
+      showToast('Vui lòng nhập Mã đăng nhập!', true);
+      return;
+    }
+    if (newCode !== oldCode) {
+      const strongCheck = validateStrongAuthCode(newCode);
+      if (!strongCheck.valid) {
+        showToast(strongCheck.message, true);
+        return;
+      }
+    }
+
+    const btn = document.getElementById('btnSaveAdminEditAuth');
+    const oldText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = 'Đang lưu...';
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.innerText = oldText;
+        if (res && res.authCodes) authorizedCodesMap = res.authCodes;
+        if (res && Array.isArray(res.jobs)) {
+          allJobs = res.jobs;
+          renderCalendar();
+          renderSelectedDayJobs();
+        }
+        adminEditAuthModalInstance.hide();
+        renderAuthCodesList();
+        populateAdminAuthFilterDropdowns(false);
+        renderMasterTable();
+        showToast(`Đã cập nhật tài khoản "${res.displayName}"`);
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.innerText = oldText;
+        showToast(err.message || 'Lỗi cập nhật tài khoản', true);
+      })
+      .adminEditAuthAccount(oldCode, newDisplay, newCode);
   }
 
   function approvePendingAuthCode(code, reqId = null) {
@@ -6720,7 +7004,7 @@
     const el = e.target;
     if ((el.tagName === 'INPUT' && el.type === 'text') || el.tagName === 'TEXTAREA') {
       // Avoid modifying password, date, number inputs
-      if (el.id === 'loginCodeInput' || el.id === 'regAuthCodeInput' || el.id === 'newAuthCodeInput' || el.id === 'selfNewCodeInput' || el.id === 'formMaDangNhap' || el.classList.contains('font-monospace')) return;
+      if (el.id === 'loginCodeInput' || el.id === 'regAuthCodeInput' || el.id === 'newAuthCodeInput' || el.id === 'selfNewCodeInput' || el.id === 'adminEditNewCodeInput' || el.id === 'formMaDangNhap' || el.classList.contains('font-monospace')) return;
       const val = el.value;
       if (val.length === 1) {
         el.value = val.charAt(0).toLocaleUpperCase('vi-VN');
@@ -6784,6 +7068,7 @@
     debtQrModalInstance = new bootstrap.Modal(document.getElementById('debtQrModal'));
     manageCatalogsModalInstance = new bootstrap.Modal(document.getElementById('manageCatalogsModal'));
     manageAuthCodesModalInstance = new bootstrap.Modal(document.getElementById('manageAuthCodesModal'));
+    adminEditAuthModalInstance = new bootstrap.Modal(document.getElementById('adminEditAuthModal'));
     selfAccountModalInstance = new bootstrap.Modal(document.getElementById('selfAccountModal'));
     reportModalInstance = new bootstrap.Modal(document.getElementById('reportModal'));
     jobInfoPopupModalInstance = new bootstrap.Modal(document.getElementById('jobInfoPopupModal'));
