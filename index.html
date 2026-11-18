@@ -3273,10 +3273,11 @@
     if (action === "normalizeAndFixMapUrl") {
       const raw = String(args[0] || "").trim();
       if (!raw) return { success: false, message: "Vui lòng nhập link hoặc địa chỉ." };
-      const gooGlMatch = raw.match(/https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\/[a-zA-Z0-9_-]+/);
-      if (gooGlMatch) {
-        const slug = gooGlMatch[0].split('/').pop();
-        return { success: true, url: `https://maps.app.goo.gl/${slug}` };
+
+      // Giữ nguyên nếu đã là link rút gọn thật từ Google Maps hoặc is.gd
+      const existingShortMatch = raw.match(/https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|is\.gd)\/[a-zA-Z0-9_-]+/);
+      if (existingShortMatch) {
+        return { success: true, url: existingShortMatch[0] };
       }
 
       let targetUrl = "";
@@ -3304,34 +3305,19 @@
         targetUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(raw)}`;
       }
 
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let hash1 = 0x811c9dc5;
-      let hash2 = 0x1b873593;
-      for (let i = 0; i < targetUrl.length; i++) {
-        const c = targetUrl.charCodeAt(i);
-        hash1 ^= c;
-        hash1 = Math.imul(hash1, 0x01000193);
-        hash2 ^= (c + i);
-        hash2 = Math.imul(hash2, 0x85ebca6b);
-      }
-      let seed = (Math.abs(hash1) * 4294967296) + Math.abs(hash2);
-      let slug = "";
-      for (let i = 0; i < 17; i++) {
-        const idx = Math.floor((seed + i * 7919) % chars.length);
-        slug += chars.charAt(Math.abs(idx));
-        seed = Math.floor(seed / 3) + (i * 131);
-      }
-      const shortUrl = `https://maps.app.goo.gl/${slug}`;
-
+      // Rút gọn bằng dịch vụ is.gd để link mở trực tiếp trên mọi thiết bị
       try {
-        fetch(`${dbUrl}/short_maps/${slug}.json`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ targetUrl: targetUrl, rawInput: raw, updatedAt: Date.now() })
-        }).catch(() => {});
-      } catch (e) {}
+        const isGdResp = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(targetUrl)}`);
+        if (isGdResp.ok) {
+          const isGdData = await isGdResp.json();
+          if (isGdData && isGdData.shorturl) {
+            return { success: true, url: isGdData.shorturl, targetUrl: targetUrl };
+          }
+        }
+      } catch (e1) {}
 
-      return { success: true, url: shortUrl, targetUrl: targetUrl };
+      // Nếu dịch vụ is.gd bận, trả về link Google Maps chuẩn hoạt động 100%
+      return { success: true, url: targetUrl, targetUrl: targetUrl };
     }
 
     throw new Error("Tác vụ không hỗ trợ: " + action);
@@ -4600,7 +4586,7 @@
   async function resolveMapAddressClientSide(rawUrl) {
     let finalUrl = rawUrl.trim();
     try {
-      if (/goo\.gl|g\.co|tinyurl\.com|is\.gd/i.test(finalUrl)) {
+      if (/goo\.gl|g\.co|is\.gd/i.test(finalUrl)) {
         const customShortMatch = finalUrl.match(/maps\.app\.goo\.gl\/([a-zA-Z0-9_-]+)/);
         if (customShortMatch && customShortMatch[1]) {
           try {
@@ -4614,7 +4600,7 @@
             }
           } catch (e) {}
         }
-        if (/goo\.gl|g\.co|tinyurl\.com|is\.gd/i.test(finalUrl)) {
+        if (/goo\.gl|g\.co|is\.gd/i.test(finalUrl)) {
           try {
             const unshortenRes = await fetch('https://unshorten.me/json/' + encodeURIComponent(finalUrl));
             const unshortenData = await unshortenRes.json();
