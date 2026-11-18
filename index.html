@@ -101,12 +101,6 @@
     
     .app-layout { display: flex; min-height: 100vh; }
     
-    .sidebar { width: var(--sidebar-width); background-color: #111111; color: #a1a1aa; padding: 20px 0; flex-shrink: 0; display: flex; flex-direction: column; }
-    .sidebar-brand { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #71717a; padding: 0 20px 10px; font-weight: 600; }
-    .sidebar-menu { list-style: none; padding: 0; margin: 0; }
-    .sidebar-item { padding: 12px 20px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; color: #d4d4d8; text-decoration: none; }
-    .sidebar-item:hover { background-color: #27272a; color: #ffffff; }
-    .sidebar-item.active { background-color: #27272a; color: #ffffff; border-left: 4px solid var(--primary-dark); }
 
     .main-content { flex-grow: 1; padding: 28px; background-color: #f8fafc; overflow-x: hidden; }
 
@@ -671,11 +665,7 @@
 
     @media (max-width: 992px) {
       .app-layout { flex-direction: column; }
-      .sidebar { width: 100%; padding: 10px 0; padding-top: max(10px, env(safe-area-inset-top)); }
-      .sidebar-menu { display: flex; overflow-x: auto; }
-      .sidebar-item { padding: 10px 15px; white-space: nowrap; border-left: none !important; border-bottom: 3px solid transparent; }
-      .sidebar-item.active { border-bottom-color: var(--primary-dark); }
-      .main-content { padding: 15px; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+        .main-content { padding: 15px; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
       .calendar-day { height: 64px; min-height: 64px; max-height: 64px; padding: 3px 2px; }
       .fixed-menu-wrapper { top: max(12px, env(safe-area-inset-top)); right: 15px; }
       .top-header-bar { padding-right: 50px; min-height: 40px; }
@@ -716,15 +706,6 @@
       justify-content: center;
       margin: 0 auto 14px;
       box-shadow: 0 6px 16px rgba(123, 17, 19, 0.35);
-    }
-    .user-badge-sidebar {
-      margin: 12px 16px 0;
-      padding: 10px 12px;
-      background: #1f1f23;
-      border: 1px solid #2e2e34;
-      border-radius: 10px;
-      font-size: 12px;
-      color: #e4e4e7;
     }
 
     /* Giao diện Popup Thêm / Sửa Job tinh gọn & chuyên nghiệp */
@@ -777,30 +758,6 @@
       font-size: 12px;
       font-weight: 600;
       padding: 0 10px;
-    }
-    .btn-quick-add {
-      font-size: 11px;
-      font-weight: 600;
-      color: #7b1113;
-      background: #fff1f2;
-      border: 1px solid #fecdd3;
-      padding: 1px 7px;
-      border-radius: 6px;
-      text-decoration: none;
-      transition: all 0.15s ease;
-      line-height: 1.4;
-    }
-    .btn-quick-add:hover {
-      background: #7b1113;
-      color: #ffffff;
-      border-color: #7b1113;
-    }
-    .job-form-section {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 10px;
     }
     #jobModal .modal-footer {
       background: #f8fafc;
@@ -1895,34 +1852,12 @@
       <a href="javascript:void(0)" class="small text-decoration-none text-secondary" onclick="toggleShowLoginPass()">👁️ Hiện mã</a>
     </div>
     <button type="button" id="btnSubmitLogin" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitLoginCode()">
-      🔓 Mở Khóa & Tải Dữ Liệu
+      🔓 Đăng nhập
     </button>
   </div>
 </div>
 
 <div class="app-layout">
-  <nav class="sidebar d-none">
-    <div class="sidebar-brand mb-2">QUẢN LÝ CÔNG VIỆC by LETAN</div>
-    <ul class="sidebar-menu">
-      <li class="sidebar-item active" id="nav-lich" onclick="switchTab('lich')">
-        <span>📅</span> Lịch làm việc
-      </li>
-      <li class="sidebar-item" id="nav-chitiet" onclick="switchTab('chitiet')">
-        <span>💰</span> Quản lý và Báo cáo
-      </li>
-    </ul>
-    <div class="user-badge-sidebar d-none" id="sidebarUserBox">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <span class="text-secondary" style="font-size: 11px;">MÃ TRUY CẬP:</span>
-        <span class="badge bg-danger" id="sidebarRoleBadge" style="font-size: 9.5px;">USER</span>
-      </div>
-      <div class="d-flex justify-content-between align-items-center">
-        <span class="fw-bold text-white text-truncate" id="sidebarCodeDisplay">-</span>
-        <button class="btn btn-outline-light btn-sm py-0 px-2" style="font-size: 10.5px;" onclick="logoutCode()">Đổi mã</button>
-      </div>
-    </div>
-  </nav>
-
   <main class="main-content">
     
     <div id="errorBanner" class="alert alert-danger d-none mb-3 py-2 small"></div>
@@ -1969,7 +1904,7 @@
                 <small class="text-muted" id="selectedDateSubCount">0 lịch làm việc</small>
               </div>
               <button class="btn btn-sm fw-bold text-white px-3 shadow-sm" style="background-color: #7b1113; border-radius: 8px;" onclick="openAddModal()">
-                + Thêm công việc
+                + Thêm
               </button>
             </div>
             <input type="text" id="filterCustomerInput" class="form-control form-control-sm mb-3" placeholder="🔍 Tìm tên dâu rể / studio..." oninput="renderSelectedDayJobs()">
@@ -2178,7 +2113,7 @@
         <textarea id="infoPopupZaloText" class="form-control font-monospace mb-3" rows="6" style="font-size: 12.5px; background-color: #f8fafc;"></textarea>
 
         <div class="d-flex gap-2 justify-content-end align-items-center">
-          <button type="button" class="btn btn-toolbar-modern btn-sm px-3" id="btnEditFromInfoPopup">✏️ Sửa công việc</button>
+          <button type="button" class="btn btn-toolbar-modern btn-sm px-3" id="btnEditFromInfoPopup">✏️ Sửa</button>
           <button type="button" class="btn btn-outline-danger btn-sm px-3" id="btnDeleteFromInfoPopup" style="height: 36px;">🗑️ Xoá</button>
           <button type="button" class="btn btn-sm px-4 text-white" id="btnCopyJobInfoZalo" onclick="copyJobInfoZalo(this)" style="height: 36px; background-color: #7b1113; border-color: #7b1113;">📤 Gửi Zalo</button>
         </div>
@@ -2325,10 +2260,10 @@
         </form>
       </div>
       <div class="modal-footer justify-content-between">
-        <button type="button" class="btn btn-outline-danger btn-sm px-3 fw-semibold d-none" id="btnDeleteInModal" onclick="confirmDeleteFromModal()">🗑️ Xóa công việc</button>
+        <button type="button" class="btn btn-outline-danger btn-sm px-3 fw-semibold d-none" id="btnDeleteInModal" onclick="confirmDeleteFromModal()">🗑️ Xóa</button>
         <div class="d-flex gap-2 ms-auto">
           <button type="button" class="btn btn-light border btn-sm px-3 fw-semibold" data-bs-dismiss="modal">Đóng</button>
-          <button type="button" class="btn btn-sm px-4 fw-bold text-white" id="btnSave" style="background-color: #7b1113;" onclick="submitJob()">Lưu công việc</button>
+          <button type="button" class="btn btn-sm px-4 fw-bold text-white" id="btnSave" style="background-color: #7b1113;" onclick="submitJob()">Lưu</button>
         </div>
       </div>
     </div>
@@ -2395,7 +2330,7 @@
         <textarea id="qrStatementText" class="form-control font-monospace statement-textarea mb-3" rows="9"></textarea>
 
         <button type="button" class="btn btn-brand-primary w-100 py-2.5" id="btnCopyDebtText" onclick="copyDebtText(this)">
-          📤 Sao Chép Bảng Kê Gửi Zalo
+          📤 Gửi Zalo
         </button>
       </div>
       <div class="modal-footer">
@@ -2485,7 +2420,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwv_wNwY1I08CbWsEonDKXtpZoix3pjEJF_gxPQSWoys4DNprEeUB9EDuyNkRZuUTe-fA/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyxfZ74IKyOesIY1tLfx5CY5kHwEvMLGkXKZuNArQlErdnc_dDgizNASpgNUiVVtiYVoA/exec";
 
   let currentAuthCode = "";
   let isAdminAccount = false;
@@ -3192,73 +3127,17 @@
           renderCalendar();
           renderSelectedDayJobs();
           renderMasterTable();
+          noteAutoSaveTimer = null;
           if (statusEl) statusEl.innerText = '⚡ Đã tự động lưu';
         })
         .withFailureHandler(function(err) {
+          noteAutoSaveTimer = null;
           if (statusEl) statusEl.innerText = '❌ Lỗi tự động lưu';
         })
         .saveJobData(formData);
     }, 700);
   }
 
-  function saveNoteFromInfoPopup(btnEl) {
-    const noteInp = document.getElementById('infoPopupGhiChuInput');
-    const rowNumber = Number(noteInp.getAttribute('data-row'));
-    if (!rowNumber) return;
-    const j = allJobs.find(item => item.rowNumber === rowNumber);
-    if (!j) return;
-
-    const newNote = noteInp.value.trim();
-    const parsed = splitJobDetail(j.chiTiet);
-    let combinedDetail = combineJobDetail(parsed.thoiGian, parsed.diaChi);
-    if (newNote) {
-      combinedDetail += ` [NOTE:${newNote.replace(/\]/g, ')')}]`;
-    }
-
-    const oldHtml = btnEl ? btnEl.innerHTML : '💾 Lưu ghi chú';
-    if (btnEl) {
-      btnEl.disabled = true;
-      btnEl.innerHTML = 'Đang lưu...';
-    }
-
-    const formData = {
-      rowNumber: j.rowNumber,
-      ngay: toInputDate(j.ngay),
-      congViec: j.congViec || '',
-      chiTiet: combinedDetail,
-      mapLink: j.mapLink || '',
-      ghiChu: newNote,
-      khachHang: j.khachHang || '',
-      nguoiThucHien: j.nguoiThucHien || 'Lê Tân',
-      tinhTrang: j.tinhTrang || 'Chờ',
-      giaTri: j.luuTruGiaTri || parseMoney(j.giaTri),
-      daCoc: j.luuTruDaCoc || parseMoney(j.daCoc),
-      chiPhi: j.luuTruChiPhi || parseMoney(j.chiPhi),
-      maDangNhap: j.maDangNhap || currentAuthCode
-    };
-
-    google.script.run
-      .withSuccessHandler(function(res) {
-        allJobs = res.jobs || [];
-        syncNoteToPopupZaloText();
-        renderCalendar();
-        renderSelectedDayJobs();
-        renderMasterTable();
-        if (btnEl) {
-          btnEl.disabled = false;
-          btnEl.innerHTML = oldHtml;
-        }
-        showToast('Đã lưu ghi chú công việc');
-      })
-      .withFailureHandler(function(err) {
-        if (btnEl) {
-          btnEl.disabled = false;
-          btnEl.innerHTML = oldHtml;
-        }
-        showToast('Lỗi lưu ghi chú: ' + (err.message || err), true);
-      })
-      .saveJobData(formData);
-  }
 
   function copyJobInfoZalo(btnEl) {
     const ta = document.getElementById('infoPopupZaloText');
@@ -3484,13 +3363,8 @@
         }
 
         document.getElementById('loginOverlay').classList.add('d-none');
-        document.getElementById('sidebarUserBox').classList.remove('d-none');
-        document.getElementById('sidebarCodeDisplay').innerText = currentAuthCode;
         const menuBadge = document.getElementById('menuAuthCodeBadge');
         if (menuBadge) menuBadge.innerText = currentAuthCode;
-        const roleBadge = document.getElementById('sidebarRoleBadge');
-        roleBadge.innerText = isAdminAccount ? 'TOÀN QUYỀN (ADMIN)' : 'CÁ NHÂN';
-        roleBadge.className = isAdminAccount ? 'badge bg-danger' : 'badge bg-secondary';
 
         document.getElementById('adminOwnerCodeGroup').classList.toggle('d-none', !isAdminAccount);
         // Mặc định ẩn cột Mã ĐN (người dùng có thể bật trong Cột hiển thị nếu cần)
@@ -3517,7 +3391,6 @@
         }
 
         renderCalendar();
-        updateHeaderStats();
         renderSelectedDayJobs();
         renderColumnVisibilityMenu();
         renderMasterTable();
@@ -3534,14 +3407,12 @@
   function changeMonth(direction) {
     currentDisplayDate = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + direction, 1);
     renderCalendar();
-    updateHeaderStats();
   }
 
   function goToTodayMonth() {
     currentDisplayDate = new Date();
     selectedDateIso = getLocalIsoDate(new Date());
     renderCalendar();
-    updateHeaderStats();
     renderSelectedDayJobs();
   }
 
@@ -3662,7 +3533,7 @@
           <div class="empty-state-desc">${isFiltering ? 'Không có dâu rể hoặc studio nào khớp với từ khóa tìm kiếm của bạn.' : 'Chưa có công việc quay chụp nào được lên lịch trong ngày này.'}</div>
           ${isFiltering
             ? `<button type="button" class="btn btn-outline-secondary btn-sm px-3 fw-semibold" style="border-radius:8px; font-size:12px;" onclick="document.getElementById('filterCustomerInput').value=''; renderSelectedDayJobs();">Xóa tìm kiếm</button>`
-            : `<button type="button" class="empty-state-btn" onclick="openAddModal()">+ Thêm công việc cho ngày này</button>`
+            : `<button type="button" class="empty-state-btn" onclick="openAddModal()">+ Thêm</button>`
           }
         </div>`;
       return;
@@ -3722,7 +3593,6 @@
     container.innerHTML = html;
   }
 
-  function updateHeaderStats() {}
 
   const FIXED_EDIT_STATUSES = ["Chờ", "Chưa TT", "Xong"];
 
@@ -3750,58 +3620,9 @@
     }
   }
 
-  function addNewJobTypeOption() {
-    showPromptDialog("Nhập loại công việc mới:", "", (newName) => {
-      if (newName && newName.trim() !== "") {
-        const cleanName = newName.trim();
-        if (!jobTypes.includes(cleanName)) jobTypes.push(cleanName);
-        saveCategoriesPrefs();
-        populateModalDropdowns(cleanName, document.getElementById('formKhachHang').value, document.getElementById('formNguoiThucHien').value, document.getElementById('formTinhTrang').value);
-        showToast(`Đã thêm "${cleanName}"`);
-      }
-    });
-  }
 
-  function addNewCustomerOption() {
-    showPromptDialog("Nhập tên Khách hàng mới:", "", (newName) => {
-      if (newName && newName.trim() !== "") {
-        const cleanName = newName.trim();
-        if (!customerList.includes(cleanName)) customerList.unshift(cleanName);
-        saveCategoriesPrefs();
-        populateModalDropdowns(document.getElementById('formCongViec').value, cleanName, document.getElementById('formNguoiThucHien').value, document.getElementById('formTinhTrang').value);
-        showToast(`Đã thêm "${cleanName}"`);
-      }
-    });
-  }
 
-  function addNewExecutorOption() {
-    showPromptDialog("Nhập tên Người thực hiện mới:", "", (newName) => {
-      if (newName && newName.trim() !== "") {
-        const cleanName = newName.trim();
-        if (!executorList.includes(cleanName)) executorList.push(cleanName);
-        saveCategoriesPrefs();
-        populateModalDropdowns(document.getElementById('formCongViec').value, document.getElementById('formKhachHang').value, cleanName, document.getElementById('formTinhTrang').value);
-        showToast(`Đã thêm "${cleanName}"`);
-      }
-    });
-  }
 
-  function addNewStatusOption() {
-    showPromptDialog("Nhập tình trạng công việc mới:", "", (newName) => {
-      if (newName && newName.trim() !== "") {
-        const cleanName = newName.trim();
-        if (!statusList.includes(cleanName)) statusList.push(cleanName);
-        saveCategoriesPrefs();
-        populateModalDropdowns(
-          document.getElementById('formCongViec').value, 
-          document.getElementById('formKhachHang').value, 
-          document.getElementById('formNguoiThucHien').value, 
-          cleanName
-        );
-        showToast(`Đã thêm "${cleanName}"`);
-      }
-    });
-  }
 
   function fixMapLinkInput(btnEl) {
     const mapLinkInput = document.getElementById('formMapLink');
@@ -4226,24 +4047,7 @@
     } catch (e) {}
   }
 
-  function scrollToTodayRow() {
-    const todayEl = document.getElementById('masterTodayRow');
-    if (todayEl) {
-      todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
 
-  function jumpToTodayInTable() {
-    const now = new Date();
-    const curMonthStr = `${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
-    const monthSelect = document.getElementById('filterMonthTable');
-    
-    if (monthSelect.value && monthSelect.value !== curMonthStr) {
-      monthSelect.value = curMonthStr;
-    }
-    renderMasterTable();
-    setTimeout(scrollToTodayRow, 100);
-  }
 
   function escapeJsQuotes(str) {
     return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
@@ -4276,7 +4080,6 @@
       .withSuccessHandler(function(res) {
         allJobs = res.jobs || [];
         renderCalendar();
-        updateHeaderStats();
         renderSelectedDayJobs();
         renderMasterTable();
         showToast(`Đã đổi Người thực hiện thành "${newExecutor}"` + (targetRows.length > 1 ? ` (${targetRows.length} công việc)` : ''));
@@ -4298,7 +4101,6 @@
       .withSuccessHandler(function(res) {
         allJobs = res.jobs || [];
         renderCalendar();
-        updateHeaderStats();
         renderSelectedDayJobs();
         renderMasterTable();
         showToast(`Đã chuyển sang "${chosenStatus}"` + (targetRows.length > 1 ? ` (${targetRows.length} công việc)` : ''));
@@ -4741,7 +4543,7 @@
             <div class="empty-state-desc">Không tìm thấy lịch làm việc nào khớp với bộ lọc hiện tại hoặc danh sách tháng này đang trống.</div>
             ${(hasAnyFilter || onlyEmptyDays || hideCompleted)
               ? `<button type="button" class="btn btn-outline-secondary btn-sm px-3 fw-semibold" style="border-radius:8px; font-size:12px;" onclick="clearAllFilters(); resetQuickFilters(event);">Đặt lại toàn bộ bộ lọc</button>`
-              : `<button type="button" class="empty-state-btn" onclick="openAddModal()">+ Thêm công việc mới ngay</button>`
+              : `<button type="button" class="empty-state-btn" onclick="openAddModal()">+ Thêm</button>`
             }
           </div>
         </td>
@@ -4960,16 +4762,15 @@
       .withSuccessHandler(function(res) {
         allJobs = res.jobs || [];
         renderCalendar();
-        updateHeaderStats();
         renderSelectedDayJobs();
         renderMasterTable();
-        btn.disabled = false; btn.innerText = 'Lưu công việc';
+        btn.disabled = false; btn.innerText = 'Lưu';
         jobModalInstance.hide();
         showToast('Đã lưu lịch thành công');
       })
       .withFailureHandler(function(err) {
         showToast('Lỗi khi lưu: ' + err.message, true);
-        btn.disabled = false; btn.innerText = 'Lưu công việc';
+        btn.disabled = false; btn.innerText = 'Lưu';
       })
       .saveJobData(formData);
   }
@@ -4983,8 +4784,7 @@
         .withSuccessHandler(function(res) {
           allJobs = res.jobs || [];
           renderCalendar();
-          updateHeaderStats();
-          renderSelectedDayJobs();
+            renderSelectedDayJobs();
           renderMasterTable();
           jobModalInstance.hide();
           showToast('Đã xóa lịch');
@@ -5001,8 +4801,7 @@
         .withSuccessHandler(function(res) {
           allJobs = res.jobs || [];
           renderCalendar();
-          updateHeaderStats();
-          renderSelectedDayJobs();
+            renderSelectedDayJobs();
           renderMasterTable();
           showToast('Đã xóa lịch');
         })
@@ -5245,7 +5044,7 @@
   function copyDebtText(btnEl) {
     const ta = document.getElementById('qrStatementText');
     navigator.clipboard.writeText(ta.value).then(() => {
-      animateCopyButton(btnEl, '📤 Sao Chép Bảng Kê Gửi Zalo');
+      animateCopyButton(btnEl, '📤 Gửi Zalo');
       showToast("Đã copy nội dung bảng kê");
     });
   }
@@ -5267,15 +5066,6 @@
     }
   });
 
-  function bubbleJumpToday() {
-    const tabLich = document.getElementById('tabLich');
-    if (tabLich && !tabLich.classList.contains('d-none')) {
-      goToTodayMonth();
-      selectDate(getLocalIsoDate(new Date()));
-    } else {
-      jumpToTodayInTable();
-    }
-  }
 
   function toggleShowLoginPass() {
     const inp = document.getElementById('loginCodeInput');
@@ -5317,7 +5107,6 @@
     try { localStorage.removeItem('letan_saved_auth_code'); } catch (e) {}
     document.getElementById('loginCodeInput').value = '';
     document.getElementById('loginOverlay').classList.remove('d-none');
-    document.getElementById('sidebarUserBox').classList.add('d-none');
     renderCalendar();
     renderSelectedDayJobs();
     renderMasterTable();
@@ -5342,11 +5131,10 @@
   function startRealtimeSync() {
     if (backgroundSyncInterval) clearInterval(backgroundSyncInterval);
     backgroundSyncInterval = setInterval(function() {
-      if (!currentAuthCode) return;
-      // Silent background fetch to sync changes made from other devices
+      if (!currentAuthCode || noteAutoSaveTimer) return;
       google.script.run
         .withSuccessHandler(function(res) {
-          if (res && res.jobs) {
+          if (res && res.jobs && !noteAutoSaveTimer) {
             const newJobsJson = JSON.stringify(res.jobs);
             const oldJobsJson = JSON.stringify(allJobs);
             if (newJobsJson !== oldJobsJson) {
@@ -5358,8 +5146,8 @@
           }
         })
         .withFailureHandler(function() {})
-        .getAllJobsData(currentAuthCode);
-    }, 6000); // Poll every 6 seconds for real-time multi-device sync
+        .getAllJobsData();
+    }, 6000);
   }
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -5374,7 +5162,6 @@
     jobInfoPopupModalInstance = new bootstrap.Modal(document.getElementById('jobInfoPopupModal'));
     loadTablePrefs();
     renderCalendar();
-    updateHeaderStats();
     renderSelectedDayJobs();
     if (window.lucide) lucide.createIcons();
 
