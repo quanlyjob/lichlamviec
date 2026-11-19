@@ -2162,6 +2162,7 @@
             <div class="job-info-val">
               <textarea id="infoPopupGhiChuInput" class="form-control form-control-sm" rows="2" placeholder="Nhập hoặc sửa ghi chú trực tiếp tại đây..." oninput="onInfoPopupNoteInput(this)" style="font-size: 13px; background-color: #ffffff;"></textarea>
               <div class="d-flex justify-content-between align-items-center mt-1.5">
+                <small class="text-muted fst-italic" id="noteSaveStatusText" style="font-size: 11px;">⚡ Tự động lưu tức thì</small>
               </div>
             </div>
           </div>
@@ -3523,6 +3524,12 @@
       const foundEntry = Object.entries(firebaseJobsMap).find(([k, v]) => v && Number(v.rowNumber) === targetRow);
       if (foundEntry) {
         const key = foundEntry[0];
+        const snapshot = { ...foundEntry[1], deletedAt: Date.now(), deletedBy: cleanAuth };
+        await fetch(`${dbUrl}/deleted_jobs_backup/${encodeURIComponent(key)}_${Date.now()}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(snapshot)
+        }).catch(() => {});
         await fetch(`${dbUrl}/jobs/${key}.json`, { method: "DELETE" });
         delete firebaseJobsMap[key];
       }
@@ -4214,7 +4221,7 @@
       `Đ/c: ${diaChiText}`
     ];
     if (mapLinkToUse) {
-      lines.push(`${mapLinkToUse}`);
+      lines.push(`Maps: ${mapLinkToUse}`);
     }
     if (noteText) {
       lines.push(`( ${noteText} )`);
