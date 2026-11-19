@@ -3615,7 +3615,7 @@
 
   function toggleCustomerFilter(custName) {
     if (!custName) return;
-    if (filterCustomerVal.toLowerCase() === custName.trim().toLowerCase()) {
+    if (String(filterCustomerVal || '').toLowerCase() === String(custName || '').trim().toLowerCase()) {
       filterCustomerVal = "";
     } else {
       filterCustomerVal = custName.trim();
@@ -3648,13 +3648,13 @@
       const savedCustomers = localStorage.getItem('pref_customer_list' + sfx);
       const savedExecutors = localStorage.getItem('pref_executor_list' + sfx);
       const savedStatuses = localStorage.getItem('pref_status_list' + sfx);
-      if (savedJobTypes) jobTypes = JSON.parse(savedJobTypes);
-      if (savedCustomers) customerList = JSON.parse(savedCustomers);
-      if (savedExecutors) executorList = JSON.parse(savedExecutors);
+      if (savedJobTypes) { const p = JSON.parse(savedJobTypes); if (Array.isArray(p)) jobTypes = p.filter(Boolean).map(x => String(x).trim()); }
+      if (savedCustomers) { const p = JSON.parse(savedCustomers); if (Array.isArray(p)) customerList = p.filter(Boolean).map(x => String(x).trim()); }
+      if (savedExecutors) { const p = JSON.parse(savedExecutors); if (Array.isArray(p)) executorList = p.filter(Boolean).map(x => String(x).trim()); }
       if (savedStatuses) {
         const parsedSt = JSON.parse(savedStatuses);
         if (Array.isArray(parsedSt)) {
-          statusList = parsedSt.filter(s => s !== 'Chưa thực hiện' && s !== 'Đã TT');
+          statusList = parsedSt.filter(Boolean).map(x => String(x).trim()).filter(s => s !== 'Chưa thực hiện' && s !== 'Đã TT');
         }
       }
     } catch(e) {}
@@ -3882,11 +3882,11 @@
         // Nạp danh mục riêng của mã đăng nhập hiện tại
         resetCategoriesToDefault();
         if (res && res.categories) {
-          if (Array.isArray(res.categories.jobTypes)) jobTypes = res.categories.jobTypes;
-          if (Array.isArray(res.categories.customerList)) customerList = res.categories.customerList;
-          if (Array.isArray(res.categories.executorList)) executorList = res.categories.executorList;
+          if (Array.isArray(res.categories.jobTypes)) jobTypes = res.categories.jobTypes.filter(Boolean).map(x => String(x).trim());
+          if (Array.isArray(res.categories.customerList)) customerList = res.categories.customerList.filter(Boolean).map(x => String(x).trim());
+          if (Array.isArray(res.categories.executorList)) executorList = res.categories.executorList.filter(Boolean).map(x => String(x).trim());
           if (Array.isArray(res.categories.statusList)) {
-            statusList = res.categories.statusList.filter(s => s !== 'Chưa thực hiện' && s !== 'Đã TT');
+            statusList = res.categories.statusList.filter(Boolean).map(x => String(x).trim()).filter(s => s !== 'Chưa thực hiện' && s !== 'Đã TT');
           }
           const sfx = getAuthCatSuffix();
           try {
@@ -4029,14 +4029,14 @@
     const lunarStr = getLunarDateStr(yNum, mIdx, dNum);
     document.getElementById('selectedDateHeader').innerText = `${weekdayNames[dateObj.getDay()]}, ${dNum} tháng ${Number(parts[1])} (${lunarStr})`;
 
-    const filterText = document.getElementById('filterCustomerInput').value.toLowerCase();
+    const filterText = String(document.getElementById('filterCustomerInput')?.value || '').toLowerCase();
     const calAuthSel = document.getElementById('filterAuthCodeCalendar');
     const selectedCalAuth = (isAdminAccount && calAuthSel) ? calAuthSel.value : '';
     
     const dayJobs = allJobs.filter(j => {
-      if (j.ngay !== formatted || (j.congViec.trim() === '' && j.khachHang.trim() === '')) return false;
+      if (j.ngay !== formatted || (String(j.congViec || '').trim() === '' && String(j.khachHang || '').trim() === '')) return false;
       if (selectedCalAuth && normalizeCodeServer(j.maDangNhap || '') !== selectedCalAuth) return false;
-      if (filterText && !j.khachHang.toLowerCase().includes(filterText) && !j.congViec.toLowerCase().includes(filterText)) return false;
+      if (filterText && !String(j.khachHang || '').toLowerCase().includes(filterText) && !String(j.congViec || '').toLowerCase().includes(filterText)) return false;
       return true;
     }).sort(compareJobsChronologically);
 
@@ -4918,19 +4918,19 @@
         if (p.length !== 3 || `${p[1].padStart(2, '0')}/${p[2]}` !== selectedMonth) return false;
       }
       if (keyword &&
-          !j.khachHang.toLowerCase().includes(keyword) &&
-          !j.congViec.toLowerCase().includes(keyword) &&
-          !j.chiTiet.toLowerCase().includes(keyword) &&
-          !j.ngay.toLowerCase().includes(keyword) &&
-          !(j.nguoiThucHien || '').toLowerCase().includes(keyword)) {
+          !String(j.khachHang || '').toLowerCase().includes(keyword) &&
+          !String(j.congViec || '').toLowerCase().includes(keyword) &&
+          !String(j.chiTiet || '').toLowerCase().includes(keyword) &&
+          !String(j.ngay || '').toLowerCase().includes(keyword) &&
+          !String(j.nguoiThucHien || '').toLowerCase().includes(keyword)) {
         return false;
       }
       return true;
     });
 
-    const matchJT = (j) => !selectedJobType || j.congViec.trim().toLowerCase() === selectedJobType.toLowerCase();
-    const matchCust = (j) => !selectedCust || j.khachHang.trim().toLowerCase() === selectedCust.toLowerCase();
-    const matchExec = (j) => !selectedExecutor || (j.nguoiThucHien || "").trim().toLowerCase() === selectedExecutor.toLowerCase();
+    const matchJT = (j) => !selectedJobType || String(j.congViec || '').trim().toLowerCase() === String(selectedJobType || '').toLowerCase();
+    const matchCust = (j) => !selectedCust || String(j.khachHang || '').trim().toLowerCase() === String(selectedCust || '').toLowerCase();
+    const matchExec = (j) => !selectedExecutor || String(j.nguoiThucHien || '').trim().toLowerCase() === String(selectedExecutor || '').toLowerCase();
     const matchSt = (j) => !selectedStatus || j.tinhTrang.trim() === selectedStatus;
 
     const extractUniqueOptions = (jobsSubset, getterFn, catalogOrder) => {
@@ -4943,8 +4943,8 @@
       });
       const arr = Array.from(mapLowerToOriginal.values());
       arr.sort((a, b) => {
-        const idxA = catalogOrder.findIndex(x => x.toLowerCase() === a.toLowerCase());
-        const idxB = catalogOrder.findIndex(x => x.toLowerCase() === b.toLowerCase());
+        const idxA = catalogOrder.findIndex(x => String(x || '').toLowerCase() === String(a || '').toLowerCase());
+        const idxB = catalogOrder.findIndex(x => String(x || '').toLowerCase() === String(b || '').toLowerCase());
         if (idxA !== -1 && idxB !== -1) return idxA - idxB;
         if (idxA !== -1) return -1;
         if (idxB !== -1) return 1;
@@ -4961,28 +4961,28 @@
       j => j.congViec,
       jobTypes
     );
-    if (selectedJobType && !activeJobTypes.some(x => x.toLowerCase() === selectedJobType.toLowerCase())) activeJobTypes.unshift(selectedJobType);
+    if (selectedJobType && !activeJobTypes.some(x => String(x || '').toLowerCase() === String(selectedJobType || '').toLowerCase())) activeJobTypes.unshift(selectedJobType);
 
     const activeCustomers = extractUniqueOptions(
       effectiveBaseJobs.filter(j => matchJT(j) && matchExec(j) && matchSt(j)),
       j => j.khachHang,
       customerList
     );
-    if (selectedCust && !activeCustomers.some(x => x.toLowerCase() === selectedCust.toLowerCase())) activeCustomers.unshift(selectedCust);
+    if (selectedCust && !activeCustomers.some(x => String(x || '').toLowerCase() === String(selectedCust || '').toLowerCase())) activeCustomers.unshift(selectedCust);
 
     const activeExecutors = extractUniqueOptions(
       effectiveBaseJobs.filter(j => matchJT(j) && matchCust(j) && matchSt(j)),
       j => j.nguoiThucHien || "Lê Tân",
       executorList
     );
-    if (selectedExecutor && !activeExecutors.some(x => x.toLowerCase() === selectedExecutor.toLowerCase())) activeExecutors.unshift(selectedExecutor);
+    if (selectedExecutor && !activeExecutors.some(x => String(x || '').toLowerCase() === String(selectedExecutor || '').toLowerCase())) activeExecutors.unshift(selectedExecutor);
 
     const activeStatuses = extractUniqueOptions(
       effectiveBaseJobs.filter(j => matchJT(j) && matchCust(j) && matchExec(j)),
       j => j.tinhTrang || "Chờ",
       statusList
     );
-    if (selectedStatus && !activeStatuses.some(x => x.toLowerCase() === selectedStatus.toLowerCase())) activeStatuses.unshift(selectedStatus);
+    if (selectedStatus && !activeStatuses.some(x => String(x || '').toLowerCase() === String(selectedStatus || '').toLowerCase())) activeStatuses.unshift(selectedStatus);
 
     const visibleCols = tableColumns.filter(c => c.visible);
     let theadHtml = `<tr>`;
@@ -5692,7 +5692,7 @@
 
   function generateCustomerDebtStatement(cust, selectedMonth, selectedStatus = 'Chưa TT') {
     const unpaidJobs = getActiveAdminScopedJobs().filter(j => {
-      if (!j.khachHang || j.khachHang.trim().toLowerCase() !== cust.toLowerCase()) return false;
+      if (!j.khachHang || String(j.khachHang || '').trim().toLowerCase() !== String(cust || '').toLowerCase()) return false;
       if (selectedStatus && j.tinhTrang !== selectedStatus) return false;
       if (selectedMonth) {
         let p = j.ngay.split('/');
@@ -5756,7 +5756,7 @@
   function generateExecutorSalaryStatement(execName, selectedMonth, selectedStatus = '') {
     const filteredJobs = getActiveAdminScopedJobs().filter(j => {
       const jExec = (j.nguoiThucHien || '').trim();
-      if (jExec.toLowerCase() !== execName.toLowerCase()) return false;
+      if (String(jExec || '').toLowerCase() !== String(execName || '').toLowerCase()) return false;
       if (!j.congViec && !j.khachHang) return false;
       if (j.ttChiPhi === 'Đã trả') return false;
       const salVal = j.luuTruChiPhi || parseMoney(j.chiPhi);
