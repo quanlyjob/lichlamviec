@@ -3524,12 +3524,6 @@
       const foundEntry = Object.entries(firebaseJobsMap).find(([k, v]) => v && Number(v.rowNumber) === targetRow);
       if (foundEntry) {
         const key = foundEntry[0];
-        const snapshot = { ...foundEntry[1], deletedAt: Date.now(), deletedBy: cleanAuth };
-        await fetch(`${dbUrl}/deleted_jobs_backup/${encodeURIComponent(key)}_${Date.now()}.json`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(snapshot)
-        }).catch(() => {});
         await fetch(`${dbUrl}/jobs/${key}.json`, { method: "DELETE" });
         delete firebaseJobsMap[key];
       }
@@ -4221,7 +4215,7 @@
       `Đ/c: ${diaChiText}`
     ];
     if (mapLinkToUse) {
-      lines.push(`Maps: ${mapLinkToUse}`);
+      lines.push(`${mapLinkToUse}`);
     }
     if (noteText) {
       lines.push(`( ${noteText} )`);
