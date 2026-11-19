@@ -1828,9 +1828,34 @@
       font-variant-numeric: tabular-nums;
     }
 
+
+    /* LETAN STUDIO — unified Tailwind/Lucide workspace skin */
+    :root{--sidebar-width:258px;--primary-dark:#7b1113;--primary-hover:#971c20;--canvas:#f5f6f8;--surface:#fff;--ink:#25242b;--muted:#777780;--line:#e9e8ec;--shadow-card:0 8px 28px rgba(34,31,32,.045),0 1px 2px rgba(34,31,32,.03)}
+    html{background:var(--canvas);scroll-behavior:smooth}
+    body{background:var(--canvas);color:var(--ink);font-family:Inter,"Segoe UI",system-ui,sans-serif;font-size:14px;letter-spacing:-.01em}
+    button,input,select,textarea{font:inherit} button{-webkit-tap-highlight-color:transparent}
+    .app-layout{min-height:100vh;align-items:stretch}
+    .app-sidebar{position:fixed;inset:0 auto 0 0;z-index:1030;width:var(--sidebar-width);height:100dvh;padding:26px 18px 18px;background:#fff;border-right:1px solid var(--line);box-shadow:8px 0 26px rgba(35,28,29,.025)}
+    .sidebar-brand{min-height:46px;padding:0 8px;margin-bottom:34px}.brand-mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#8e1d20,#671013);color:#fff;display:grid;place-items:center;box-shadow:0 8px 18px rgba(123,17,19,.2)}.brand-mark svg{width:21px;height:21px;stroke-width:2.1}.brand-copy{display:flex;flex-direction:column;line-height:1.05;gap:5px}.brand-name{font-size:17px;letter-spacing:.12em;font-weight:850;color:#29252a}.brand-caption{font-size:9px;letter-spacing:.14em;font-weight:750;color:#9b7778}
+    .sidebar-section-label{padding:0 11px;margin-bottom:10px;font-size:9px;letter-spacing:.14em;font-weight:800;color:#a0a0a8}.sidebar-nav{gap:5px}.sidebar-item{width:100%;min-height:46px;border:1px solid transparent;background:transparent;color:#767680;text-align:left;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}.sidebar-item>svg{width:19px;height:19px;stroke-width:1.9;flex:0 0 auto}.sidebar-item:hover{background:#f8f6f6;color:#40353a}.sidebar-item.active{color:#791619;background:#fff3f2;border-color:#f6e2e1;box-shadow:inset 3px 0 0 #7b1113}.nav-item-arrow{margin-left:auto;opacity:0;transition:opacity .16s ease}.nav-item-arrow svg{width:15px;height:15px}.sidebar-item.active .nav-item-arrow{opacity:.72}.sidebar-flex-spacer{flex:1;min-height:24px}
+    .sidebar-sync-card{display:flex;gap:11px;align-items:center;padding:13px 12px;margin:0 0 12px;border:1px solid #ece9e9;border-radius:15px;background:linear-gradient(135deg,#fff,#fbf9f9)}.sidebar-sync-icon{display:grid;place-items:center;width:34px;height:34px;flex:0 0 auto;border-radius:11px;color:#68795e;background:#eef3eb}.sidebar-sync-icon svg{width:17px;height:17px}.sidebar-sync-card strong,.sidebar-sync-card span{display:block}.sidebar-sync-card strong{font-size:11px;color:#45444b;margin-bottom:3px}.sidebar-sync-card span{font-size:9px;color:#8b8b92;line-height:1.35}
+    .sidebar-add-button{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:45px;margin-bottom:15px;border:0;border-radius:13px;background:linear-gradient(135deg,#842024,#6d1115);color:#fff;font-size:13px;font-weight:750;box-shadow:0 8px 16px rgba(123,17,19,.16);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}.sidebar-add-button:hover{color:#fff;filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 10px 20px rgba(123,17,19,.22)}.sidebar-add-button svg{width:17px;height:17px}.sidebar-account{display:flex;align-items:center;gap:10px;padding:13px 4px 0;border-top:1px solid #f0eef0;min-width:0}.sidebar-avatar{width:35px;height:35px;display:grid;place-items:center;border-radius:50%;color:#7b1113;background:#f9eceb;flex:0 0 auto}.sidebar-avatar svg{width:17px;height:17px}.sidebar-account-copy{flex:1;min-width:0}.sidebar-account-copy strong,.sidebar-account-copy span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sidebar-account-copy strong{font-size:11px;color:#34323a}.sidebar-account-copy span{margin-top:3px;color:#96959c;font-size:9px}.sidebar-account-menu{display:grid;place-items:center;width:30px;height:30px;flex:0 0 auto;color:#777680;border:0;border-radius:9px;background:transparent}.sidebar-account-menu:hover{color:#7b1113;background:#fff2f1}.sidebar-account-menu svg{width:17px;height:17px}
+    .main-content{width:calc(100% - var(--sidebar-width));min-height:100vh;margin-left:var(--sidebar-width);padding:30px clamp(20px,3vw,46px) 46px;background:var(--canvas);overflow-x:hidden}.top-header-bar{min-height:54px;margin-bottom:18px!important;padding:3px 60px 3px 0}.page-subtitle{margin-bottom:5px;font-size:10px;letter-spacing:.12em;color:#9c5c5e;font-weight:800}.page-title{margin:0;color:#25242c;font-size:clamp(22px,2.2vw,29px);letter-spacing:-.04em;font-weight:780}
+    .calendar-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:20px}.summary-card{display:flex;align-items:center;gap:14px;min-width:0;min-height:104px;padding:17px 19px;background:var(--surface);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow-card);transition:transform .2s ease,box-shadow .2s ease}.summary-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(34,31,32,.07)}.summary-icon{display:grid;place-items:center;width:43px;height:43px;flex:0 0 auto;border-radius:14px}.summary-icon svg{width:20px;height:20px;stroke-width:1.9}.summary-icon-wine{color:#7b1113;background:#fff0ef}.summary-icon-green{color:#4c7b5b;background:#edf5ee}.summary-icon-amber{color:#a26b27;background:#fbf3e6}.summary-card span,.summary-card strong,.summary-card small{display:block}.summary-card span{font-size:11px;color:#777680;font-weight:650}.summary-card strong{margin:2px 0 1px;color:#28262c;font-size:24px;line-height:1.15;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.summary-card small{color:#a09fa6;font-size:9.5px}
+    .calendar-card,.day-detail-panel,.main-content .card{background:#fff;border:1px solid var(--line)!important;border-radius:18px!important;box-shadow:var(--shadow-card)!important}.calendar-card{padding:20px}.calendar-header{margin-bottom:18px}#calendarMonthTitle{color:#28262c;font-size:16px;letter-spacing:-.02em;font-weight:750}.calendar-header .btn-group{gap:6px}.calendar-nav-button,.calendar-today-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px!important;border:1px solid #e8e7eb!important;color:#55545d!important;background:#fff!important;min-height:35px;box-shadow:none!important}.calendar-nav-button{width:36px;padding:0!important}.calendar-nav-button svg,.calendar-today-button svg{width:15px;height:15px}.calendar-today-button{padding:0 12px!important;font-weight:650!important}.calendar-nav-button:hover,.calendar-today-button:hover{color:#7b1113!important;background:#fff7f6!important;border-color:#ecd1d0!important}.calendar-grid{gap:6px}.calendar-weekday{padding:0 0 7px;color:#a09fa7;font-size:10px;font-weight:750;letter-spacing:.04em}.calendar-day{height:74px;min-height:74px;max-height:74px;padding:5px 2px;border-color:#f0eff2;border-radius:12px;gap:2px}.calendar-day:hover{border-color:#d9c6c6;background:#fffafa}.calendar-day.today{border:2px solid #7b1113}.calendar-day.has-event{background:#fff8f7;border-color:#f4d7d5}.day-number{width:25px;height:25px;min-height:25px;color:#4b4a52;font-size:12px;font-weight:700}.calendar-day.today .day-number{background:#7b1113;color:#fff}.lunar-date{color:#aaa9b0;font-size:9px}.event-badge{max-width:90%;overflow:hidden;text-overflow:ellipsis;border-radius:999px;background:#8b282b;font-size:8px;font-weight:700;padding:2px 6px}.calendar-day.selected-date{background:#7b1113!important;box-shadow:0 6px 14px rgba(123,17,19,.18)}.calendar-day.selected-date .day-number{background:#fff;color:#7b1113}
+    .day-detail-panel{padding:20px}#selectedDateHeader{color:#2b2931!important;font-size:15px;font-weight:760!important}#selectedDateSubCount{display:inline-block;margin-top:5px;color:#9998a0!important;font-size:10px}.calendar-add-button{display:inline-flex;align-items:center;gap:7px;min-height:36px;border:0!important;border-radius:10px!important;background:#7b1113!important;box-shadow:0 5px 12px rgba(123,17,19,.16)!important}.calendar-add-button svg{width:15px;height:15px}#filterCustomerInput{min-height:39px;margin:5px 0 13px!important;border-radius:11px;border-color:#e8e7eb;background:#fbfbfc;font-size:11px}.event-item-card{margin-top:9px;padding:13px;border:1px solid #efedf0;border-radius:14px;background:#fff}.event-item-card:hover{border-color:#ded9dc;box-shadow:0 7px 18px rgba(30,26,29,.06)}
+    #tabChitiet .card{padding:18px!important}#tabChitiet .top-header-bar{margin-bottom:18px!important}.search-filter-box{width:min(270px,100%);height:38px;padding:0 10px;border-color:#e7e6eb;border-radius:11px;box-shadow:none!important;background:#fbfbfc}.search-filter-box:focus-within{border-color:#b87576;box-shadow:0 0 0 3px rgba(123,17,19,.08)!important}.search-filter-icon{color:#a2a0a8;margin-right:8px}.search-filter-icon svg{width:16px;height:16px}.search-filter-input{font-size:11px}.btn-toolbar-modern,.column-visibility-dropdown{border-radius:10px!important}.btn-toolbar-modern{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 11px!important;border:1px solid #e8e7eb!important;color:#5d5c65!important;background:#fff!important;font-weight:650!important;font-size:11px!important;box-shadow:none!important}.btn-toolbar-modern:hover{color:#7b1113!important;border-color:#e5cecd!important;background:#fff8f7!important}.btn-toolbar-modern svg{width:15px;height:15px}.btn-refresh-table{min-width:93px;justify-content:center}#filterMonthTable,#filterAuthCodeTable{min-height:37px!important;border-radius:10px!important;border-color:#e8e7eb;font-size:11px}#tableStatusHint{color:#7d7c85!important}.mobile-scroll-hint{border:1px solid #f0e3e2;border-radius:12px;background:#fff8f7;color:#78696a;padding:9px 12px;font-size:10px}#btnToggleMobileCards{min-height:32px;border-radius:9px!important;background:#7b1113!important;font-size:10px!important}#masterTableContainer{border:1px solid #ecebf0;border-radius:13px;background:#fff}#masterTableContainer table{margin:0;font-size:11px!important}#masterTableContainer th{position:sticky;top:0;z-index:1;padding:11px 9px;color:#777680;background:#f8f7f8;border-bottom:1px solid #e9e8ec;font-size:10px;font-weight:750;white-space:nowrap}#masterTableContainer td{padding:10px 9px;border-color:#f0eff2;color:#4a4951;vertical-align:middle}#masterTableContainer tbody tr:hover td{background:#fffafa}#masterTableContainer .job-badge{border-radius:999px;font-weight:700}.today-row td{background:#fff9e9!important}.today-row td:first-child{border-left-color:#d89c37!important}.row-status-chuatt td{background:#fff5f4!important;color:#7e2628!important}.row-status-xong td{background:#f5faf5!important;color:#3e6245!important}.mobile-job-card{border:1px solid #e9e7eb!important;border-radius:15px!important;box-shadow:0 4px 14px rgba(34,31,32,.04)}
+    .form-control,.form-select{min-height:39px;border-color:#e6e5ea;border-radius:10px;color:#37363e;font-size:12px;box-shadow:none}.form-control:focus,.form-select:focus{border-color:#c78989;box-shadow:0 0 0 3px rgba(123,17,19,.08)}.form-label{color:#595861!important;font-weight:700!important;font-size:11px!important}.btn{border-radius:10px;font-weight:650;transition:all .17s ease}.btn-sm{font-size:11px}.btn-brand-primary,.btn-primary{background:#7b1113!important;border-color:#7b1113!important}.btn-brand-primary:hover,.btn-primary:hover{background:#971c20!important;border-color:#971c20!important}.app-toast{border-radius:14px;padding:11px 17px;font-size:12px}
+    .fixed-menu-wrapper{top:max(25px,env(safe-area-inset-top));right:clamp(20px,3vw,46px)}.hamburger-menu-btn{width:40px;height:40px;border-radius:12px;border-color:#e6e4e8;box-shadow:0 5px 16px rgba(30,25,26,.07)}.fixed-dropdown-menu{border-color:#ebe9ed;border-radius:16px;box-shadow:0 20px 48px rgba(27,22,24,.15)}
+    .login-overlay{background:radial-gradient(circle at 20% 18%,rgba(255,255,255,.12),transparent 30%),linear-gradient(135deg,#351113,#6f171a 55%,#3b1215);backdrop-filter:blur(6px)}.login-card{width:min(420px,calc(100vw - 30px));padding:30px;border:1px solid rgba(255,255,255,.55);border-radius:22px;box-shadow:0 24px 80px rgba(30,8,9,.28)}.login-logo{display:grid;place-items:center;width:55px;height:55px;margin:0 auto 16px;border-radius:18px;background:linear-gradient(145deg,#92282b,#6d1115);color:#fff;font-size:20px;font-weight:850;box-shadow:0 8px 20px rgba(123,17,19,.24)}#loginCardTitle{font-size:20px;letter-spacing:-.03em}#loginCardSubtitle{color:#86858d!important;font-size:11px!important}.login-card .form-control{min-height:43px;background:#fcfbfc}.login-card .btn{min-height:43px;border-radius:11px!important;background:#7b1113!important}
+    .modal-backdrop.show{opacity:.46;backdrop-filter:blur(3px)}.modal .modal-content{border:1px solid #eeecef;border-radius:19px;overflow:hidden;box-shadow:0 24px 70px rgba(21,17,19,.17)}.modal .modal-header{padding:17px 21px 14px!important}.modal .modal-title{font-size:15px!important}.modal .modal-body{padding:19px 21px!important}.modal .modal-footer{padding:13px 21px!important}.report-stat-card,.info-detail-card,.statement-filter-card,.catalog-list-box{border-radius:14px!important}
+    button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(123,17,19,.25);outline-offset:2px}
+    @media(max-width:1100px){:root{--sidebar-width:232px}.main-content{padding:25px 22px 38px}.calendar-card,.day-detail-panel{padding:16px}.summary-card{padding:14px;gap:11px}.summary-icon{width:38px;height:38px}}
+    @media(max-width:767.98px){.app-sidebar{inset:auto 0 0;width:100%;height:calc(66px + env(safe-area-inset-bottom));padding:7px 18px calc(7px + env(safe-area-inset-bottom));flex-direction:row;align-items:center;justify-content:center;border-right:0;border-top:1px solid #e9e7eb;box-shadow:0 -8px 25px rgba(32,28,29,.07)}.sidebar-brand,.sidebar-section-label,.sidebar-flex-spacer,.sidebar-sync-card,.sidebar-add-button,.sidebar-account{display:none!important}.sidebar-nav{width:min(100%,440px);flex-direction:row!important;justify-content:space-around;gap:8px}.sidebar-item{width:auto;min-width:132px;min-height:48px;flex:1;justify-content:center;gap:8px;padding:7px 10px!important;border-radius:12px!important;font-size:11px!important}.sidebar-item>svg{width:18px;height:18px}.sidebar-item.active{box-shadow:none}.nav-item-arrow{display:none}.main-content{width:100%;min-height:100vh;margin-left:0;padding:18px 14px calc(88px + env(safe-area-inset-bottom))}.top-header-bar{min-height:47px;margin-bottom:14px!important;padding-right:49px}.page-title{font-size:22px}.fixed-menu-wrapper{top:max(12px,env(safe-area-inset-top));right:14px}.hamburger-menu-btn{width:37px;height:37px}.calendar-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:13px}.summary-card{min-height:98px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:7px;padding:10px;border-radius:14px}.summary-icon{width:31px;height:31px;border-radius:10px}.summary-icon svg{width:16px;height:16px}.summary-card span{font-size:9px;line-height:1.25}.summary-card strong{font-size:20px}.summary-card small{display:none}#tabLich .row.g-4{--bs-gutter-y:.8rem}.calendar-card{padding:12px 10px;border-radius:15px!important}.calendar-header{margin-bottom:12px}#calendarMonthTitle{font-size:13px}.calendar-grid{gap:3px}.calendar-weekday{font-size:8px;padding-bottom:4px}.calendar-day{height:57px;min-height:57px;max-height:57px;padding:3px 1px;border-radius:9px}.day-number{width:21px;height:21px;min-height:21px;font-size:10px}.lunar-date{font-size:7px}.event-badge{font-size:6.5px;padding:1px 4px;max-width:94%}.day-detail-panel{padding:15px;border-radius:15px!important}#tabChitiet .card{padding:13px!important}#tabChitiet .top-header-bar{padding-right:48px}.search-filter-box{width:100%}#masterTableContainer{overflow:auto}.fixed-dropdown-menu{width:min(285px,calc(100vw - 26px))}.login-card{padding:25px 21px}.modal-dialog{margin:10px}.modal .modal-body{padding:16px!important}.modal .modal-footer,.modal .modal-header{padding-left:16px!important;padding-right:16px!important}}
+    @media(max-width:380px){.sidebar-item{min-width:0;font-size:10px!important}.calendar-day{height:51px;min-height:51px;max-height:51px}.lunar-date{display:none}.calendar-today-button{padding:0 8px!important}.summary-card{padding:8px}}
   </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 antialiased">
 
 <div id="appToast" class="app-toast"></div>
 
@@ -1894,8 +1919,20 @@
   </div>
 </div>
 
-<div class="app-layout">
-  <main class="main-content">
+<div class="app-layout flex min-h-screen bg-slate-50">
+  <aside class="app-sidebar flex h-screen w-64 shrink-0 flex-col" aria-label="Điều hướng chính">
+    <div class="sidebar-brand flex items-center gap-3"><div class="brand-mark"><i data-lucide="calendar-check-2"></i></div><div class="brand-copy"><span class="brand-name">LETAN</span><span class="brand-caption">STUDIO · WORKSPACE</span></div></div>
+    <div class="sidebar-section-label">KHÔNG GIAN LÀM VIỆC</div>
+    <nav class="sidebar-nav flex flex-col gap-1">
+      <button type="button" id="nav-lich" class="sidebar-item active flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold" onclick="switchTab('lich')"><i data-lucide="calendar-days"></i><span>Lịch làm việc</span><span class="nav-item-arrow"><i data-lucide="chevron-right"></i></span></button>
+      <button type="button" id="nav-chitiet" class="sidebar-item flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold" onclick="switchTab('chitiet')"><i data-lucide="table-2"></i><span>Danh sách công việc</span><span class="nav-item-arrow"><i data-lucide="chevron-right"></i></span></button>
+    </nav>
+    <div class="sidebar-flex-spacer"></div>
+    <div class="sidebar-sync-card"><div class="sidebar-sync-icon"><i data-lucide="cloud-check"></i></div><div><strong>Dữ liệu được đồng bộ</strong><span>Kết nối lịch theo thời gian thực</span></div></div>
+    <button type="button" class="sidebar-add-button" onclick="openAddModal()"><i data-lucide="plus"></i><span>Thêm công việc</span></button>
+    <div class="sidebar-account"><div class="sidebar-avatar"><i data-lucide="user-round"></i></div><div class="sidebar-account-copy"><strong id="sidebarUserName">Chưa đăng nhập</strong><span>Tài khoản đang dùng</span></div><button type="button" class="sidebar-account-menu" onclick="toggleAssistiveMenu(event)" title="Tùy chọn tài khoản"><i data-lucide="ellipsis"></i></button></div>
+  </aside>
+  <main class="main-content min-w-0 flex-1">
     
     <div id="errorBanner" class="alert alert-danger d-none mb-3 py-2 small"></div>
 
@@ -1908,6 +1945,11 @@
         </select>
       </div>
 
+      <section class="calendar-summary-grid grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Tóm tắt lịch trong tháng">
+        <article class="summary-card"><div class="summary-icon summary-icon-wine"><i data-lucide="calendar-range"></i></div><div><span>Lịch trong tháng</span><strong id="summaryMonthJobs">0</strong><small>công việc đã lên lịch</small></div></article>
+        <article class="summary-card"><div class="summary-icon summary-icon-green"><i data-lucide="circle-check"></i></div><div><span>Đã hoàn tất</span><strong id="summaryMonthDone">0</strong><small>công việc hoàn thành</small></div></article>
+        <article class="summary-card"><div class="summary-icon summary-icon-amber"><i data-lucide="clock-3"></i></div><div><span>Chưa hoàn tất</span><strong id="summaryMonthOpen">0</strong><small>công việc cần theo dõi</small></div></article>
+      </section>
       <div class="row g-4 align-items-start">
         <div class="col-lg-7">
           <div class="calendar-card">
@@ -1916,9 +1958,9 @@
                 <h5 class="fw-bold mb-0" id="calendarMonthTitle">Tháng 11 Năm 2026</h5>
               </div>
               <div class="btn-group">
-                <button class="btn btn-outline-secondary btn-sm px-3" onclick="changeMonth(-1)">&lt;</button>
-                <button class="btn btn-outline-secondary btn-sm px-3 fw-semibold" onclick="goToTodayMonth()">Hôm nay</button>
-                <button class="btn btn-outline-secondary btn-sm px-3" onclick="changeMonth(1)">&gt;</button>
+                <button class="btn btn-outline-secondary btn-sm calendar-nav-button" onclick="changeMonth(-1)" aria-label="Tháng trước"><i data-lucide="chevron-left"></i></button>
+                <button class="btn btn-outline-secondary btn-sm fw-semibold calendar-today-button" onclick="goToTodayMonth()"><i data-lucide="sun"></i> Hôm nay</button>
+                <button class="btn btn-outline-secondary btn-sm calendar-nav-button" onclick="changeMonth(1)" aria-label="Tháng sau"><i data-lucide="chevron-right"></i></button>
               </div>
             </div>
             
@@ -1943,8 +1985,8 @@
                 <h6 class="fw-bold mb-0 text-dark" id="selectedDateHeader">Hôm nay</h6>
                 <small class="text-muted" id="selectedDateSubCount">0 lịch làm việc</small>
               </div>
-              <button class="btn btn-sm fw-bold text-white px-3 shadow-sm" style="background-color: #7b1113; border-radius: 8px;" onclick="openAddModal()">
-                + Thêm
+              <button class="btn btn-sm fw-bold text-white px-3 shadow-sm calendar-add-button" onclick="openAddModal()">
+                <i data-lucide="plus"></i> Thêm lịch
               </button>
             </div>
             <input type="text" id="filterCustomerInput" class="form-control form-control-sm mb-3" placeholder="🔍 Tìm tên dâu rể / studio..." oninput="renderSelectedDayJobs()">
@@ -1976,12 +2018,7 @@
             </select>
             
             <div class="search-filter-box shadow-sm">
-              <span class="search-filter-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-              </span>
+              <span class="search-filter-icon"><i data-lucide="search"></i></span>
               <input type="text" id="searchTableInput" class="search-filter-input" placeholder="Tìm khách, việc, địa chỉ..." oninput="renderMasterTable(false)">
               <button type="button" id="btnClearAllFilters" class="btn-clear-filter" onclick="clearAllFilters()" title="Xóa tìm kiếm & tất cả bộ lọc">✕</button>
             </div>
@@ -2030,7 +2067,7 @@
           </div>
 
           <button type="button" id="btnRefreshTable" class="btn btn-sm btn-toolbar-modern ms-auto btn-refresh-table px-3.5" onclick="triggerRefresh(this)">
-            Làm mới
+            <i data-lucide="refresh-cw"></i> Làm mới
           </button>
         </div>
 
@@ -4683,9 +4720,24 @@
     renderSelectedDayJobs();
   }
 
+  function renderCalendarSummary(year, month) {
+    const monthJobs = (allJobs || []).filter(job => {
+      const parts = String(job.ngay || '').split('/');
+      if (parts.length !== 3 || Number(parts[1]) !== month + 1 || Number(parts[2]) !== year) return false;
+      const authSelect = document.getElementById('filterAuthCodeCalendar');
+      return !(isAdminAccount && authSelect && authSelect.value && normalizeCodeServer(job.maDangNhap || '') !== authSelect.value);
+    });
+    const completed = monthJobs.filter(job => String(job.tinhTrang || '').trim() === 'Xong').length;
+    const values = { summaryMonthJobs: monthJobs.length, summaryMonthDone: completed, summaryMonthOpen: Math.max(0, monthJobs.length - completed) };
+    Object.entries(values).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(value);
+    });
+  }
   function renderCalendar() {
     const year = currentDisplayDate.getFullYear();
     const month = currentDisplayDate.getMonth();
+    renderCalendarSummary(year, month);
     
     document.getElementById('calendarMonthTitle').innerText = `${monthNames[month]} Năm ${year}`;
 
@@ -7081,6 +7133,8 @@
     const titleEl = document.getElementById('calendarPageTitle');
     if (!titleEl) return;
     const nameToShow = (currentDisplayName || '').trim();
+    const sidebarUserName = document.getElementById('sidebarUserName');
+    if (sidebarUserName) sidebarUserName.textContent = nameToShow || 'Chưa đăng nhập';
     if (nameToShow !== '') {
       titleEl.innerText = `Lịch của ${nameToShow}`;
     } else {
