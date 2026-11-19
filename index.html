@@ -1837,7 +1837,7 @@
     .app-layout{min-height:100vh;align-items:stretch}
     .app-sidebar{position:fixed;inset:0 auto 0 0;z-index:1030;width:var(--sidebar-width);height:100dvh;padding:26px 18px 18px;background:#fff;border-right:1px solid var(--line);box-shadow:8px 0 26px rgba(35,28,29,.025)}
     .sidebar-brand{min-height:46px;padding:0 8px;margin-bottom:34px}.brand-mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#8e1d20,#671013);color:#fff;display:grid;place-items:center;box-shadow:0 8px 18px rgba(123,17,19,.2)}.brand-mark svg{width:21px;height:21px;stroke-width:2.1}.brand-copy{display:flex;flex-direction:column;line-height:1.05;gap:5px}.brand-name{font-size:17px;letter-spacing:.12em;font-weight:850;color:#29252a}.brand-caption{font-size:9px;letter-spacing:.14em;font-weight:750;color:#9b7778}
-    .sidebar-section-label{padding:0 11px;margin-bottom:10px;font-size:9px;letter-spacing:.14em;font-weight:800;color:#a0a0a8}.sidebar-nav{gap:5px}.sidebar-item{width:100%;min-height:46px;border:1px solid transparent;background:transparent;color:#767680;text-align:left;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}.sidebar-item>svg{width:19px;height:19px;stroke-width:1.9;flex:0 0 auto}.sidebar-item:hover{background:#f8f6f6;color:#40353a}.sidebar-item.active{color:#791619;background:#fff3f2;border-color:#f6e2e1;box-shadow:inset 3px 0 0 #7b1113}.nav-item-arrow{margin-left:auto;opacity:0;transition:opacity .16s ease}.nav-item-arrow svg{width:15px;height:15px}.sidebar-item.active .nav-item-arrow{opacity:.72}.sidebar-flex-spacer{flex:1;min-height:24px}
+    .sidebar-section-label{padding:0 11px;margin-bottom:10px;font-size:9px;letter-spacing:.14em;font-weight:800;color:#a0a0a8}.sidebar-nav{gap:5px}.sidebar-item{width:100%;min-height:46px;border:1px solid transparent;background:transparent;color:#767680;text-align:left;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}.sidebar-item>svg{width:19px;height:19px;stroke-width:1.9;flex:0 0 auto}.sidebar-item:hover{background:#f8f6f6;color:#40353a}.sidebar-item.active{color:#791619;background:#fff3f2;border-color:#f6e2e1;box-shadow:inset 3px 0 0 #7b1113}.nav-item-arrow{margin-left:auto;opacity:0;transition:opacity .16s ease}.nav-item-arrow svg{width:15px;height:15px}.sidebar-item.active .nav-item-arrow{opacity:.72}.sidebar-flex-spacer{flex:0 0 8px;min-height:8px}
     .sidebar-sync-card{display:flex;gap:11px;align-items:center;padding:13px 12px;margin:0 0 12px;border:1px solid #ece9e9;border-radius:15px;background:linear-gradient(135deg,#fff,#fbf9f9)}.sidebar-sync-icon{display:grid;place-items:center;width:34px;height:34px;flex:0 0 auto;border-radius:11px;color:#68795e;background:#eef3eb}.sidebar-sync-icon svg{width:17px;height:17px}.sidebar-sync-card strong,.sidebar-sync-card span{display:block}.sidebar-sync-card strong{font-size:11px;color:#45444b;margin-bottom:3px}.sidebar-sync-card span{font-size:9px;color:#8b8b92;line-height:1.35}
     .sidebar-add-button{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:45px;margin-bottom:15px;border:0;border-radius:13px;background:linear-gradient(135deg,#842024,#6d1115);color:#fff;font-size:13px;font-weight:750;box-shadow:0 8px 16px rgba(123,17,19,.16);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}.sidebar-add-button:hover{color:#fff;filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 10px 20px rgba(123,17,19,.22)}.sidebar-add-button svg{width:17px;height:17px}.sidebar-account{display:flex;align-items:center;gap:10px;padding:13px 4px 0;border-top:1px solid #f0eef0;min-width:0}.sidebar-avatar{width:35px;height:35px;display:grid;place-items:center;border-radius:50%;color:#7b1113;background:#f9eceb;flex:0 0 auto}.sidebar-avatar svg{width:17px;height:17px}.sidebar-account-copy{flex:1;min-width:0}.sidebar-account-copy strong,.sidebar-account-copy span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sidebar-account-copy strong{font-size:11px;color:#34323a}.sidebar-account-copy span{margin-top:3px;color:#96959c;font-size:9px}.sidebar-account-menu{display:grid;place-items:center;width:30px;height:30px;flex:0 0 auto;color:#777680;border:0;border-radius:9px;background:transparent}.sidebar-account-menu:hover{color:#7b1113;background:#fff2f1}.sidebar-account-menu svg{width:17px;height:17px}
     .main-content{width:calc(100% - var(--sidebar-width));min-height:100vh;margin-left:var(--sidebar-width);padding:30px clamp(20px,3vw,46px) 46px;background:var(--canvas);overflow-x:hidden}.top-header-bar{min-height:54px;margin-bottom:18px!important;padding:3px 60px 3px 0}.page-subtitle{margin-bottom:5px;font-size:10px;letter-spacing:.12em;color:#9c5c5e;font-weight:800}.page-title{margin:0;color:#25242c;font-size:clamp(22px,2.2vw,29px);letter-spacing:-.04em;font-weight:780}
@@ -1853,6 +1853,52 @@
     @media(max-width:1100px){:root{--sidebar-width:232px}.main-content{padding:25px 22px 38px}.calendar-card,.day-detail-panel{padding:16px}.summary-card{padding:14px;gap:11px}.summary-icon{width:38px;height:38px}}
     @media(max-width:767.98px){.app-sidebar{inset:auto 0 0;width:100%;height:calc(66px + env(safe-area-inset-bottom));padding:7px 18px calc(7px + env(safe-area-inset-bottom));flex-direction:row;align-items:center;justify-content:center;border-right:0;border-top:1px solid #e9e7eb;box-shadow:0 -8px 25px rgba(32,28,29,.07)}.sidebar-brand,.sidebar-section-label,.sidebar-flex-spacer,.sidebar-sync-card,.sidebar-add-button,.sidebar-account{display:none!important}.sidebar-nav{width:min(100%,440px);flex-direction:row!important;justify-content:space-around;gap:8px}.sidebar-item{width:auto;min-width:132px;min-height:48px;flex:1;justify-content:center;gap:8px;padding:7px 10px!important;border-radius:12px!important;font-size:11px!important}.sidebar-item>svg{width:18px;height:18px}.sidebar-item.active{box-shadow:none}.nav-item-arrow{display:none}.main-content{width:100%;min-height:100vh;margin-left:0;padding:18px 14px calc(88px + env(safe-area-inset-bottom))}.top-header-bar{min-height:47px;margin-bottom:14px!important;padding-right:49px}.page-title{font-size:22px}.fixed-menu-wrapper{top:max(12px,env(safe-area-inset-top));right:14px}.hamburger-menu-btn{width:37px;height:37px}.calendar-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:13px}.summary-card{min-height:98px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:7px;padding:10px;border-radius:14px}.summary-icon{width:31px;height:31px;border-radius:10px}.summary-icon svg{width:16px;height:16px}.summary-card span{font-size:9px;line-height:1.25}.summary-card strong{font-size:20px}.summary-card small{display:none}#tabLich .row.g-4{--bs-gutter-y:.8rem}.calendar-card{padding:12px 10px;border-radius:15px!important}.calendar-header{margin-bottom:12px}#calendarMonthTitle{font-size:13px}.calendar-grid{gap:3px}.calendar-weekday{font-size:8px;padding-bottom:4px}.calendar-day{height:57px;min-height:57px;max-height:57px;padding:3px 1px;border-radius:9px}.day-number{width:21px;height:21px;min-height:21px;font-size:10px}.lunar-date{font-size:7px}.event-badge{font-size:6.5px;padding:1px 4px;max-width:94%}.day-detail-panel{padding:15px;border-radius:15px!important}#tabChitiet .card{padding:13px!important}#tabChitiet .top-header-bar{padding-right:48px}.search-filter-box{width:100%}#masterTableContainer{overflow:auto}.fixed-dropdown-menu{width:min(285px,calc(100vw - 26px))}.login-card{padding:25px 21px}.modal-dialog{margin:10px}.modal .modal-body{padding:16px!important}.modal .modal-footer,.modal .modal-header{padding-left:16px!important;padding-right:16px!important}}
     @media(max-width:380px){.sidebar-item{min-width:0;font-size:10px!important}.calendar-day{height:51px;min-height:51px;max-height:51px}.lunar-date{display:none}.calendar-today-button{padding:0 8px!important}.summary-card{padding:8px}}
+
+    /* Sidebar controls and compact mobile drawer */
+    .app-sidebar{overflow:hidden;transition:transform .24s cubic-bezier(.2,.8,.2,1),width .24s ease,box-shadow .24s ease}
+    .app-sidebar.is-collapsed{transform:translateX(calc(-1 * var(--sidebar-width)))}
+    .main-content{transition:margin-left .24s ease,width .24s ease}
+    .main-content.sidebar-expanded{width:100%;margin-left:0}
+    .sidebar-scroll-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 2px 10px;scrollbar-width:thin;scrollbar-color:#e2d9da transparent}
+    .sidebar-filter-section{margin:21px 5px 17px;padding:15px 11px 12px;border:1px solid #eee9eb;border-radius:14px;background:#fcfbfb}
+    .sidebar-filter-section .sidebar-section-label{padding:0;margin:0 0 12px}
+    .sidebar-filter-label{display:flex;align-items:center;gap:7px;margin:0 0 6px;color:#77747e;font-size:10px;font-weight:700}
+    .sidebar-filter-label svg{width:14px;height:14px;color:#9c6b6d}
+    .sidebar-filter-label-second{margin-top:13px}
+    #filterAuthCodeCalendar,#filterAuthCodeTable{width:100%!important;height:37px!important;min-height:37px!important;padding:6px 28px 6px 10px!important;border:1px solid #e7e3e7!important;border-radius:9px!important;background-color:#fff!important;color:#58545d!important;font-size:10px!important;box-shadow:none!important}
+    .sidebar-tools-section{padding:0 4px 8px}
+    .sidebar-tools-section .sidebar-section-label{padding:0 7px;margin:0 0 7px}
+    .sidebar-tools-section .menu-action-item{min-height:38px;padding:7px 8px;gap:10px;border-radius:10px;font-size:10.5px;font-weight:650;color:#5b5962}
+    .sidebar-tools-section .menu-action-item:hover{background:#f8f4f4;color:#781619}
+    .sidebar-tools-section .menu-action-item.danger{margin-top:6px;border-top:1px solid #f0edef;border-radius:0 0 10px 10px;padding-top:12px;color:#9e3f42}
+    .sidebar-tools-section .menu-icon-wrap{width:27px;height:27px;display:grid;place-items:center;flex:0 0 auto;border-radius:8px;background:#f5f1f2;color:#8a5355}
+    .sidebar-tools-section .menu-icon-wrap svg{width:14px;height:14px;stroke-width:1.9}
+    .sidebar-backdrop{display:none;position:fixed;inset:0;z-index:1020;border:0;background:rgba(23,18,20,.42);backdrop-filter:blur(2px)}
+    .sidebar-backdrop.show{display:block}
+    .hamburger-menu-btn{display:grid;place-items:center;position:relative}
+    .hamburger-menu-btn>svg{width:19px;height:19px;stroke-width:1.8;color:#4b464b}
+    .hamburger-menu-btn:hover>svg{color:#7b1113}
+    @media(max-width:767.98px){
+      .app-sidebar{inset:0 auto 0 0;width:min(318px,88vw);height:100dvh;padding:20px 16px 16px;flex-direction:column;align-items:stretch;justify-content:flex-start;border-top:0;border-right:1px solid var(--line);box-shadow:18px 0 48px rgba(30,23,25,.16);transform:translateX(-105%)}
+      .app-sidebar.is-open{transform:translateX(0)}
+      .sidebar-brand{display:flex!important;margin-bottom:22px}
+      .sidebar-section-label{display:block!important}
+      .sidebar-scroll-content{width:100%;overflow-y:auto}
+      .sidebar-nav{width:100%;flex-direction:column!important;gap:5px}
+      .sidebar-item{width:100%;min-width:0;min-height:44px;justify-content:flex-start;flex:none;padding:9px 11px!important;font-size:11px!important}
+      .sidebar-item.active{box-shadow:inset 3px 0 0 #7b1113}
+      .nav-item-arrow{display:inline-flex}
+      .sidebar-filter-section{margin:16px 4px 13px}
+      .sidebar-tools-section{padding-bottom:10px}
+      .sidebar-flex-spacer{display:block!important;flex:1;min-height:10px}
+      .sidebar-sync-card{display:flex!important}
+      .sidebar-add-button{display:flex!important}
+      .sidebar-account{display:flex!important}
+      .sidebar-backdrop.show{display:block}
+      body.sidebar-mobile-open{overflow:hidden}
+      .fixed-menu-wrapper{z-index:1045}
+      .fixed-dropdown-menu{display:none!important}
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
@@ -1920,18 +1966,41 @@
 </div>
 
 <div class="app-layout flex min-h-screen bg-slate-50">
-  <aside class="app-sidebar flex h-screen w-64 shrink-0 flex-col" aria-label="Điều hướng chính">
+  <aside id="appSidebar" class="app-sidebar flex h-screen w-64 shrink-0 flex-col" aria-label="Điều hướng chính">
     <div class="sidebar-brand flex items-center gap-3"><div class="brand-mark"><i data-lucide="calendar-check-2"></i></div><div class="brand-copy"><span class="brand-name">LETAN</span><span class="brand-caption">STUDIO · WORKSPACE</span></div></div>
-    <div class="sidebar-section-label">KHÔNG GIAN LÀM VIỆC</div>
-    <nav class="sidebar-nav flex flex-col gap-1">
-      <button type="button" id="nav-lich" class="sidebar-item active flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold" onclick="switchTab('lich')"><i data-lucide="calendar-days"></i><span>Lịch làm việc</span><span class="nav-item-arrow"><i data-lucide="chevron-right"></i></span></button>
-      <button type="button" id="nav-chitiet" class="sidebar-item flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold" onclick="switchTab('chitiet')"><i data-lucide="table-2"></i><span>Danh sách công việc</span><span class="nav-item-arrow"><i data-lucide="chevron-right"></i></span></button>
-    </nav>
+        <div class="sidebar-scroll-content">
+      <div class="sidebar-section-label">KHÔNG GIAN LÀM VIỆC</div>
+      <nav class="sidebar-nav flex flex-col gap-1">
+        <button type="button" id="nav-lich" class="sidebar-item active flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold" onclick="switchTab('lich'); closeSidebar()"><i data-lucide="calendar-days"></i><span>Lịch làm việc</span></button>
+        <button type="button" id="nav-chitiet" class="sidebar-item flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold" onclick="switchTab('chitiet'); closeSidebar()"><i data-lucide="table-2"></i><span>Danh sách công việc</span></button>
+      </nav>
+      <section id="sidebarAuthFilters" class="sidebar-filter-section d-none" aria-label="Lọc theo tài khoản">
+        <div class="sidebar-section-label">LỌC TÀI KHOẢN</div>
+        <label class="sidebar-filter-label" for="filterAuthCodeCalendar"><i data-lucide="calendar-days"></i> Lịch làm việc</label>
+        <select id="filterAuthCodeCalendar" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 195px; border-radius: 10px; height: 36px;" onchange="onCalendarAuthFilterChange()" title="Lọc lịch làm việc theo Tài khoản">
+          <option value="">👤 Tất cả tài khoản</option>
+        </select>
+        <label class="sidebar-filter-label sidebar-filter-label-second" for="filterAuthCodeTable"><i data-lucide="list-filter"></i> Danh sách công việc</label>
+        <select id="filterAuthCodeTable" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 170px; border-radius: 8px; height: 36px;" onchange="renderMasterTable(false)" title="Lọc công việc theo Tài khoản">
+              <option value="">👤 Tất cả tài khoản</option>
+            </select>
+      </section>
+      <section class="sidebar-tools-section" aria-label="Công cụ quản lý">
+        <div class="sidebar-section-label">CÔNG CỤ</div>
+        <button type="button" class="menu-action-item" onclick="openDebtQrModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="receipt"></i></span><span>Công nợ &amp; Bảng kê lương</span></button>
+        <button type="button" class="menu-action-item" onclick="openReportModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="bar-chart-3"></i></span><span>Báo cáo tài chính</span></button>
+        <button type="button" class="menu-action-item" onclick="openManageCatalogsModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="sliders-horizontal"></i></span><span>Quản lý danh mục</span></button>
+        <button type="button" class="menu-action-item d-none" id="btnMenuManageAuthCodes" onclick="openManageAuthCodesModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="shield-check"></i></span><span>Quản lý mã đăng nhập</span></button>
+        <button type="button" class="menu-action-item d-none" id="btnMenuExportBackup" onclick="exportFirebaseBackupJson(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="download"></i></span><span>Sao lưu dữ liệu (JSON)</span></button>
+        <button type="button" class="menu-action-item" id="btnMenuSelfAccount" onclick="openSelfAccountModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="user-cog"></i></span><span>Đổi mã &amp; tên hiển thị</span></button>
+        <button type="button" class="menu-action-item danger" onclick="logoutCode(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="log-out"></i></span><span>Đăng xuất</span></button>
+      </section>
+    </div>
     <div class="sidebar-flex-spacer"></div>
     <div class="sidebar-sync-card"><div class="sidebar-sync-icon"><i data-lucide="cloud-check"></i></div><div><strong>Dữ liệu được đồng bộ</strong><span>Kết nối lịch theo thời gian thực</span></div></div>
-    <button type="button" class="sidebar-add-button" onclick="openAddModal()"><i data-lucide="plus"></i><span>Thêm công việc</span></button>
-    <div class="sidebar-account"><div class="sidebar-avatar"><i data-lucide="user-round"></i></div><div class="sidebar-account-copy"><strong id="sidebarUserName">Chưa đăng nhập</strong><span>Tài khoản đang dùng</span></div><button type="button" class="sidebar-account-menu" onclick="toggleAssistiveMenu(event)" title="Tùy chọn tài khoản"><i data-lucide="ellipsis"></i></button></div>
-  </aside>
+    <button type="button" class="sidebar-add-button" onclick="openAddModal(); closeSidebar()"><i data-lucide="plus"></i><span>Thêm công việc</span></button>
+    <div class="sidebar-account"><div class="sidebar-avatar"><i data-lucide="user-round"></i></div><div class="sidebar-account-copy"><strong id="sidebarUserName">Chưa đăng nhập</strong><span>Tài khoản đang dùng</span></div></div>  </aside>
+  <button type="button" id="sidebarBackdrop" class="sidebar-backdrop" aria-label="Đóng thanh điều hướng" onclick="closeSidebar()"></button>
   <main class="main-content min-w-0 flex-1">
     
     <div id="errorBanner" class="alert alert-danger d-none mb-3 py-2 small"></div>
@@ -1940,9 +2009,7 @@
     <div id="tabLich">
       <div class="mb-3 top-header-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div class="page-title mb-0" id="calendarPageTitle">Lịch làm việc</div>
-        <select id="filterAuthCodeCalendar" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 195px; border-radius: 10px; height: 36px;" onchange="onCalendarAuthFilterChange()" title="Lọc lịch làm việc theo Tài khoản">
-          <option value="">👤 Tất cả tài khoản</option>
-        </select>
+        
       </div>
 
       <section class="calendar-summary-grid grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Tóm tắt lịch trong tháng">
@@ -2013,9 +2080,7 @@
               <option value="">📅 Tất cả tháng</option>
             </select>
 
-            <select id="filterAuthCodeTable" class="form-select form-select-sm fw-semibold text-danger shadow-sm d-none" style="width: 170px; border-radius: 8px; height: 36px;" onchange="renderMasterTable(false)" title="Lọc công việc theo Tài khoản">
-              <option value="">👤 Tất cả tài khoản</option>
-            </select>
+            
             
             <div class="search-filter-box shadow-sm">
               <span class="search-filter-icon"><i data-lucide="search"></i></span>
@@ -2103,63 +2168,8 @@
 
 <!-- Nút Menu cố định góc trên bên phải -->
 <div id="floatingMenuBubble" class="fixed-menu-wrapper">
-  <button type="button" class="hamburger-menu-btn" id="assistiveBtn" onclick="toggleAssistiveMenu(event)" title="Mở menu điều hướng">
-    <span class="hamburger-line"></span>
-    <span class="hamburger-line"></span>
-    <span class="hamburger-line"></span>
-  </button>
-  <div class="fixed-dropdown-menu" id="assistiveMenu">
-    <div class="menu-header-info">
-      <span class="menu-brand-title">Lịch làm việc</span>
-      <span class="menu-auth-tag" id="menuAuthCodeBadge">USER</span>
-    </div>
-
-    <button type="button" class="menu-action-item" id="btnPopupToggleTab" onclick="toggleTabFromPopup(); closeAssistiveMenu();">
-      <span class="menu-icon-wrap" id="iconPopupToggleTab"><i data-lucide="table-2"></i></span>
-      <span id="labelPopupToggleTab">Quản lý & Danh sách</span>
-    </button>
-
-    <div class="menu-divider"></div>
-
-    <button type="button" class="menu-action-item" onclick="openDebtQrModal(); closeAssistiveMenu();">
-      <span class="menu-icon-wrap"><i data-lucide="receipt"></i></span>
-      <span>Công nợ & Bảng kê lương</span>
-    </button>
-
-    <button type="button" class="menu-action-item" onclick="openReportModal(); closeAssistiveMenu();">
-      <span class="menu-icon-wrap"><i data-lucide="bar-chart-3"></i></span>
-      <span>Báo cáo tài chính</span>
-    </button>
-
-    <button type="button" class="menu-action-item" onclick="openManageCatalogsModal(); closeAssistiveMenu();">
-      <span class="menu-icon-wrap"><i data-lucide="sliders"></i></span>
-      <span>Quản lý danh mục</span>
-    </button>
-
-    <button type="button" class="menu-action-item d-none" id="btnMenuManageAuthCodes" onclick="openManageAuthCodesModal(); closeAssistiveMenu();">
-      <span class="menu-icon-wrap" style="background: #fff1f2; color: #7b1113;"><i data-lucide="shield-check"></i></span>
-      <span>Quản lý Mã đăng nhập</span>
-    </button>
-
-    <button type="button" class="menu-action-item d-none" id="btnMenuExportBackup" onclick="exportFirebaseBackupJson(); closeAssistiveMenu();">
-      <span class="menu-icon-wrap"><i data-lucide="download"></i></span>
-      <span>Sao lưu dữ liệu (JSON)</span>
-    </button>
-
-    <button type="button" class="menu-action-item" id="btnMenuSelfAccount" onclick="openSelfAccountModal(); closeAssistiveMenu();">
-      <span class="menu-icon-wrap"><i data-lucide="user-cog"></i></span>
-      <span>Đổi mã & Tên hiển thị</span>
-    </button>
-
-    <div class="menu-divider"></div>
-
-    <button type="button" class="menu-action-item danger" onclick="logoutCode(); closeAssistiveMenu();">
-      <span class="menu-icon-wrap"><i data-lucide="log-out"></i></span>
-      <span>Đăng xuất</span>
-    </button>
-  </div>
+  <button type="button" class="hamburger-menu-btn" id="assistiveBtn" onclick="toggleSidebar(event)" title="Ẩn hoặc hiện thanh điều hướng" aria-label="Ẩn hoặc hiện thanh điều hướng" aria-controls="appSidebar" aria-expanded="false"><i data-lucide="panel-left"></i></button>
 </div>
-
 <!-- Modal Popup Hiển thị Thông tin Công việc & Copy gửi Zalo -->
 <div class="modal fade" id="jobInfoPopupModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -4655,6 +4665,8 @@
         if (filterAuthSelect) filterAuthSelect.classList.toggle('d-none', !isAdminAccount);
         const filterCalAuthSelect = document.getElementById('filterAuthCodeCalendar');
         if (filterCalAuthSelect) filterCalAuthSelect.classList.toggle('d-none', !isAdminAccount);
+        const sidebarAuthFilters = document.getElementById('sidebarAuthFilters');
+        if (sidebarAuthFilters) sidebarAuthFilters.classList.toggle('d-none', !isAdminAccount);
 
         if (isAdminAccount) {
           populateAdminAuthFilterDropdowns(!adminDefaultFilterInitialized);
@@ -6535,24 +6547,73 @@
     });
   }
 
-  const bubble = document.getElementById('floatingMenuBubble');
+  function isMobileSidebarViewport() {
+    return window.matchMedia('(max-width: 767.98px)').matches;
+  }
 
-  function toggleAssistiveMenu(e) {
+  function toggleSidebar(e) {
     if (e) e.stopPropagation();
-    bubble.classList.toggle('active');
+    const sidebar = document.getElementById('appSidebar');
+    const main = document.querySelector('.main-content');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const button = document.getElementById('assistiveBtn');
+    if (!sidebar || !main || !button) return;
+
+    if (isMobileSidebarViewport()) {
+      const willOpen = !sidebar.classList.contains('is-open');
+      sidebar.classList.toggle('is-open', willOpen);
+      if (backdrop) backdrop.classList.toggle('show', willOpen);
+      document.body.classList.toggle('sidebar-mobile-open', willOpen);
+      button.setAttribute('aria-expanded', String(willOpen));
+    } else {
+      const willCollapse = !sidebar.classList.contains('is-collapsed');
+      sidebar.classList.toggle('is-collapsed', willCollapse);
+      main.classList.toggle('sidebar-expanded', willCollapse);
+      button.setAttribute('aria-expanded', String(!willCollapse));
+    }
   }
 
-  function closeAssistiveMenu() {
-    bubble.classList.remove('active');
+  function closeSidebar() {
+    if (!isMobileSidebarViewport()) return;
+    const sidebar = document.getElementById('appSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const button = document.getElementById('assistiveBtn');
+    if (sidebar) sidebar.classList.remove('is-open');
+    if (backdrop) backdrop.classList.remove('show');
+    document.body.classList.remove('sidebar-mobile-open');
+    if (button) button.setAttribute('aria-expanded', 'false');
   }
+
+  // Backward-compatible names used by existing actions.
+  function toggleAssistiveMenu(e) { toggleSidebar(e); }
+  function closeAssistiveMenu() { closeSidebar(); }
 
   document.addEventListener('click', function(e) {
-    if (bubble && !bubble.contains(e.target)) {
-      bubble.classList.remove('active');
-    }
+    if (isMobileSidebarViewport() && !e.target.closest('#appSidebar, #floatingMenuBubble')) closeSidebar();
   });
-
-
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSidebar();
+  });
+  let lastSidebarMobileMode = isMobileSidebarViewport();
+  document.addEventListener('DOMContentLoaded', function() {
+    const button = document.getElementById('assistiveBtn');
+    if (button) button.setAttribute('aria-expanded', String(!isMobileSidebarViewport()));
+  });
+  window.addEventListener('resize', function() {
+    const mobileMode = isMobileSidebarViewport();
+    if (mobileMode === lastSidebarMobileMode) return;
+    lastSidebarMobileMode = mobileMode;
+    const sidebar = document.getElementById('appSidebar');
+    const main = document.querySelector('.main-content');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const button = document.getElementById('assistiveBtn');
+    if (!sidebar || !main) return;
+    sidebar.classList.remove('is-open', 'is-collapsed');
+    main.classList.remove('sidebar-expanded');
+    if (backdrop) backdrop.classList.remove('show');
+    document.body.classList.remove('sidebar-mobile-open');
+    if (button) button.setAttribute('aria-expanded', String(!mobileMode));
+  });
   function toggleShowInputPass(inputId, linkId) {
     const inp = document.getElementById(inputId);
     const link = linkId ? document.getElementById(linkId) : null;
@@ -7165,6 +7226,8 @@
     if (calAuthSel) { calAuthSel.value = ''; calAuthSel.classList.add('d-none'); }
     const tblAuthSel = document.getElementById('filterAuthCodeTable');
     if (tblAuthSel) { tblAuthSel.value = ''; tblAuthSel.classList.add('d-none'); }
+    const sidebarAuthFilters = document.getElementById('sidebarAuthFilters');
+    if (sidebarAuthFilters) sidebarAuthFilters.classList.add('d-none');
     try { localStorage.removeItem('letan_saved_auth_code'); } catch (e) {}
     document.getElementById('loginCodeInput').value = '';
     updateCalendarPageTitle();
