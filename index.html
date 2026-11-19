@@ -1855,11 +1855,11 @@
     @media(max-width:380px){.sidebar-item{min-width:0;font-size:10px!important}.calendar-day{height:51px;min-height:51px;max-height:51px}.lunar-date{display:none}.calendar-today-button{padding:0 8px!important}.summary-card{padding:8px}}
 
     /* Sidebar controls and compact mobile drawer */
-    .app-sidebar{overflow:hidden;transition:transform .24s cubic-bezier(.2,.8,.2,1),width .24s ease,box-shadow .24s ease}
+    .app-sidebar{overflow:visible;transition:transform .24s cubic-bezier(.2,.8,.2,1),width .24s ease,box-shadow .24s ease}
     .app-sidebar.is-collapsed{transform:translateX(calc(-1 * var(--sidebar-width)))}
     .main-content{transition:margin-left .24s ease,width .24s ease}
     .main-content.sidebar-expanded{width:100%;margin-left:0}
-    .sidebar-scroll-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 2px 10px;scrollbar-width:thin;scrollbar-color:#e2d9da transparent}
+    .sidebar-scroll-content{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 2px 10px;scrollbar-width:thin;scrollbar-color:#e2d9da transparent}
     .sidebar-filter-section{margin:21px 5px 17px;padding:15px 11px 12px;border:1px solid #eee9eb;border-radius:14px;background:#fcfbfb}
     .sidebar-filter-section .sidebar-section-label{padding:0;margin:0 0 12px}
     .sidebar-filter-label{display:flex;align-items:center;gap:7px;margin:0 0 6px;color:#77747e;font-size:10px;font-weight:700}
@@ -1890,7 +1890,7 @@
       .nav-item-arrow{display:inline-flex}
       .sidebar-filter-section{margin:16px 4px 13px}
       .sidebar-tools-section{padding-bottom:10px}
-      .sidebar-flex-spacer{display:block!important;flex:1;min-height:10px}
+
       .sidebar-sync-card{display:flex!important}
       .sidebar-add-button{display:flex!important}
       .sidebar-account{display:flex!important}
@@ -1904,7 +1904,7 @@
     #tabLich .calendar-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
     .sidebar-account-wrap{position:relative;flex:0 0 auto;padding-top:13px;border-top:1px solid #f0eef0}
     .sidebar-account-wrap .sidebar-account{padding:0;border:0}
-    .sidebar-account-dropdown{min-width:225px;padding:7px;border:1px solid #ece9ed;border-radius:13px;box-shadow:0 16px 36px rgba(28,22,24,.14)}
+    .sidebar-account-dropdown{display:none;position:absolute;right:0;bottom:calc(100% + 8px);top:auto!important;left:auto!important;z-index:1080;min-width:225px;padding:7px;border:1px solid #ece9ed;border-radius:13px;box-shadow:0 16px 36px rgba(28,22,24,.14);transform:none!important}.sidebar-account-dropdown.show{display:block}
     .sidebar-account-dropdown .menu-action-item{min-height:38px;padding:8px 9px;gap:9px;border-radius:9px;font-size:11px}
     .sidebar-account-dropdown .menu-icon-wrap{width:27px;height:27px;display:grid;place-items:center;border-radius:8px;background:#f5f1f2;color:#8a5355}
     .sidebar-account-dropdown .menu-icon-wrap svg{width:14px;height:14px}
@@ -2010,16 +2010,16 @@
         <button type="button" class="menu-action-item d-none" id="btnMenuExportBackup" onclick="exportFirebaseBackupJson(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="download"></i></span><span>Sao lưu dữ liệu (JSON)</span></button>
       </section>
     </div>
-    <div class="sidebar-flex-spacer"></div>
+
         <div class="sidebar-account-wrap dropdown">
       <div class="sidebar-account">
         <div class="sidebar-avatar"><i data-lucide="user-round"></i></div>
         <div class="sidebar-account-copy"><strong id="sidebarUserName">Chưa đăng nhập</strong><span>Tài khoản đang dùng</span></div>
-        <button type="button" class="sidebar-account-menu" id="sidebarAccountMenuButton" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Tùy chọn tài khoản"><i data-lucide="ellipsis"></i></button>
+        <button type="button" class="sidebar-account-menu" id="sidebarAccountMenuButton" onclick="toggleSidebarAccountMenu(event)" aria-expanded="false" aria-label="Tùy chọn tài khoản"><i data-lucide="ellipsis"></i></button>
       </div>
       <div class="dropdown-menu dropdown-menu-end sidebar-account-dropdown">
-        <button type="button" class="menu-action-item" id="btnMenuSelfAccount" onclick="openSelfAccountModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="user-cog"></i></span><span>Đổi mã &amp; tên hiển thị</span></button>
-        <button type="button" class="menu-action-item danger" onclick="logoutCode(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="log-out"></i></span><span>Đăng xuất</span></button>
+        <button type="button" class="menu-action-item" id="btnMenuSelfAccount" onclick="closeSidebarAccountMenu(); openSelfAccountModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="user-cog"></i></span><span>Đổi mã &amp; tên hiển thị</span></button>
+        <button type="button" class="menu-action-item danger" onclick="closeSidebarAccountMenu(); logoutCode(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="log-out"></i></span><span>Đăng xuất</span></button>
       </div>
     </div>  </aside>
   <button type="button" id="sidebarBackdrop" class="sidebar-backdrop" aria-label="Đóng thanh điều hướng" onclick="closeSidebar()"></button>
@@ -2075,7 +2075,7 @@
                 <small class="text-muted" id="selectedDateSubCount">0 lịch làm việc</small>
               </div>
               <button class="btn btn-sm fw-bold text-white px-3 shadow-sm calendar-add-button" onclick="openAddModal()">
-                <i data-lucide="plus"></i> + Thêm
+                <i data-lucide="plus"></i> Thêm
               </button>
             </div>
             <input type="text" id="filterCustomerInput" class="form-control form-control-sm mb-3" placeholder="🔍 Tìm tên dâu rể / studio..." oninput="renderSelectedDayJobs()">
@@ -6585,7 +6585,25 @@
     }
   }
 
+  function toggleSidebarAccountMenu(e) {
+    if (e) e.stopPropagation();
+    const menu = document.querySelector('.sidebar-account-dropdown');
+    const button = document.getElementById('sidebarAccountMenuButton');
+    if (!menu) return;
+    const isOpen = !menu.classList.contains('show');
+    menu.classList.toggle('show', isOpen);
+    if (button) button.setAttribute('aria-expanded', String(isOpen));
+  }
+
+  function closeSidebarAccountMenu() {
+    const menu = document.querySelector('.sidebar-account-dropdown');
+    const button = document.getElementById('sidebarAccountMenuButton');
+    if (menu) menu.classList.remove('show');
+    if (button) button.setAttribute('aria-expanded', 'false');
+  }
+
   function closeSidebar() {
+    closeSidebarAccountMenu();
     if (!isMobileSidebarViewport()) return;
     const sidebar = document.getElementById('appSidebar');
     const backdrop = document.getElementById('sidebarBackdrop');
@@ -6595,16 +6613,19 @@
     document.body.classList.remove('sidebar-mobile-open');
     if (button) button.setAttribute('aria-expanded', 'false');
   }
-
   // Backward-compatible names used by existing actions.
   function toggleAssistiveMenu(e) { toggleSidebar(e); }
   function closeAssistiveMenu() { closeSidebar(); }
 
   document.addEventListener('click', function(e) {
+    if (!e.target.closest('.sidebar-account-wrap')) closeSidebarAccountMenu();
     if (isMobileSidebarViewport() && !e.target.closest('#appSidebar, #floatingMenuBubble')) closeSidebar();
   });
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeSidebar();
+    if (e.key === 'Escape') {
+      closeSidebarAccountMenu();
+      closeSidebar();
+    }
   });
   let lastSidebarMobileMode = isMobileSidebarViewport();
   document.addEventListener('DOMContentLoaded', function() {
