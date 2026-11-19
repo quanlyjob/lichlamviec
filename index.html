@@ -92,1743 +92,982 @@
   </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    :root {
-      --sidebar-width: 250px;
-      --primary-dark: #7b1113;
-      --primary-hover: #9b2c2c;
-    }
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; color: #1e293b; margin: 0; }
-    
-    .app-layout { display: flex; min-height: 100vh; }
-    
-
-    .main-content { flex-grow: 1; padding: 28px; background-color: #f8fafc; overflow-x: hidden; }
-
-    .page-subtitle { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #b91c1c; font-weight: 700; margin-bottom: 4px; }
-    .page-title { font-size: 24px; font-weight: 700; color: #09090b; margin-bottom: 16px; }
-
-    .calendar-card { background: white; border: 1px solid #e4e4e7; border-radius: 16px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; width: 100%; }
-    .calendar-weekday { text-align: center; font-weight: 600; font-size: 12px; color: #71717a; padding-bottom: 6px; user-select: none; }
-    
-    .calendar-day {
-      height: 68px;
-      min-height: 68px;
-      max-height: 68px;
-      background: #ffffff; 
-      border: 1px solid #f1f5f9; 
-      border-radius: 10px;
-      padding: 4px 2px; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: flex-start;
-      align-items: center;
-      gap: 2px;
-      cursor: pointer; 
-      transition: background-color 0.15s, border-color 0.15s;
-      overflow: hidden;
-      box-sizing: border-box;
-      user-select: none;
-    }
-    .calendar-day:hover { border-color: #cbd5e1; background: #fafafa; }
-    .calendar-day.other-month { background: #fafafa; color: #cbd5e1; pointer-events: none; }
-    .calendar-day.today { border: 2px solid var(--primary-dark); }
-    .calendar-day.has-event { background: #fff5f5; border-color: #feb2b2; }
-    .calendar-day.selected-date { background: #7b1113 !important; color: white !important; border-color: #5a0c0e !important; }
-    
-    .day-number {
-      font-weight: 600; 
-      font-size: 13px; 
-      width: 24px; 
-      height: 24px; 
-      min-height: 24px;
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      border-radius: 50%; 
-      margin: 0 auto;
-      transition: all 0.15s;
-      line-height: 1;
-    }
-    .calendar-day:hover .day-number { background-color: #f1f5f9; }
-    .calendar-day.today .day-number { background-color: #7b1113; color: white; }
-    .calendar-day.selected-date .day-number { background-color: white; color: #7b1113; }
-
-    .lunar-date {
-      font-size: 10px;
-      color: #64748b;
-      font-weight: 500;
-      line-height: 1.1;
-      white-space: nowrap;
-    }
-    .calendar-day.other-month .lunar-date { color: #cbd5e1; }
-    .calendar-day.has-event .lunar-date { color: #9f1239; }
-    .calendar-day.selected-date .lunar-date { color: #fecaca !important; }
-
-    .event-badge { 
-      background: #7b1113; 
-      color: white; 
-      font-size: 9.5px; 
-      font-weight: 600; 
-      padding: 1px 6px; 
-      border-radius: 8px; 
-      text-align: center; 
-      align-self: center; 
-      white-space: nowrap;
-      line-height: 1.25;
-      margin-top: 1px;
-    }
-    .calendar-day.selected-date .event-badge { background: white; color: #7b1113; }
-
-    .day-detail-panel { background: white; border: 1px solid #e4e4e7; border-radius: 16px; padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; }
-    .event-item-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 14px; margin-top: 10px; transition: box-shadow 0.2s; }
-    .event-item-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    
-    .today-row td { background-color: #fff3cd !important; font-weight: 600; }
-    .today-row td:first-child { border-left: 4px solid #ffc107 !important; }
-    .empty-day-row td { color: #94a3b8; font-style: italic; background-color: #fcfcfd; }
-    .today-row.empty-day-row td { color: #664d03; background-color: #fff3cd !important; }
-
-    .row-status-xong td {
-      background-color: #f0fdf4 !important;
-      color: #166534 !important;
-    }
-    .row-status-xong td .job-badge {
-      background-color: #dcfce7 !important;
-      border-color: #86efac !important;
-      color: #166534 !important;
-    }
-
-    .search-filter-box {
-      position: relative;
-      display: flex;
-      align-items: center;
-      width: 235px;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 0 6px 0 10px;
-      height: 31px;
-      transition: all 0.18s ease;
-    }
-    .search-filter-box:focus-within {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
-    .search-filter-icon {
-      color: #94a3b8;
-      display: flex;
-      align-items: center;
-      margin-right: 7px;
-      pointer-events: none;
-    }
-    .search-filter-input {
-      border: none;
-      outline: none;
-      background: transparent;
-      width: 100%;
-      font-size: 13px;
-      color: #1e293b;
-      padding: 0;
-    }
-    .search-filter-input::placeholder { color: #94a3b8; }
-    .btn-clear-filter {
-      border: none;
-      background: #f1f5f9;
-      color: #64748b;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      flex-shrink: 0;
-      margin-left: 4px;
-      padding: 0;
-      line-height: 1;
-      transition: all 0.15s ease;
-      opacity: 0.45;
-    }
-    .btn-clear-filter:hover {
-      background: #fee2e2;
-      color: #dc2626;
-      opacity: 1 !important;
-      transform: scale(1.08);
-    }
-    .btn-clear-filter.has-active-filter {
-      background: #fee2e2;
-      color: #dc2626;
-      opacity: 1;
-    }
-
-    /* Giao diện nút và menu Cột hiển thị tinh tế */
-    .column-visibility-dropdown {
-      border: 1px solid #e2e8f0 !important;
-      border-radius: 12px !important;
-      padding: 8px !important;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
-      min-width: 215px !important;
-    }
-    .col-vis-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 10px;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #334155;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.15s ease, color 0.15s ease;
-    }
-    .col-vis-item:hover {
-      background-color: #f1f5f9;
-      color: #0f172a;
-    }
-    .col-vis-item input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-      accent-color: #7b1113;
-      border-radius: 4px;
-    }
-
-    #masterTableContainer table th, 
-    #masterTableContainer table td {
-      vertical-align: middle !important;
-      text-align: center !important;
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 13px;
-      padding: 10px 8px !important;
-    }
-
-    #masterTableContainer table th[draggable="true"] {
-      cursor: grab;
-      user-select: none;
-      position: relative;
-    }
-    #masterTableContainer table th[draggable="true"]:active {
-      cursor: grabbing;
-    }
-    #masterTableContainer table th.dragging-col {
-      opacity: 0.4;
-      background: #e2e8f0 !important;
-    }
-    #masterTableContainer table th.drag-over {
-      border-left: 3px dashed #7b1113 !important;
-    }
-
-    #masterTableContainer table td:nth-child(5) { text-align: center !important; }
-    #masterTableContainer table td:nth-child(6) { text-align: left !important; }
-    #masterTableContainer table td:nth-child(10), 
-    #masterTableContainer table td:nth-child(11), 
-    #masterTableContainer table td:nth-child(12) { text-align: right !important; }
-
-    .job-badge { 
-      display: inline-block !important;
-      background-color: #f8fafc;
-      color: #334155;
-      font-weight: 600 !important;
-      font-size: 12px !important;
-      padding: 4px 10px !important;
-      border-radius: 6px !important;
-      border: 1px solid #cbd5e1;
-      text-decoration: none !important;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .job-badge:hover {
-      background-color: #7b1113 !important;
-      color: #ffffff !important;
-      border-color: #7b1113 !important;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 6px rgba(123, 17, 19, 0.25);
-    }
-
-    .dropdown-toggle::after {
-      display: none !important;
-    }
-
-    .customer-badge {
-      display: inline-block !important;
-      background-color: #eff6ff;
-      color: #1e40af;
-      font-weight: 600 !important;
-      font-size: 12px !important;
-      padding: 4px 10px !important;
-      border-radius: 6px !important;
-      border: 1px solid #bfdbfe;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .customer-badge:hover {
-      background-color: #2563eb !important;
-      color: #ffffff !important;
-      border-color: #2563eb !important;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
-    }
-    .customer-badge.active-filter {
-      background-color: #2563eb !important;
-      color: #ffffff !important;
-      border-color: #1d4ed8 !important;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
-    }
-
-    .dropdown-menu .dropdown-item {
-      padding: 6px 12px;
-      margin: 2px 6px;
-      border-radius: 6px;
-      width: calc(100% - 12px);
-      transition: all 0.15s ease;
-      color: #334155;
-    }
-    .dropdown-menu .dropdown-item:hover, 
-    .dropdown-menu .dropdown-item:focus {
-      background-color: #fee2e2 !important;
-      color: #991b1b !important;
-      font-weight: 600;
-    }
-    .dropdown-menu .dropdown-item.active {
-      background-color: #7b1113 !important;
-      color: #ffffff !important;
-    }
-
-    .cost-checkbox { 
-      display: block !important;
-      margin: 0 auto !important;
-      width: 18px !important; 
-      height: 18px !important; 
-      cursor: pointer; 
-      accent-color: #198754; 
-      border-radius: 4px; 
-    }
-
-    .spin-anim { animation: spin 0.8s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-
-    .money-quick-chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
-    .money-chip { font-size: 11px; padding: 2px 7px; border-radius: 5px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; cursor: pointer; font-weight: 600; }
-    .money-chip:hover { background: #2563eb; color: white; }
-
-    .job-info-row {
-      display: flex;
-      padding: 8px 0;
-      border-bottom: 1px dashed #e2e8f0;
-      font-size: 13.5px;
-    }
-    .job-info-row:last-child { border-bottom: none; }
-    .job-info-label { width: 135px; flex-shrink: 0; color: #64748b; font-weight: 600; }
-    .job-info-val { flex-grow: 1; color: #0f172a; font-weight: 500; word-break: break-word; }
-
-    .app-toast {
-      position: fixed;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-80px) scale(0.92);
-      background: rgba(24, 24, 27, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      color: #ffffff;
-      padding: 8px 18px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 600;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-      white-space: nowrap;
-    }
-    .app-toast.show { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
-    .app-toast.toast-warning { background: rgba(153, 27, 27, 0.94); }
-
-    .top-header-bar {
-      padding-right: 52px;
-      min-height: 42px;
-      display: flex;
-      align-items: center;
-    }
-
-    .fixed-menu-wrapper {
-      position: fixed;
-      top: max(18px, env(safe-area-inset-top));
-      right: 20px;
-      z-index: 9999;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .hamburger-menu-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-      padding: 0;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .hamburger-menu-btn:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
-    }
-    .fixed-menu-wrapper.active .hamburger-menu-btn {
-      background: #7b1113;
-      border-color: #7b1113;
-      box-shadow: 0 6px 18px rgba(123, 17, 19, 0.28);
-    }
-
-    .hamburger-line {
-      width: 18px;
-      height: 2px;
-      background-color: #1e293b;
-      border-radius: 2px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      transform-origin: center;
-    }
-    .fixed-menu-wrapper.active .hamburger-line {
-      background-color: #ffffff;
-    }
-    .fixed-menu-wrapper.active .hamburger-line:nth-child(1) {
-      transform: translateY(7px) rotate(45deg);
-    }
-    .fixed-menu-wrapper.active .hamburger-line:nth-child(2) {
-      opacity: 0;
-      transform: scaleX(0);
-    }
-    .fixed-menu-wrapper.active .hamburger-line:nth-child(3) {
-      transform: translateY(-7px) rotate(-45deg);
-    }
-
-    .fixed-dropdown-menu {
-      position: absolute;
-      top: calc(100% + 10px);
-      right: 0;
-      width: 255px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 8px;
-      box-shadow: 0 18px 38px -6px rgba(15, 23, 42, 0.16), 0 8px 16px -6px rgba(15, 23, 42, 0.08);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transform: translateY(-8px) scale(0.96);
-      transform-origin: top right;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes pulseRefreshBtn {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.55; }
-    }
-    .btn-refresh-table {
-      position: relative;
-      overflow: hidden;
-      transition: all 0.2s ease;
-    }
-    .btn-refresh-table:hover:not(:disabled) {
-      border-color: #7b1113 !important;
-      color: #7b1113 !important;
-      background-color: #fff1f2 !important;
-    }
-    .btn-refresh-table.is-loading {
-      pointer-events: none;
-      background-color: #7b1113 !important;
-      border-color: #7b1113 !important;
-      color: #ffffff !important;
-      animation: pulseRefreshBtn 1s ease-in-out infinite;
-    }
-    .fixed-menu-wrapper.active .fixed-dropdown-menu {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      transform: translateY(0) scale(1);
-    }
-
-    .menu-header-info {
-      padding: 8px 12px 10px;
-      border-bottom: 1px solid #f1f5f9;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .menu-brand-title {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      color: #7b1113;
-    }
-    .menu-auth-tag {
-      font-size: 10.5px;
-      font-weight: 700;
-      background: #f1f5f9;
-      color: #475569;
-      padding: 2px 8px;
-      border-radius: 6px;
-    }
-
-    .menu-divider {
-      height: 1px;
-      background: #f1f5f9;
-      margin: 6px 4px;
-    }
-
-    .menu-action-item {
-      width: 100%;
-      background: transparent;
-      border: none;
-      border-radius: 10px;
-      padding: 9px 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 13.5px;
-      font-weight: 600;
-      color: #334155;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.15s ease;
-    }
-    .menu-action-item:hover {
-      background: #f8fafc;
-      color: #0f172a;
-    }
-    .menu-action-item:active {
-      transform: scale(0.985);
-    }
-
-    .menu-action-item.primary {
-      background: #7b1113;
-      color: #ffffff;
-      margin-bottom: 4px;
-      box-shadow: 0 4px 12px rgba(123, 17, 19, 0.22);
-    }
-    .menu-action-item.primary:hover {
-      background: #991b1b;
-      color: #ffffff;
-    }
-
-    .menu-action-item.danger {
-      color: #dc2626;
-    }
-    .menu-action-item.danger:hover {
-      background: #fef2f2;
-      color: #b91c1c;
-    }
-
-    .menu-icon-wrap {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: #f1f5f9;
-      color: #475569;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 14px;
-      transition: all 0.15s ease;
-    }
-    .menu-action-item:hover .menu-icon-wrap {
-      background: #e2e8f0;
-      color: #0f172a;
-    }
-    .menu-action-item.primary .menu-icon-wrap {
-      background: rgba(255, 255, 255, 0.18);
-      color: #ffffff;
-    }
-    .menu-action-item.danger .menu-icon-wrap {
-      background: #fee2e2;
-      color: #dc2626;
-    }
-
-    @media (max-width: 992px) {
-      .app-layout { flex-direction: column; }
-        .main-content { padding: 15px; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
-      .calendar-day { height: 64px; min-height: 64px; max-height: 64px; padding: 3px 2px; }
-      .fixed-menu-wrapper { top: max(12px, env(safe-area-inset-top)); right: 15px; }
-      .top-header-bar { padding-right: 50px; min-height: 40px; }
-    }
-
-    /* Giao diện màn hình khóa Đăng nhập */
-    .login-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(17, 17, 17, 0.94);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .login-card {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 28px 24px;
-      width: 100%;
-      max-width: 370px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-      text-align: center;
-    }
-    .login-logo {
-      width: 64px;
-      height: 64px;
-      border-radius: 16px;
-      background: #7b1113;
-      color: #ffffff;
-      font-size: 26px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 14px;
-      box-shadow: 0 6px 16px rgba(123, 17, 19, 0.35);
-    }
-
-    /* Giao diện Popup Thêm / Sửa Job tinh gọn & chuyên nghiệp */
-    #jobModal .modal-content {
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
-    }
-    #jobModal .modal-header {
-      background: #111111;
-      padding: 12px 18px;
-      border-bottom: none;
-    }
-    #jobModal .modal-title {
-      font-size: 14.5px;
-      letter-spacing: 0.2px;
-    }
-    #jobModal .modal-body {
-      padding: 16px 18px;
-      background-color: #ffffff;
-    }
-    #jobModal .form-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #334155;
-      margin-bottom: 4px;
-    }
-    #jobModal .form-control,
-    #jobModal .form-select {
-      border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      font-size: 13px;
-      padding: 6px 10px;
-      color: #0f172a;
-      background-color: #f8fafc;
-      transition: all 0.15s ease;
-    }
-    #jobModal .form-control:focus,
-    #jobModal .form-select:focus {
-      background-color: #ffffff;
-      border-color: #7b1113;
-      box-shadow: 0 0 0 3px rgba(123, 17, 19, 0.12);
-    }
-    #jobModal .input-group .form-control {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-    #jobModal .input-group .btn {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 0 10px;
-    }
-    #jobModal .modal-footer {
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      padding: 10px 18px;
-    }
-
-    /* === NÂNG CẤP UI/UX CHUYÊN NGHIỆP (PADDING, BORDERLESS, TYPOGRAPHY, EMPTY STATE & RESPONSIVE) === */
-    body {
-      background-color: #f1f5f9;
-      color: #0f172a;
-      -webkit-font-smoothing: antialiased;
-      letter-spacing: -0.01em;
-    }
-
-    .main-content {
-      padding: 32px 36px;
-      background-color: #f1f5f9;
-      max-width: 1600px;
-      margin: 0 auto;
-    }
-
-    .page-subtitle {
-      font-size: 11.5px;
-      letter-spacing: 0.8px;
-      color: #991b1b;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .page-title {
-      font-size: 26px;
-      font-weight: 800;
-      color: #0f172a;
-      letter-spacing: -0.025em;
-    }
-
-    /* Thẻ Lịch & Cột Chi Tiết Ngày: Tăng padding, bỏ viền thừa, dùng đổ bóng mềm */
-    .calendar-card {
-      background: #ffffff;
-      border: 1px solid rgba(226, 232, 240, 0.7);
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
-    }
-
-    .calendar-header {
-      margin-bottom: 18px;
-    }
-
-    #calendarMonthTitle {
-      font-size: 18px;
-      font-weight: 800;
-      color: #0f172a;
-      letter-spacing: -0.015em;
-    }
-
-    .calendar-header .btn-group {
-      background: #f8fafc;
-      padding: 3px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      gap: 2px;
-    }
-
-    .calendar-header .btn-group .btn {
-      border: none !important;
-      border-radius: 9px !important;
-      color: #334155;
-      font-weight: 600;
-      font-size: 12.5px;
-      padding: 5px 12px;
-      transition: all 0.15s ease;
-    }
-
-    .calendar-header .btn-group .btn:hover {
-      background: #ffffff;
-      color: #7b1113;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-
-    .calendar-grid {
-      gap: 8px;
-    }
-
-    .calendar-weekday {
-      font-weight: 700;
-      font-size: 11.5px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #64748b;
-      padding-bottom: 8px;
-    }
-
-    .calendar-day {
-      height: 74px;
-      min-height: 74px;
-      max-height: 74px;
-      background: #f8fafc;
-      border: 1px solid transparent;
-      border-radius: 14px;
-      padding: 6px 4px;
-      gap: 2px;
-      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .calendar-day:hover {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
-    }
-
-    .calendar-day.other-month {
-      background: transparent;
-      opacity: 0.4;
-    }
-
-    .calendar-day.has-event {
-      background: #fff1f2;
-      border-color: rgba(254, 205, 211, 0.7);
-    }
-
-    .calendar-day.today {
-      border: 2px solid #7b1113;
-      background: #ffffff;
-    }
-
-    .calendar-day.selected-date {
-      background: #7b1113 !important;
-      color: #ffffff !important;
-      border-color: #7b1113 !important;
-      box-shadow: 0 6px 16px rgba(123, 17, 19, 0.28);
-      transform: translateY(-1px);
-    }
-
-    .day-number {
-      font-weight: 700;
-      font-size: 14px;
-      color: #0f172a;
-    }
-
-    .calendar-day.selected-date .day-number {
-      background-color: rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-    }
-
-    .lunar-date {
-      font-size: 10px;
-      color: #94a3b8;
-      font-weight: 500;
-    }
-
-    .event-badge {
-      font-size: 10px;
-      font-weight: 700;
-      padding: 1.5px 8px;
-      border-radius: 999px;
-    }
-
-    /* Cột Chi Tiết Ngày */
-    .day-detail-panel {
-      background: #ffffff;
-      border: 1px solid rgba(226, 232, 240, 0.7);
-      border-radius: 20px;
-      padding: 26px;
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
-    }
-
-    #selectedDateHeader {
-      font-size: 16.5px;
-      font-weight: 800 !important;
-      color: #0f172a !important;
-      letter-spacing: -0.01em;
-    }
-
-    #selectedDateSubCount {
-      font-size: 12.5px;
-      font-weight: 500;
-      color: #64748b !important;
-    }
-
-    #filterCustomerInput {
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 8px 12px;
-      font-size: 13px;
-      transition: all 0.2s ease;
-    }
-
-    #filterCustomerInput:focus {
-      background-color: #ffffff;
-      border-color: #7b1113;
-      box-shadow: 0 0 0 3px rgba(123, 17, 19, 0.1);
-    }
-
-    /* Thẻ Job trong ngày: Tăng padding, phân cấp chữ rõ ràng, bỏ viền thô */
-    .event-item-card {
-      background: #f8fafc;
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      border-left: 4px solid #7b1113;
-      border-radius: 14px;
-      padding: 16px 18px;
-      margin-top: 12px;
-      transition: all 0.2s ease;
-    }
-
-    .event-item-card:hover {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      border-left-color: #7b1113;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.07);
-    }
-
-    .event-card-customer {
-      font-size: 15px;
-      font-weight: 800;
-      color: #0f172a;
-      margin: 0;
-      letter-spacing: -0.01em;
-    }
-
-    .event-card-time {
-      font-size: 13px;
-      font-weight: 700;
-      color: #334155;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-
-    .event-card-addr {
-      font-size: 12.5px;
-      font-weight: 400;
-      color: #64748b;
-      line-height: 1.45;
-      margin-bottom: 6px;
-    }
-
-    .event-card-exec {
-      font-size: 12px;
-      font-weight: 600;
-      color: #15803d;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: #f0fdf4;
-      padding: 2px 9px;
-      border-radius: 6px;
-    }
-
-    /* Bảng Quản Lý (Tab 2): Bỏ đường kẻ dọc rườm rà, tăng padding thoáng đãng */
-    #tabChitiet > .card {
-      border-radius: 18px !important;
-      padding: 20px 24px !important;
-      border: 1px solid rgba(226, 232, 240, 0.7) !important;
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04) !important;
-    }
-
-    #masterTableContainer {
-      border-radius: 12px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    #masterTableContainer table {
-      border-collapse: separate !important;
-      border-spacing: 0 !important;
-    }
-
-    #masterTableContainer table th,
-    #masterTableContainer table td {
-      border: none !important;
-      border-bottom: 1px solid #f1f5f9 !important;
-      padding: 13px 10px !important;
-    }
-
-    #masterTableContainer table thead th {
-      background-color: #f8fafc !important;
-      color: #475569;
-      font-weight: 700;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      border-bottom: 2px solid #e2e8f0 !important;
-      padding: 12px 10px !important;
-    }
-
-    #masterTableContainer table tbody tr {
-      transition: background-color 0.15s ease;
-    }
-
-    #masterTableContainer table tbody tr:hover td {
-      background-color: #f8fafc !important;
-    }
-
-    .cell-date-primary {
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .cell-money-primary {
-      font-weight: 700;
-      color: #0f172a;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .cell-money-secondary {
-      font-weight: 500;
-      color: #64748b;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* Giao diện Trạng Thái Trống (Empty State) hiện đại & thân thiện */
-    .empty-state-box {
-      padding: 36px 20px;
-      text-align: center;
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 16px;
-      margin-top: 8px;
-    }
-
-    .empty-state-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: #fff1f2;
-      color: #7b1113;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 12px;
-    }
-
-    .empty-state-title {
-      font-size: 14.5px;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 4px;
-    }
-
-    .empty-state-desc {
-      font-size: 12.5px;
-      color: #64748b;
-      max-width: 280px;
-      margin: 0 auto 14px;
-      line-height: 1.45;
-    }
-
-    .empty-state-btn {
-      background-color: #7b1113;
-      color: #ffffff;
-      border: none;
-      border-radius: 9px;
-      padding: 6px 16px;
-      font-size: 12.5px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      box-shadow: 0 2px 8px rgba(123, 17, 19, 0.2);
-    }
-
-    .empty-state-btn:hover {
-      background-color: #991b1b;
-      transform: translateY(-1px);
-    }
-
-    /* Tối ưu hiển thị trên Điện Thoại (Mobile Responsive) */
-    @media (max-width: 768px) {
-      .main-content {
-        padding: 14px 12px 28px;
-      }
-      .page-title {
-        font-size: 21px;
-      }
-      .calendar-card,
-      .day-detail-panel,
-      #tabChitiet > .card {
-        padding: 16px !important;
-        border-radius: 16px !important;
-      }
-      .calendar-grid {
-        gap: 4px;
-      }
-      .calendar-day {
-        height: 62px;
-        min-height: 62px;
-        max-height: 62px;
-        border-radius: 10px;
-        padding: 3px 1px;
-      }
-      .day-number {
-        font-size: 12.5px;
-        width: 22px;
-        height: 22px;
-        min-height: 22px;
-      }
-      .lunar-date {
-        font-size: 9px;
-      }
-      .event-badge {
-        font-size: 8.5px;
-        padding: 1px 5px;
-      }
-      .search-filter-box {
-        width: 100%;
-        flex-grow: 1;
-      }
-      #filterMonthTable {
-        width: calc(50% - 4px) !important;
-        flex-grow: 1;
-      }
-      #btnRefreshTable {
-        margin-left: 0 !important;
-      }
-    }
-
-
-    /* === TAILWIND + LUCIDE MODERN UI UPGRADE & IFRAME OVERFLOW PROTECTION === */
-    html, body {
-      max-width: 100vw !important;
-      overflow-x: hidden !important;
-      background-color: #f8fafc;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    .app-layout {
-      max-width: 100vw;
-      overflow-x: hidden;
-    }
-
-    .lucide {
-      width: 15px;
-      height: 15px;
-      stroke-width: 2.2;
-      vertical-align: -2px;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-
-    /* Modern Inputs & Selects with soft borders, generous padding, and clear focus ring */
-    .form-control, .form-select, .search-filter-box {
-      border-radius: 10px !important;
-      border: 1px solid #cbd5e1 !important;
-      background-color: #ffffff;
-      color: #0f172a;
-      padding: 7px 12px;
-      font-size: 13px;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    }
-
-    .form-control:hover, .form-select:hover, .search-filter-box:hover {
-      border-color: #94a3b8 !important;
-    }
-
-    .form-control:focus, .form-select:focus, .search-filter-box:focus-within {
-      border-color: #7b1113 !important;
-      background-color: #ffffff !important;
-      box-shadow: 0 0 0 3.5px rgba(123, 17, 19, 0.14) !important;
-      outline: none !important;
-    }
-
-    .search-filter-box {
-      padding: 0 8px 0 11px !important;
-      height: 36px !important;
-    }
-
-    #filterMonthTable {
-      height: 36px !important;
-      padding-top: 0 !important;
-      padding-bottom: 0 !important;
-    }
-
-    /* Modern Buttons */
-    .btn {
-      border-radius: 10px !important;
-      font-weight: 600 !important;
-      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .btn:focus-visible {
-      box-shadow: 0 0 0 3.5px rgba(123, 17, 19, 0.18) !important;
-      outline: none !important;
-    }
-
-    .btn-toolbar-modern {
-      height: 36px !important;
-      padding: 0 13px !important;
-      border-radius: 10px !important;
-      border: 1px solid #cbd5e1 !important;
-      background: #ffffff !important;
-      color: #334155 !important;
-      font-size: 12.5px !important;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-    }
-
-    .btn-toolbar-modern:hover {
-      background: #f8fafc !important;
-      border-color: #94a3b8 !important;
-      color: #0f172a !important;
-      transform: translateY(-1px);
-    }
-
-    /* Status Pills with distinct dot indicator & semantic colors */
-    .status-pill {
-      display: inline-flex !important;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 4px 11px !important;
-      border-radius: 9999px !important;
-      font-size: 11.5px !important;
-      font-weight: 700 !important;
-      letter-spacing: 0.01em;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.16s ease;
-      white-space: nowrap;
-    }
-
-    .status-pill:hover {
-      transform: translateY(-1px);
-      filter: brightness(0.97);
-      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
-    }
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 9999px;
-      flex-shrink: 0;
-    }
-
-    .status-pill-wait {
-      background-color: #fef3c7 !important;
-      color: #92400e !important;
-      border-color: #fde68a !important;
-    }
-    .status-pill-wait .status-dot { background-color: #d97706; }
-
-    .status-pill-pending {
-      background-color: #e0f2fe !important;
-      color: #075985 !important;
-      border-color: #bae6fd !important;
-    }
-    .status-pill-pending .status-dot { background-color: #0284c7; }
-
-    .status-pill-unpaid {
-      background-color: #ffe4e6 !important;
-      color: #9f1239 !important;
-      border-color: #fecdd3 !important;
-    }
-    .status-pill-unpaid .status-dot { background-color: #e11d48; }
-
-    .status-pill-paid {
-      background-color: #dcfce7 !important;
-      color: #166534 !important;
-      border-color: #bbf7d0 !important;
-    }
-    .status-pill-paid .status-dot { background-color: #16a34a; }
-
-    .status-pill-done {
-      background-color: #d1fae5 !important;
-      color: #065f46 !important;
-      border-color: #a7f3d0 !important;
-    }
-    .status-pill-done .status-dot { background-color: #059669; }
-
-    /* Modern Table Row Hover */
-    #masterTableContainer table tbody tr {
-      transition: background-color 0.14s ease, box-shadow 0.14s ease;
-    }
-    #masterTableContainer table tbody tr:hover td {
-      background-color: #f1f5f9 !important;
-    }
-
-    /* Toast & Modal refinement */
-    .modal-content {
-      border-radius: 18px !important;
-      border: 1px solid rgba(226, 232, 240, 0.8) !important;
-      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
-    }
-
-
-    /* === FIX TRIỆT ĐỂ LỖI CẮT CỘT & CUỘN NGANG BẢNG TRÊN IPHONE (iOS SAFARI) === */
-    .app-layout {
-      width: 100%;
-      max-width: 100vw;
-      overflow-x: hidden;
-    }
-
-    .main-content {
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      box-sizing: border-box;
-    }
-
-    #tabLich, #tabChitiet {
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-    }
-
-    #tabChitiet > .card {
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      box-sizing: border-box;
-    }
-
-    #masterTableContainer {
-      width: 100% !important;
-      max-width: 100% !important;
-      overflow-x: auto !important;
-      overflow-y: visible !important;
-      -webkit-overflow-scrolling: touch !important;
-      overscroll-behavior-x: contain;
-      padding-bottom: 12px;
-      border-radius: 12px;
-      /* Hiển thị thanh cuộn ngang mảnh trên mobile để dễ nhận biết */
-      scrollbar-width: thin;
-      scrollbar-color: #cbd5e1 #f8fafc;
-    }
-
-    #masterTableContainer::-webkit-scrollbar {
-      height: 6px;
-    }
-    #masterTableContainer::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 999px;
-    }
-    #masterTableContainer::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 999px;
-    }
-
-    #masterTableContainer table {
-      min-width: 1060px !important;
-      width: 100% !important;
-    }
-
-    #masterTableContainer table th,
-    #masterTableContainer table td {
-      white-space: nowrap !important;
-    }
-
-    /* Cột Địa chỉ cho phép xuống dòng gọn gàng với độ rộng tối thiểu rõ ràng */
-    #masterTableContainer table td.col-address-cell {
-      white-space: normal !important;
-      min-width: 210px !important;
-      max-width: 290px !important;
-      text-align: left !important;
-      line-height: 1.4;
-    }
-
-    /* Ghim nhẹ cột Ngày trên mobile khi vuốt ngang để không bị mất dấu dòng */
-    @media (max-width: 768px) {
-      #tabChitiet > .card {
-        padding: 12px !important;
-      }
-      #masterTableContainer table th,
-      #masterTableContainer table td {
-        padding: 10px 8px !important;
-        font-size: 12.5px !important;
-      }
-      .mobile-scroll-hint {
-        display: flex !important;
-      }
-    }
-
-    .mobile-scroll-hint {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      background: #fff1f2;
-      color: #9f1239;
-      border: 1px solid #fecdd3;
-      border-radius: 10px;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    /* Giao diện Thẻ Chi Tiết đầy đủ các cột dành cho iPhone (Mobile Card View) */
-    .mobile-job-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-left: 4px solid #7b1113;
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-    }
-    .mobile-job-card.card-status-xong {
-      background: #f0fdf4;
-      border-color: #bbf7d0;
-      border-left-color: #16a34a;
-    }
-    .mobile-job-card.card-today {
-      background: #fffbeb;
-      border-color: #fde68a;
-      border-left-color: #f59e0b;
-    }
-    .mobile-card-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 8px 10px;
-      margin-top: 10px;
-    }
-    .mobile-card-stat-label {
-      font-size: 10.5px;
-      font-weight: 600;
-      color: #64748b;
-      text-transform: uppercase;
-    }
-    .mobile-card-stat-val {
-      font-size: 12.5px;
-      font-weight: 700;
-      color: #0f172a;
-      font-variant-numeric: tabular-nums;
-    }
-
-
-    /* === ĐỒNG BỘ GIAO DIỆN POPUP MODAL HIỆN ĐẠI (CHI TIẾT, THÊM/SỬA CÔNG VIỆC, QUẢN LÝ DANH MỤC) === */
-    .modal-backdrop.show {
-      opacity: 0.55 !important;
-      backdrop-filter: blur(4px);
-    }
-
-    .modal .modal-content {
-      border-radius: 20px !important;
-      border: 1px solid rgba(226, 232, 240, 0.9) !important;
-      box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.22), 0 4px 16px -2px rgba(15, 23, 42, 0.08) !important;
-      overflow: hidden;
-      background-color: #ffffff;
-    }
-
-    .modal .modal-header {
-      background: #ffffff !important;
-      color: #0f172a !important;
-      padding: 18px 22px 14px !important;
-      border-bottom: 1px solid #f1f5f9 !important;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .modal .modal-title {
-      font-size: 16px !important;
-      font-weight: 800 !important;
-      color: #0f172a !important;
-      letter-spacing: -0.015em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0;
-    }
-
-    .modal .modal-title::before {
-      content: "";
-      display: inline-block;
-      width: 4px;
-      height: 18px;
-      background-color: #7b1113;
-      border-radius: 999px;
-    }
-
-    .modal .modal-header .btn-close,
-    .modal .modal-header .btn-close-white {
-      filter: none !important;
-      background-color: #f1f5f9;
-      border-radius: 10px;
-      width: 30px;
-      height: 30px;
-      padding: 0;
-      opacity: 0.75;
-      transition: all 0.15s ease;
-      background-size: 11px;
-    }
-
-    .modal .modal-header .btn-close:hover {
-      background-color: #fee2e2;
-      opacity: 1;
-    }
-
-    .modal .modal-body {
-      padding: 20px 22px !important;
-      background-color: #ffffff !important;
-    }
-
-    .modal .modal-footer {
-      background-color: #f8fafc !important;
-      border-top: 1px solid #f1f5f9 !important;
-      padding: 14px 22px !important;
-    }
-
-    /* Chi tiết thông tin công việc card */
-    .info-detail-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 6px 16px;
-      margin-bottom: 16px;
-    }
-
-    .job-info-row {
-      display: flex;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 13.5px;
-    }
-    .job-info-row:last-child { border-bottom: none; }
-    .job-info-label {
-      width: 130px;
-      flex-shrink: 0;
-      color: #64748b;
-      font-weight: 600;
-      font-size: 12.5px;
-    }
-    .job-info-val {
-      flex-grow: 1;
-      color: #0f172a;
-      font-weight: 600;
-      word-break: break-word;
-    }
-
-    /* Danh sách mục trong Quản lý danh mục */
-    .catalog-list-box {
-      border: 1px solid #e2e8f0 !important;
-      border-radius: 14px !important;
-      padding: 10px !important;
-      background-color: #f8fafc !important;
-      max-height: 260px;
-      overflow-y: auto;
-    }
-    .catalog-item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 8px 12px;
-      margin-bottom: 6px;
-      transition: all 0.15s ease;
-    }
-    .catalog-item-row:last-child { margin-bottom: 0; }
-    .catalog-item-row:hover {
-      border-color: #cbd5e1;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
-    }
-
-
-    /* === NÂNG CẤP V9: TÔ MÀU DÒNG CHƯA TT, NGÀY LỊCH XONG MÀU XANH & ĐỒNG BỘ TOÀN BỘ POPUP === */
-
-    /* 1. Tô màu dòng có tình trạng "Chưa TT" tại trang Quản lý công việc */
-    .row-status-chuatt td {
-      background-color: #fff1f2 !important;
-      color: #881337 !important;
-    }
-    .row-status-chuatt td:first-child {
-      border-left: 4px solid #e11d48 !important;
-    }
-    .row-status-chuatt:hover td {
-      background-color: #ffe4e6 !important;
-    }
-    .row-status-chuatt td .job-badge {
-      background-color: #ffe4e6 !important;
-      border-color: #fda4af !important;
-      color: #9f1239 !important;
-    }
-
-    .row-status-xong td:first-child {
-      border-left: 4px solid #16a34a !important;
-    }
-    .row-status-xong:hover td {
-      background-color: #dcfce7 !important;
-    }
-
-    /* Thẻ mobile khi ở trạng thái Chưa TT */
-    .mobile-job-card.card-status-chuatt {
-      background: #fff1f2;
-      border-color: #fecdd3;
-      border-left: 4px solid #e11d48;
-    }
-
-    /* 2. Tại Lịch làm việc: Ngày có toàn bộ công việc đạt trạng thái "Xong" hiển thị màu xanh lá */
-    .calendar-day.all-done {
-      background: #f0fdf4 !important;
-      border-color: #86efac !important;
-    }
-    .calendar-day.all-done:hover {
-      background: #dcfce7 !important;
-      border-color: #4ade80 !important;
-    }
-    .calendar-day.all-done .day-number {
-      color: #166534;
-    }
-    .calendar-day.all-done.today {
-      border: 2px solid #16a34a !important;
-    }
-    .calendar-day.all-done.today .day-number {
-      background-color: #16a34a !important;
-      color: #ffffff !important;
-    }
-    .calendar-day.all-done .lunar-date {
-      color: #15803d !important;
-    }
-    .calendar-day.all-done .event-badge {
-      background: #16a34a !important;
-      color: #ffffff !important;
-    }
-    /* Khi đang bấm chọn vào ngày đã Xong hết: giữ tông xanh đậm đồng bộ */
-    .calendar-day.all-done.selected-date {
-      background: #15803d !important;
-      border-color: #166534 !important;
-      color: #ffffff !important;
-      box-shadow: 0 6px 16px rgba(21, 128, 61, 0.28) !important;
-    }
-    .calendar-day.all-done.selected-date .day-number {
-      background-color: rgba(255, 255, 255, 0.22) !important;
-      color: #ffffff !important;
-    }
-    .calendar-day.all-done.selected-date .lunar-date {
-      color: #bbf7d0 !important;
-    }
-    .calendar-day.all-done.selected-date .event-badge {
-      background: #ffffff !important;
-      color: #15803d !important;
-    }
-
-    /* Thẻ công việc bên cột chi tiết ngày khi công việc đã "Xong" */
-    .event-item-card.event-done {
-      background: #f0fdf4;
-      border-color: #bbf7d0;
-      border-left: 4px solid #16a34a;
-    }
-    .event-item-card.event-done:hover {
-      background: #ffffff;
-      border-color: #86efac;
-      border-left-color: #16a34a;
-    }
-
-    /* 3. Đồng bộ giao diện Công nợ & Bảng kê lương, Báo cáo tài chính và toàn bộ Modal */
-    .statement-mode-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      background: #f1f5f9;
-      padding: 5px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-    }
-    .statement-mode-tab {
-      position: relative;
-      margin: 0;
-    }
-    .statement-mode-tab input[type="radio"] {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-    .statement-mode-label {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 8px 12px;
-      border-radius: 9px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.18s ease;
-      text-align: center;
-      user-select: none;
-    }
-    .statement-mode-tab input[type="radio"]:checked + .statement-mode-label {
-      background: #ffffff;
-      color: #7b1113;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-    }
-    .statement-mode-tab input[type="radio"]#modeExecutor:checked + .statement-mode-label {
-      color: #15803d;
-    }
-
-    .statement-filter-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 14px;
-    }
-
-    .statement-textarea {
-      border-radius: 12px !important;
-      background-color: #f8fafc !important;
-      border: 1px solid #e2e8f0 !important;
-      padding: 12px 14px !important;
-      font-size: 12.5px !important;
-      line-height: 1.55 !important;
-      color: #1e293b !important;
-    }
-
-    .btn-brand-primary {
-      background-color: #7b1113 !important;
-      border-color: #7b1113 !important;
-      color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(123, 17, 19, 0.2) !important;
-    }
-    .btn-brand-primary:hover {
-      background-color: #991b1b !important;
-      border-color: #991b1b !important;
-      color: #ffffff !important;
-      transform: translateY(-1px);
-    }
-
-    /* Thẻ thống kê trong Popup Báo cáo tài chính tổng hợp */
-    .report-stat-card {
-      padding: 18px 14px;
-      border-radius: 16px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      transition: all 0.18s ease;
-    }
-    .report-stat-card:hover {
-      background: #ffffff;
-      box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.06);
-      transform: translateY(-2px);
-    }
-    .report-stat-card.stat-unpaid {
-      background: #fff1f2;
-      border-color: #fecdd3;
-    }
-    .report-stat-label {
-      font-size: 11.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      color: #64748b;
-      margin-bottom: 6px;
-    }
-    .report-stat-value {
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      font-variant-numeric: tabular-nums;
-    }
-
-  </style>
+  :root {
+    --bg-canvas: #f4f6f9;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f8fafc;
+    --border-hairline: #e2e8f0;
+    --border-soft: #cbd5e1;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --brand-primary: #7b1113;
+    --brand-hover: #991b1b;
+    --brand-soft: #fff1f2;
+    --brand-border: #fecdd3;
+    --success-primary: #15803d;
+    --success-soft: #f0fdf4;
+    --success-border: #bbf7d0;
+    --radius-card: 18px;
+    --radius-control: 10px;
+    --shadow-card: 0 4px 20px -4px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
+    --shadow-elevated: 0 20px 42px -12px rgba(15, 23, 42, 0.16);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    margin: 0;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  .app-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .main-content {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 1520px;
+    min-width: 0;
+    margin: 0 auto;
+    padding: 28px 34px 44px;
+  }
+
+  .top-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    min-height: 42px;
+    padding-right: 54px;
+    margin-bottom: 18px;
+  }
+
+  .page-subtitle {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--brand-primary);
+    margin-bottom: 3px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+
+  .lucide {
+    width: 15px;
+    height: 15px;
+    stroke-width: 2.1;
+    vertical-align: -2px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* Controls & Buttons */
+  .form-control, .form-select {
+    border-radius: var(--radius-control) !important;
+    border: 1px solid var(--border-hairline) !important;
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+    font-size: 13px;
+    padding: 7px 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+  }
+
+  .form-control:hover, .form-select:hover {
+    border-color: var(--border-soft) !important;
+    background-color: var(--bg-surface);
+  }
+
+  .form-control:focus, .form-select:focus {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--brand-primary) !important;
+    box-shadow: 0 0 0 3px rgba(123, 17, 19, 0.12) !important;
+    outline: none !important;
+  }
+
+  .btn {
+    border-radius: var(--radius-control) !important;
+    font-weight: 600 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.16s ease !important;
+  }
+
+  .btn-brand-primary {
+    background-color: var(--brand-primary) !important;
+    border-color: var(--brand-primary) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(123, 17, 19, 0.18);
+  }
+
+  .btn-brand-primary:hover {
+    background-color: var(--brand-hover) !important;
+    border-color: var(--brand-hover) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+  }
+
+  .btn-toolbar-modern {
+    height: 36px !important;
+    padding: 0 13px !important;
+    border: 1px solid var(--border-hairline) !important;
+    background: var(--bg-surface) !important;
+    color: var(--text-secondary) !important;
+    font-size: 12.5px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  }
+
+  .btn-toolbar-modern:hover:not(:disabled) {
+    background: var(--brand-soft) !important;
+    border-color: var(--brand-border) !important;
+    color: var(--brand-primary) !important;
+    transform: translateY(-1px);
+  }
+
+  .btn-refresh-table.is-loading {
+    pointer-events: none;
+    background-color: var(--brand-primary) !important;
+    border-color: var(--brand-primary) !important;
+    color: #ffffff !important;
+  }
+
+  .dropdown-toggle::after { display: none !important; }
+
+  /* Calendar & Daily Panel */
+  .calendar-card, .day-detail-panel {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-card);
+    padding: 22px;
+    box-shadow: var(--shadow-card);
+    height: 100%;
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  #calendarMonthTitle {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .calendar-header .btn-group {
+    background: var(--bg-subtle);
+    padding: 3px;
+    border-radius: 11px;
+    border: 1px solid var(--border-hairline);
+    gap: 2px;
+  }
+
+  .calendar-header .btn-group .btn {
+    border: none !important;
+    border-radius: 8px !important;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    padding: 4px 11px;
+  }
+
+  .calendar-header .btn-group .btn:hover {
+    background: var(--bg-surface);
+    color: var(--brand-primary);
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 7px;
+    width: 100%;
+  }
+
+  .calendar-weekday {
+    text-align: center;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding-bottom: 6px;
+    user-select: none;
+  }
+
+  .calendar-day {
+    height: 70px;
+    min-height: 70px;
+    max-height: 70px;
+    background: var(--bg-subtle);
+    border: 1px solid transparent;
+    border-radius: 13px;
+    padding: 5px 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2px;
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+    transition: all 0.16s ease;
+  }
+
+  .calendar-day:hover {
+    background: var(--bg-surface);
+    border-color: var(--border-soft);
+    transform: translateY(-1px);
+  }
+
+  .calendar-day.other-month {
+    background: transparent;
+    opacity: 0.38;
+    pointer-events: none;
+  }
+
+  .calendar-day.has-event {
+    background: var(--brand-soft);
+    border-color: var(--brand-border);
+  }
+
+  .calendar-day.today {
+    border: 2px solid var(--brand-primary);
+    background: var(--bg-surface);
+  }
+
+  .calendar-day.selected-date {
+    background: var(--brand-primary) !important;
+    border-color: var(--brand-primary) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 14px rgba(123, 17, 19, 0.24);
+  }
+
+  .day-number {
+    font-weight: 700;
+    font-size: 13.5px;
+    width: 23px;
+    height: 23px;
+    min-height: 23px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+
+  .calendar-day.today .day-number { background: var(--brand-primary); color: #ffffff; }
+  .calendar-day.selected-date .day-number { background: rgba(255, 255, 255, 0.22); color: #ffffff; }
+
+  .lunar-date {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .calendar-day.has-event .lunar-date { color: #9f1239; }
+  .calendar-day.selected-date .lunar-date { color: #fecdd3 !important; }
+
+  .event-badge {
+    background: var(--brand-primary);
+    color: #ffffff;
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 1.5px 7px;
+    border-radius: 999px;
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+
+  .calendar-day.selected-date .event-badge { background: #ffffff; color: var(--brand-primary); }
+
+  /* Completed day & event state */
+  .calendar-day.all-done { background: var(--success-soft) !important; border-color: #86efac !important; }
+  .calendar-day.all-done .day-number { color: #166534; }
+  .calendar-day.all-done .lunar-date { color: var(--success-primary) !important; }
+  .calendar-day.all-done .event-badge { background: #16a34a !important; color: #ffffff !important; }
+  .calendar-day.all-done.today { border: 2px solid #16a34a !important; }
+  .calendar-day.all-done.today .day-number { background: #16a34a !important; color: #ffffff !important; }
+  .calendar-day.all-done.selected-date {
+    background: var(--success-primary) !important;
+    border-color: #166534 !important;
+    box-shadow: 0 6px 14px rgba(21, 128, 61, 0.24) !important;
+  }
+  .calendar-day.all-done.selected-date .lunar-date { color: #bbf7d0 !important; }
+  .calendar-day.all-done.selected-date .event-badge { background: #ffffff !important; color: var(--success-primary) !important; }
+
+  .event-item-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-hairline);
+    border-left: 3.5px solid var(--brand-primary);
+    border-radius: 14px;
+    padding: 15px 17px;
+    margin-top: 11px;
+    transition: all 0.16s ease;
+  }
+
+  .event-item-card:hover {
+    background: var(--bg-surface);
+    border-color: var(--border-soft);
+    border-left-color: var(--brand-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px -6px rgba(15, 23, 42, 0.08);
+  }
+
+  .event-item-card.event-done {
+    background: var(--success-soft);
+    border-color: var(--success-border);
+    border-left-color: #16a34a;
+  }
+
+  .event-card-customer { font-size: 14.5px; font-weight: 800; color: var(--text-primary); margin: 0; }
+  .event-card-time { font-size: 12.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; }
+  .event-card-addr { font-size: 12.5px; color: var(--text-muted); line-height: 1.45; margin-bottom: 6px; }
+  .event-card-exec {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--success-primary);
+    background: var(--success-soft);
+    border: 1px solid var(--success-border);
+    padding: 2px 9px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+
+  /* Table & Filters */
+  #tabChitiet > .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline) !important;
+    border-radius: var(--radius-card) !important;
+    padding: 18px 22px !important;
+    box-shadow: var(--shadow-card) !important;
+  }
+
+  .search-filter-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 235px;
+    height: 36px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-control);
+    padding: 0 7px 0 11px;
+  }
+
+  .search-filter-box:focus-within {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(123, 17, 19, 0.12);
+  }
+
+  .search-filter-icon { color: var(--text-muted); display: flex; align-items: center; margin-right: 7px; pointer-events: none; }
+  .search-filter-input { border: none; outline: none; background: transparent; width: 100%; font-size: 13px; color: var(--text-primary); padding: 0; }
+  .search-filter-input::placeholder { color: #94a3b8; }
+
+  .btn-clear-filter {
+    border: none;
+    background: #f1f5f9;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    opacity: 0.5;
+    transition: all 0.15s ease;
+  }
+
+  .btn-clear-filter:hover, .btn-clear-filter.has-active-filter {
+    background: #fee2e2;
+    color: #dc2626;
+    opacity: 1;
+  }
+
+  .column-visibility-dropdown, .dropdown-menu {
+    border: 1px solid var(--border-hairline) !important;
+    border-radius: 12px !important;
+    padding: 6px !important;
+    box-shadow: 0 12px 26px -6px rgba(15, 23, 42, 0.12) !important;
+    min-width: 205px;
+  }
+
+  .col-vis-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .col-vis-item:hover { background: var(--bg-subtle); color: var(--text-primary); }
+  .col-vis-item input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--brand-primary); cursor: pointer; }
+
+  .dropdown-menu .dropdown-item {
+    padding: 6px 11px;
+    margin: 2px 4px;
+    border-radius: 7px;
+    width: calc(100% - 8px);
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .dropdown-menu .dropdown-item:hover, .dropdown-menu .dropdown-item:focus {
+    background: var(--brand-soft) !important;
+    color: var(--brand-hover) !important;
+    font-weight: 600;
+  }
+
+  .dropdown-menu .dropdown-item.active {
+    background: var(--brand-primary) !important;
+    color: #ffffff !important;
+  }
+
+  #masterTableContainer {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    border-radius: 12px;
+    padding-bottom: 8px;
+  }
+
+  #masterTableContainer table {
+    min-width: 1020px;
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    font-size: 13px;
+  }
+
+  #masterTableContainer table th,
+  #masterTableContainer table td {
+    vertical-align: middle !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    border: none !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 12px 10px !important;
+  }
+
+  #masterTableContainer table thead th {
+    background: var(--bg-subtle) !important;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1.5px solid var(--border-hairline) !important;
+  }
+
+  #masterTableContainer table th[draggable="true"] { cursor: grab; user-select: none; }
+  #masterTableContainer table th.dragging-col { opacity: 0.4; }
+  #masterTableContainer table th.drag-over { border-left: 2.5px dashed var(--brand-primary) !important; }
+  #masterTableContainer table tbody tr:hover td { background: var(--bg-subtle) !important; }
+  #masterTableContainer table td.col-address-cell { white-space: normal !important; min-width: 200px; max-width: 280px; text-align: left !important; line-height: 1.4; }
+
+  .today-row td { background-color: #fffbeb !important; font-weight: 600; }
+  .today-row td:first-child { border-left: 3.5px solid #f59e0b !important; }
+  .empty-day-row td { color: #94a3b8; font-style: italic; background-color: #fcfcfd; }
+
+  .row-status-xong td { background-color: var(--success-soft) !important; color: #166534 !important; }
+  .row-status-xong td:first-child { border-left: 3.5px solid #16a34a !important; }
+  .row-status-chuatt td { background-color: var(--brand-soft) !important; color: #881337 !important; }
+  .row-status-chuatt td:first-child { border-left: 3.5px solid #e11d48 !important; }
+
+  .job-badge, .customer-badge {
+    display: inline-block;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .job-badge {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-soft);
+  }
+
+  .job-badge:hover {
+    background: var(--brand-primary);
+    color: #ffffff;
+    border-color: var(--brand-primary);
+  }
+
+  .customer-badge {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+
+  .customer-badge:hover, .customer-badge.active-filter {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .status-pill-wait { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+  .status-pill-wait .status-dot { background: #d97706; }
+  .status-pill-pending { background: #e0f2fe; color: #075985; border-color: #bae6fd; }
+  .status-pill-pending .status-dot { background: #0284c7; }
+  .status-pill-unpaid { background: #ffe4e6; color: #9f1239; border-color: #fecdd3; }
+  .status-pill-unpaid .status-dot { background: #e11d48; }
+  .status-pill-paid, .status-pill-done { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+  .status-pill-paid .status-dot, .status-pill-done .status-dot { background: #16a34a; }
+
+  .cost-checkbox { display: block; margin: 0 auto; width: 17px; height: 17px; cursor: pointer; accent-color: #16a34a; }
+  .cell-date-primary { font-weight: 700; color: var(--text-primary); }
+  .cell-money-primary { font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+  .cell-money-secondary { font-weight: 500; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+  .money-quick-chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+  .money-chip {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .money-chip:hover { background: #2563eb; color: #ffffff; }
+
+  /* Empty State */
+  .empty-state-box {
+    padding: 34px 20px;
+    text-align: center;
+    background: var(--bg-subtle);
+    border: 1px dashed var(--border-soft);
+    border-radius: 15px;
+    margin-top: 8px;
+  }
+
+  .empty-state-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--brand-soft);
+    color: var(--brand-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+
+  .empty-state-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .empty-state-desc { font-size: 12.5px; color: var(--text-muted); max-width: 290px; margin: 0 auto 14px; line-height: 1.45; }
+  .empty-state-btn {
+    background: var(--brand-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 9px;
+    padding: 6px 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Toast & Floating Menu */
+  .app-toast {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px) scale(0.94);
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(12px);
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .app-toast.show { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+  .app-toast.toast-warning { background: rgba(153, 27, 27, 0.95); }
+
+  .fixed-menu-wrapper {
+    position: fixed;
+    top: max(18px, env(safe-area-inset-top));
+    right: 20px;
+    z-index: 9999;
+    user-select: none;
+  }
+
+  .hamburger-menu-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+  }
+
+  .fixed-menu-wrapper.active .hamburger-menu-btn { background: var(--brand-primary); border-color: var(--brand-primary); }
+  .hamburger-line { width: 18px; height: 2px; background: var(--text-primary); border-radius: 2px; transition: all 0.22s ease; }
+  .fixed-menu-wrapper.active .hamburger-line { background: #ffffff; }
+  .fixed-menu-wrapper.active .hamburger-line:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .fixed-menu-wrapper.active .hamburger-line:nth-child(2) { opacity: 0; }
+  .fixed-menu-wrapper.active .hamburger-line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .fixed-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 252px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: var(--shadow-elevated);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px) scale(0.96);
+    transform-origin: top right;
+    transition: all 0.18s ease;
+  }
+
+  .fixed-menu-wrapper.active .fixed-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+
+  .menu-header-info {
+    padding: 8px 12px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .menu-brand-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--brand-primary); }
+  .menu-auth-tag { font-size: 10.5px; font-weight: 700; background: #f1f5f9; color: var(--text-secondary); padding: 2px 8px; border-radius: 6px; }
+  .menu-divider { height: 1px; background: #f1f5f9; margin: 6px 4px; }
+
+  .menu-action-item {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 12px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.14s ease;
+  }
+
+  .menu-action-item:hover { background: var(--bg-subtle); color: var(--text-primary); }
+  .menu-action-item.danger { color: #dc2626; }
+  .menu-action-item.danger:hover { background: #fef2f2; color: #b91c1c; }
+
+  .menu-icon-wrap {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .menu-action-item.danger .menu-icon-wrap { background: #fee2e2; color: #dc2626; }
+
+  /* Auth & Modals */
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(14px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .login-card {
+    background: var(--bg-surface);
+    border-radius: 20px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 375px;
+    box-shadow: 0 24px 54px rgba(0, 0, 0, 0.4);
+    text-align: center;
+  }
+
+  .login-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: var(--brand-primary);
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+  }
+
+  .modal-backdrop.show { opacity: 0.52 !important; backdrop-filter: blur(3px); }
+  .modal .modal-content {
+    border-radius: 20px !important;
+    border: 1px solid var(--border-hairline) !important;
+    box-shadow: var(--shadow-elevated) !important;
+    overflow: hidden;
+    background: var(--bg-surface);
+  }
+
+  .modal .modal-header {
+    background: var(--bg-surface) !important;
+    padding: 17px 22px 13px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+  }
+
+  .modal .modal-title {
+    font-size: 15.5px !important;
+    font-weight: 800 !important;
+    color: var(--text-primary) !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .modal .modal-title::before {
+    content: "";
+    width: 4px;
+    height: 17px;
+    border-radius: 999px;
+    background: var(--brand-primary);
+  }
+
+  .modal .modal-body { padding: 18px 22px !important; background: var(--bg-surface) !important; }
+  .modal .modal-footer { padding: 13px 22px !important; background: var(--bg-subtle) !important; border-top: 1px solid #f1f5f9 !important; }
+
+  .info-detail-card, .statement-filter-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-hairline);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 15px;
+  }
+
+  .job-info-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; }
+  .job-info-row:last-child { border-bottom: none; }
+  .job-info-label { width: 128px; flex-shrink: 0; color: var(--text-muted); font-weight: 600; font-size: 12.5px; }
+  .job-info-val { flex-grow: 1; color: var(--text-primary); font-weight: 600; word-break: break-word; }
+
+  .catalog-list-box {
+    border: 1px solid var(--border-hairline) !important;
+    border-radius: 14px !important;
+    padding: 10px !important;
+    background: var(--bg-subtle) !important;
+    max-height: 255px;
+    overflow-y: auto;
+  }
+
+  .catalog-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+  }
+
+  .catalog-item-row:last-child { margin-bottom: 0; }
+
+  .statement-mode-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+
+  .statement-mode-tab { position: relative; margin: 0; }
+  .statement-mode-tab input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+  .statement-mode-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.16s ease;
+  }
+
+  .statement-mode-tab input[type="radio"]:checked + .statement-mode-label {
+    background: var(--bg-surface);
+    color: var(--brand-primary);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  }
+
+  .statement-mode-tab input[type="radio"]#modeExecutor:checked + .statement-mode-label { color: var(--success-primary); }
+
+  .statement-textarea {
+    border-radius: 12px !important;
+    background: var(--bg-subtle) !important;
+    border: 1px solid var(--border-hairline) !important;
+    padding: 12px 14px !important;
+    font-size: 12.5px !important;
+    line-height: 1.55 !important;
+  }
+
+  .report-stat-card {
+    padding: 16px 14px;
+    border-radius: 15px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-hairline);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .report-stat-card.stat-unpaid { background: var(--brand-soft); border-color: var(--brand-border); }
+  .report-stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; }
+  .report-stat-value { font-size: 18.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  .mobile-scroll-hint {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: var(--brand-soft);
+    color: #9f1239;
+    border: 1px solid var(--brand-border);
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .mobile-job-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    border-left: 4px solid var(--brand-primary);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  }
+
+  .mobile-job-card.card-status-xong { background: var(--success-soft); border-color: var(--success-border); border-left-color: #16a34a; }
+  .mobile-job-card.card-status-chuatt { background: var(--brand-soft); border-color: var(--brand-border); border-left-color: #e11d48; }
+  .mobile-job-card.card-today { background: #fffbeb; border-color: #fde68a; border-left-color: #f59e0b; }
+
+  .mobile-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-hairline);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-top: 10px;
+  }
+
+  .mobile-card-stat-label { font-size: 10.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+  .mobile-card-stat-val { font-size: 12.5px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 768px) {
+    .main-content { padding: 14px 12px 28px; }
+    .page-title { font-size: 21px; }
+    .calendar-card, .day-detail-panel, #tabChitiet > .card { padding: 15px !important; border-radius: 16px !important; }
+    .calendar-grid { gap: 4px; }
+    .calendar-day { height: 62px; min-height: 62px; max-height: 62px; border-radius: 10px; padding: 3px 1px; }
+    .day-number { font-size: 12.5px; width: 22px; height: 22px; min-height: 22px; }
+    .lunar-date { font-size: 9px; }
+    .event-badge { font-size: 8.5px; padding: 1px 5px; }
+    .search-filter-box { width: 100%; flex-grow: 1; }
+    #filterMonthTable { width: calc(50% - 4px) !important; flex-grow: 1; height: 36px !important; }
+    .mobile-scroll-hint { display: flex !important; }
+  }
+</style>
 </head>
 <body>
 
@@ -1857,7 +1096,7 @@
     <div id="loginSignInForm">
       <div class="mb-3 text-start">
         <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập:</label>
-        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mã truy cập..." autocomplete="current-password" style="letter-spacing: 1px; height: 42px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitLoginCode()">
+        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mã truy cập..." autocomplete="current-password" style="letter-spacing: 1px; height: 42px; border-radius: 10px;" oninput="document.getElementById('loginErrorInline').classList.add('d-none')" onkeyup="if(event.key==='Enter') submitLoginCode()">
       </div>
       <div class="d-flex align-items-center justify-content-between mb-3 px-1">
         <div class="form-check text-start mb-0">
@@ -2381,8 +1620,8 @@
           <div>
             <label class="form-label small fw-bold text-secondary mb-1">3. Tình trạng</label>
             <select id="qrStatusSelect" class="form-select fw-semibold text-danger" onchange="updateQrDropdownsAndStatement()">
-              <option value="Chưa TT">Chưa TT</option>
               <option value="">Tất cả tình trạng</option>
+              <option value="Chưa TT">Chưa TT</option>
               <option value="Chờ">Chờ</option>
               <option value="Xong">Xong</option>
             </select>
@@ -3184,6 +2423,7 @@
       const existingInfo = authorizedCodesMap[codeToDel] || {};
       const delHash = existingInfo.codeHash || (await computeCodeSha256(codeToDel));
       await fetch(`${dbUrl}/auth_hashes/${delHash}.json`, { method: "DELETE" });
+      fetch(`${dbUrl}/auth_codes/${encodeURIComponent(codeToDel)}.json`, { method: "DELETE" }).catch(() => {});
       delete authorizedCodesMap[codeToDel];
 
       let deletedJobsCount = 0;
@@ -3524,6 +2764,12 @@
       const foundEntry = Object.entries(firebaseJobsMap).find(([k, v]) => v && Number(v.rowNumber) === targetRow);
       if (foundEntry) {
         const key = foundEntry[0];
+        const snapshot = { ...foundEntry[1], deletedAt: Date.now(), deletedBy: cleanAuth };
+        await fetch(`${dbUrl}/deleted_jobs_backup/${encodeURIComponent(key)}_${Date.now()}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(snapshot)
+        }).catch(() => {});
         await fetch(`${dbUrl}/jobs/${key}.json`, { method: "DELETE" });
         delete firebaseJobsMap[key];
       }
@@ -3627,14 +2873,33 @@
         targetUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(raw)}`;
       }
 
-      // Rút gọn bằng dịch vụ is.gd để link mở trực tiếp trên mọi thiết bị
+      // Rút gọn bằng dịch vụ is.gd qua JSONP (vượt qua lỗi chặn CORS trên mọi trình duyệt & iPhone)
       try {
-        const isGdResp = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(targetUrl)}`);
-        if (isGdResp.ok) {
-          const isGdData = await isGdResp.json();
-          if (isGdData && isGdData.shorturl) {
-            return { success: true, url: isGdData.shorturl, targetUrl: targetUrl };
+        const shortUrlJsonp = await new Promise((resolve) => {
+          const cbName = '_isgd_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+          const scriptEl = document.createElement('script');
+          const timer = setTimeout(() => {
+            cleanup();
+            resolve(null);
+          }, 4500);
+          function cleanup() {
+            clearTimeout(timer);
+            try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+            if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
           }
+          window[cbName] = function(data) {
+            cleanup();
+            resolve(data && data.shorturl ? data.shorturl : null);
+          };
+          scriptEl.onerror = function() {
+            cleanup();
+            resolve(null);
+          };
+          scriptEl.src = `https://is.gd/create.php?format=json&callback=${cbName}&url=${encodeURIComponent(targetUrl)}`;
+          document.body.appendChild(scriptEl);
+        });
+        if (shortUrlJsonp) {
+          return { success: true, url: shortUrlJsonp, targetUrl: targetUrl };
         }
       } catch (e1) {}
 
@@ -3678,7 +2943,7 @@
   let jobTypes = ["Chụp PSC", "Quay PSC", "Chụp SK", "Quay SK", "Ăn hỏi", "Khác"];
   let customerList = ["OneStory", "Chiến", "June", "Lita", "Kog", "MinhThe", "Thangken", "Dungcasau", "Mira", "Khách lẻ"];
   let executorList = ["Lê Tân", "Cộng sự 1", "Cộng sự 2", "Team Media"];
-  let statusList = ["Chờ", "Chưa thực hiện", "Chưa TT", "Đã TT", "Xong"];
+  let statusList = ["Chờ", "Chưa TT", "Xong"];
 
   let filterJobTypeVal = "";
   let filterCustomerVal = "";
@@ -4215,7 +3480,7 @@
       `Đ/c: ${diaChiText}`
     ];
     if (mapLinkToUse) {
-      lines.push(`${mapLinkToUse}`);
+      lines.push(`Maps: ${mapLinkToUse}`);
     }
     if (noteText) {
       lines.push(`( ${noteText} )`);
@@ -4361,7 +3626,7 @@
   const DEFAULT_JOB_TYPES = [];
   const DEFAULT_CUSTOMER_LIST = [];
   const DEFAULT_EXECUTOR_LIST = [];
-  const DEFAULT_STATUS_LIST = ["Chờ", "Chưa thực hiện", "Chưa TT", "Đã TT", "Xong"];
+  const DEFAULT_STATUS_LIST = ["Chờ", "Chưa TT", "Xong"];
 
   function getAuthCatSuffix() {
     return currentAuthCode ? `_${normalizeCodeServer(currentAuthCode)}` : '';
@@ -4386,7 +3651,12 @@
       if (savedJobTypes) jobTypes = JSON.parse(savedJobTypes);
       if (savedCustomers) customerList = JSON.parse(savedCustomers);
       if (savedExecutors) executorList = JSON.parse(savedExecutors);
-      if (savedStatuses) statusList = JSON.parse(savedStatuses);
+      if (savedStatuses) {
+        const parsedSt = JSON.parse(savedStatuses);
+        if (Array.isArray(parsedSt)) {
+          statusList = parsedSt.filter(s => s !== 'Chưa thực hiện' && s !== 'Đã TT');
+        }
+      }
     } catch(e) {}
   }
 
@@ -4535,6 +3805,10 @@
       renderColumnVisibilityMenu();
       renderMasterTable();
       if (window.lucide) lucide.createIcons();
+      setTimeout(() => {
+        const todayRow = document.getElementById('masterTodayRow');
+        if (todayRow) todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 120);
     }
   }
 
@@ -4599,11 +3873,11 @@
           adminDefaultFilterInitialized = true;
         }
 
-        // Tự động hiển thị cột Mã ĐN nếu là Admin để dễ tổng hợp công việc các mã khác
+        // Mặc định tắt 2 cột Thứ và Tài khoản trên Danh sách công việc
+        const thuCol = tableColumns.find(c => c.id === 'thu');
         const maDnCol = tableColumns.find(c => c.id === 'maDangNhap');
-        if (maDnCol && isAdminAccount && localStorage.getItem('pref_table_col_vis_v2') === null) {
-          maDnCol.visible = true;
-        }
+        if (thuCol && localStorage.getItem('pref_table_col_vis_v2') === null) thuCol.visible = false;
+        if (maDnCol && localStorage.getItem('pref_table_col_vis_v2') === null) maDnCol.visible = false;
 
         // Nạp danh mục riêng của mã đăng nhập hiện tại
         resetCategoriesToDefault();
@@ -4611,7 +3885,9 @@
           if (Array.isArray(res.categories.jobTypes)) jobTypes = res.categories.jobTypes;
           if (Array.isArray(res.categories.customerList)) customerList = res.categories.customerList;
           if (Array.isArray(res.categories.executorList)) executorList = res.categories.executorList;
-          if (Array.isArray(res.categories.statusList)) statusList = res.categories.statusList;
+          if (Array.isArray(res.categories.statusList)) {
+            statusList = res.categories.statusList.filter(s => s !== 'Chưa thực hiện' && s !== 'Đã TT');
+          }
           const sfx = getAuthCatSuffix();
           try {
             localStorage.setItem('pref_job_types' + sfx, JSON.stringify(jobTypes));
@@ -4884,7 +4160,7 @@
       return;
     }
 
-    const btn = btnEl || event.target;
+    const btn = btnEl || null;
     const oldHtml = btn.innerHTML;
     btn.innerHTML = 'Đang rút gọn...';
     btn.disabled = true;
@@ -4928,14 +4204,33 @@
   }
 
   async function resolveMapAddressClientSide(rawUrl) {
-    let finalUrl = rawUrl.trim();
+    let inputText = String(rawUrl || "").trim();
+    if (!inputText) {
+      return { success: false, message: 'Chưa nhập link hoặc tọa độ Google Maps.' };
+    }
+
+    // Trích xuất URL nếu người dùng dán cả đoạn chia sẻ từ app Maps trên điện thoại
+    const urlMatch = inputText.match(/https?:\/\/[^\s<>"]+/i);
+    let finalUrl = urlMatch ? urlMatch[0].replace(/[),.;]+$/, '') : inputText;
+
+    const fetchWithTimeout = async (url, timeoutMs = 6000) => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+      try {
+        return await fetch(url, { signal: ctrl.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
     try {
-      if (/goo\.gl|g\.co|is\.gd/i.test(finalUrl)) {
+      // 1. Giải mã link rút gọn (maps.app.goo.gl, goo.gl, g.co, is.gd) qua nhiều nguồn dự phòng trên mobile
+      if (/(?:maps\.app\.goo\.gl|goo\.gl|g\.co|is\.gd)/i.test(finalUrl)) {
         const customShortMatch = finalUrl.match(/maps\.app\.goo\.gl\/([a-zA-Z0-9_-]+)/);
         if (customShortMatch && customShortMatch[1]) {
           try {
             const dbUrl = getFirebaseDbUrl();
-            const mapCacheRes = await fetch(`${dbUrl}/short_maps/${customShortMatch[1]}.json`);
+            const mapCacheRes = await fetchWithTimeout(`${dbUrl}/short_maps/${customShortMatch[1]}.json`, 4000);
             if (mapCacheRes.ok) {
               const mapCacheData = await mapCacheRes.json();
               if (mapCacheData && mapCacheData.targetUrl) {
@@ -4944,18 +4239,69 @@
             }
           } catch (e) {}
         }
-        if (/goo\.gl|g\.co|is\.gd/i.test(finalUrl)) {
-          try {
-            const unshortenRes = await fetch('https://unshorten.me/json/' + encodeURIComponent(finalUrl));
-            const unshortenData = await unshortenRes.json();
-            if (unshortenData && unshortenData.resolved_url) {
-              finalUrl = unshortenData.resolved_url;
-            }
-          } catch (e) {}
+
+        if (/(?:maps\.app\.goo\.gl|goo\.gl|g\.co|is\.gd)/i.test(finalUrl)) {
+          let resolved = false;
+          // Thử 1: Giải mã is.gd qua JSONP trước, sau đó unshorten.me
+          if (/is\.gd\//i.test(finalUrl)) {
+            try {
+              const isgdRes = await new Promise((resolve) => {
+                const cbName = '_isgd_fwd_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+                const scriptEl = document.createElement('script');
+                const timer = setTimeout(() => { cleanup(); resolve(null); }, 4500);
+                function cleanup() {
+                  clearTimeout(timer);
+                  try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+                  if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+                }
+                window[cbName] = function(data) { cleanup(); resolve(data && data.url ? data.url : null); };
+                scriptEl.onerror = function() { cleanup(); resolve(null); };
+                scriptEl.src = `https://is.gd/forward.php?format=json&callback=${cbName}&shorturl=${encodeURIComponent(finalUrl)}`;
+                document.body.appendChild(scriptEl);
+              });
+              if (isgdRes) {
+                finalUrl = isgdRes;
+                resolved = true;
+              }
+            } catch (e) {}
+          }
+          if (!resolved) {
+            try {
+              const uRes = await fetchWithTimeout('https://unshorten.me/json/' + encodeURIComponent(finalUrl), 5000);
+              if (uRes.ok) {
+                const uData = await uRes.json();
+                if (uData && uData.resolved_url) {
+                  finalUrl = uData.resolved_url;
+                  resolved = true;
+                }
+              }
+            } catch (e) {}
+          }
+
+          // Thử 2: proxy đọc redirect / trang đích khi unshorten bị chặn trên mobile
+          if (!resolved) {
+            try {
+              const pRes = await fetchWithTimeout('https://api.allorigins.win/get?url=' + encodeURIComponent(finalUrl), 6000);
+              if (pRes.ok) {
+                const pData = await pRes.json();
+                const combinedProbe = `${pData.url || ''} ${pData.contents || ''}`;
+                const gMapsMatch = combinedProbe.match(/https?:\/\/(?:www\.)?google\.[a-z.]+\/maps[^"'\s<>\\]+/i);
+                if (gMapsMatch && gMapsMatch[0]) {
+                  finalUrl = gMapsMatch[0].replace(/\\u003d/g, '=').replace(/\\u0026/g, '&');
+                  resolved = true;
+                } else if (pData.url && pData.url !== finalUrl) {
+                  finalUrl = pData.url;
+                  resolved = true;
+                }
+              }
+            } catch (e) {}
+          }
         }
       }
+
       try { finalUrl = decodeURIComponent(finalUrl); } catch (e) {}
 
+      // 2. Bóc tách tọa độ (lat, lng) từ mọi định dạng URL của Google Maps trên mobile & web
       let lat = null, lng = null;
       const m3d = finalUrl.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
       const mQuery = finalUrl.match(/(?:query|q|ll|center|daddr|saddr)=(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
@@ -4969,6 +4315,40 @@
       else if (mAt) { lat = parseFloat(mAt[1]); lng = parseFloat(mAt[2]); }
       else if (mDirectCoord) { lat = parseFloat(mDirectCoord[1]); lng = parseFloat(mDirectCoord[2]); }
 
+      // 3. Dịch tọa độ sang địa chỉ thực tế (Nominatim -> dự phòng BigDataCloud trên mobile)
+      if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+        try {
+          const nomRes = await fetchWithTimeout(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=vi`, 5500);
+          if (nomRes.ok) {
+            const nomData = await nomRes.json();
+            if (nomData && nomData.display_name) {
+              return { success: true, address: cleanExtractedAddressText(nomData.display_name) };
+            }
+          }
+        } catch (e) {}
+
+        try {
+          const bdcRes = await fetchWithTimeout(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=vi`, 5500);
+          if (bdcRes.ok) {
+            const bdcData = await bdcRes.json();
+            const parts = [
+              bdcData.locality || bdcData.city || '',
+              bdcData.principalSubdivision || '',
+              bdcData.countryName || ''
+            ].filter(Boolean);
+            const fullAddr = (bdcData.localityInfo && Array.isArray(bdcData.localityInfo.administrative))
+              ? bdcData.localityInfo.administrative.map(a => a.name).filter(Boolean).reverse().join(', ')
+              : parts.join(', ');
+            if (fullAddr) {
+              return { success: true, address: cleanExtractedAddressText(fullAddr) };
+            }
+          }
+        } catch (e) {}
+
+        return { success: true, address: `${lat.toFixed(6)}, ${lng.toFixed(6)}` };
+      }
+
+      // 4. Bóc tách tên địa danh / từ khóa từ /place/... hoặc ?q=... hoặc văn bản chia sẻ
       const placeMatch = finalUrl.match(/\/(?:place|search)\/([^\/@?]+)/);
       const queryTextMatch = finalUrl.match(/[?&](?:q|query)=([^&]+)/);
       let searchCandidate = '';
@@ -4976,22 +4356,20 @@
         searchCandidate = placeMatch[1].replace(/\+/g, ' ').trim();
       } else if (queryTextMatch && queryTextMatch[1]) {
         searchCandidate = queryTextMatch[1].replace(/\+/g, ' ').trim();
-      }
-
-      if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
-        const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=vi`);
-        const nomData = await nomRes.json();
-        if (nomData && nomData.display_name) {
-          return { success: true, address: cleanExtractedAddressText(nomData.display_name) };
-        }
+      } else if (!urlMatch) {
+        searchCandidate = inputText;
       }
 
       if (searchCandidate && !/^(-?\d+\.\d+)\s*,\s*\+?(-?\d+\.\d+)$/.test(searchCandidate)) {
-        const nomSearch = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(searchCandidate)}&accept-language=vi&limit=1`);
-        const nomSearchData = await nomSearch.json();
-        if (Array.isArray(nomSearchData) && nomSearchData.length > 0 && nomSearchData[0].display_name) {
-          return { success: true, address: cleanExtractedAddressText(nomSearchData[0].display_name) };
-        }
+        try {
+          const nomSearch = await fetchWithTimeout(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(searchCandidate)}&accept-language=vi&limit=1`, 5500);
+          if (nomSearch.ok) {
+            const nomSearchData = await nomSearch.json();
+            if (Array.isArray(nomSearchData) && nomSearchData.length > 0 && nomSearchData[0].display_name) {
+              return { success: true, address: cleanExtractedAddressText(nomSearchData[0].display_name) };
+            }
+          }
+        } catch (e) {}
         return { success: true, address: cleanExtractedAddressText(searchCandidate) };
       }
     } catch (err) {}
@@ -5065,7 +4443,7 @@
     const encodedQuery = encodeURIComponent(queryText);
     const rawMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
 
-    const btn = btnEl || event.target;
+    const btn = btnEl || null;
     const oldHtml = btn ? btn.innerHTML : 'Tạo map';
     if (btn) {
       btn.innerHTML = 'Đang tạo...';
@@ -5115,14 +4493,25 @@
     reportModalInstance.show();
   }
 
+  function getActiveAdminScopedJobs() {
+    if (!isAdminAccount) return allJobs;
+    const isTabLichActive = !document.getElementById('tabLich').classList.contains('d-none');
+    const activeAuthFilter = isTabLichActive
+      ? (document.getElementById('filterAuthCodeCalendar')?.value || '')
+      : (document.getElementById('filterAuthCodeTable')?.value || '');
+    if (!activeAuthFilter) return allJobs;
+    return allJobs.filter(j => normalizeCodeServer(j.maDangNhap || '') === activeAuthFilter);
+  }
+
   function updateFinancialReport() {
     const reportMonth = document.getElementById('reportMonthSelect').value;
-    const selectedExecutor = filterExecutorVal; // respect current executor filter if any
+    const selectedExecutor = filterExecutorVal;
+    const scopedJobs = getActiveAdminScopedJobs();
 
     let sumGiaTri = 0, sumChiPhi = 0, sumLoiNhuan = 0, sumChuaTT = 0;
     let filteredJobCount = 0;
 
-    allJobs.forEach(j => {
+    scopedJobs.forEach(j => {
       if (!j.congViec && !j.khachHang) return;
       if (reportMonth) {
         let p = j.ngay.split('/');
@@ -5646,7 +5035,7 @@
     theadHtml += `</tr>`;
     document.getElementById('masterTableHead').innerHTML = theadHtml;
 
-    setTimeout(() => {
+    {
       let jobTypeMenuHtml = `<li><a class="dropdown-item ${!selectedJobType ? 'active fw-bold' : ''}" href="javascript:void(0)" onclick="setFilter('jobType', '')">Tất cả Công việc (${activeJobTypes.length})</a></li>`;
       activeJobTypes.forEach(jt => {
         const isAct = selectedJobType.toLowerCase() === jt.toLowerCase();
@@ -5678,7 +5067,7 @@
       });
       const sMenu = document.getElementById('menuFilterStatus');
       if (sMenu) sMenu.innerHTML = statusMenuHtml;
-    }, 50);
+    }
 
     let displayItems = [];
 
@@ -6157,7 +5546,7 @@
 
   function openDebtQrModal() {
     const setMonths = new Set();
-    allJobs.forEach(j => {
+    getActiveAdminScopedJobs().forEach(j => {
       if (j.ngay && j.ngay.includes('/')) {
         const p = j.ngay.split('/');
         if (p.length === 3) setMonths.add(`${p[1].padStart(2, '0')}/${p[2]}`);
@@ -6201,7 +5590,7 @@
     const custMap = new Map();
     const execMap = new Map();
 
-    allJobs.forEach(j => {
+    getActiveAdminScopedJobs().forEach(j => {
       if (selectedMonth) {
         let p = j.ngay.split('/');
         if (p.length !== 3 || `${p[1].padStart(2, '0')}/${p[2]}` !== selectedMonth) return;
@@ -6213,7 +5602,8 @@
         }
       }
       const execName = (j.nguoiThucHien || '').trim();
-      if (execName && (j.congViec || j.khachHang) && j.ttChiPhi !== 'Đã trả') {
+      const salVal = j.luuTruChiPhi || parseMoney(j.chiPhi);
+      if (execName && (j.congViec || j.khachHang) && j.ttChiPhi !== 'Đã trả' && salVal > 0) {
         if (!selectedStatus || j.tinhTrang === selectedStatus) {
           execMap.set(execName, (execMap.get(execName) || 0) + 1);
         }
@@ -6301,7 +5691,7 @@
   }
 
   function generateCustomerDebtStatement(cust, selectedMonth, selectedStatus = 'Chưa TT') {
-    const unpaidJobs = allJobs.filter(j => {
+    const unpaidJobs = getActiveAdminScopedJobs().filter(j => {
       if (!j.khachHang || j.khachHang.trim().toLowerCase() !== cust.toLowerCase()) return false;
       if (selectedStatus && j.tinhTrang !== selectedStatus) return false;
       if (selectedMonth) {
@@ -6364,11 +5754,13 @@
   }
 
   function generateExecutorSalaryStatement(execName, selectedMonth, selectedStatus = '') {
-    const filteredJobs = allJobs.filter(j => {
+    const filteredJobs = getActiveAdminScopedJobs().filter(j => {
       const jExec = (j.nguoiThucHien || '').trim();
       if (jExec.toLowerCase() !== execName.toLowerCase()) return false;
       if (!j.congViec && !j.khachHang) return false;
       if (j.ttChiPhi === 'Đã trả') return false;
+      const salVal = j.luuTruChiPhi || parseMoney(j.chiPhi);
+      if (!salVal || salVal <= 0) return false;
       if (selectedStatus && j.tinhTrang !== selectedStatus) return false;
       if (selectedMonth) {
         let p = j.ngay.split('/');
