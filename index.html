@@ -1917,7 +1917,17 @@
       .sidebar-account-wrap{display:block!important}
     }
     @media(max-width:380px){#tabLich .summary-card{padding:7px 4px;gap:5px}#tabLich .summary-icon{width:28px;height:28px}#tabLich .summary-card small{display:none!important}}
-  </style>
+  
+    /* Calendar typography: slightly larger on desktop and mobile. */
+    #calendarMonthTitle{font-size:17px!important}
+    .calendar-weekday{font-size:11px!important}
+    .day-number{font-size:13px!important}
+    .lunar-date{font-size:10px!important}
+    .event-badge{font-size:9px!important}
+    @media(max-width:767.98px){#calendarMonthTitle{font-size:14px!important}.calendar-weekday{font-size:9px!important}.day-number{font-size:11px!important}.lunar-date{font-size:8px!important}.event-badge{font-size:7.5px!important}}
+  
+    @media(min-width:768px){.sidebar-tools-section .menu-action-item{font-size:11.5px}.sidebar-tools-section .sidebar-section-label{font-size:10px}}
+</style>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
 
@@ -1985,7 +1995,7 @@
 
 <div class="app-layout flex min-h-screen bg-slate-50">
   <aside id="appSidebar" class="app-sidebar flex shrink-0 flex-col" aria-label="Điều hướng chính">
-    <div class="sidebar-brand flex items-center gap-3"><div class="brand-mark"><i data-lucide="calendar-check-2"></i></div><div class="brand-copy"><span class="brand-name">Quản lý lịch</span><span class="brand-caption">STUDIO · WORKSPACE</span></div></div>
+    <div class="sidebar-brand flex items-center gap-3"><div class="brand-mark"><i data-lucide="calendar-check-2"></i></div><div class="brand-copy"><span class="brand-name">Quản lý lịch</span><span class="brand-caption">By LETAN · 0966.220.002</span></div></div>
         <div class="sidebar-scroll-content">
       <div class="sidebar-section-label">KHÔNG GIAN LÀM VIỆC</div>
       <nav class="sidebar-nav flex flex-col gap-1">
@@ -2225,9 +2235,7 @@
             <div class="job-info-label pt-1">Ghi chú</div>
             <div class="job-info-val">
               <textarea id="infoPopupGhiChuInput" class="form-control form-control-sm" rows="2" placeholder="Nhập hoặc sửa ghi chú trực tiếp tại đây..." oninput="onInfoPopupNoteInput(this)" style="font-size: 13px; background-color: #ffffff;" autocomplete="off"></textarea>
-              <div class="d-flex justify-content-between align-items-center mt-1.5">
-                <small class="text-muted fst-italic" id="noteSaveStatusText" style="font-size: 11px;">⚡ Tự động lưu tức thì</small>
-              </div>
+
             </div>
           </div>
         </div>
@@ -2823,6 +2831,14 @@
     return normalizeCodeServer(code) === normalizeCodeServer(currentAuthCode);
   }
 
+  function isProtectedAdminAccount(code) {
+    const target = normalizeCodeServer(code);
+    if (!target) return false;
+    if (isAdminCode(target)) return true;
+    const info = authorizedCodesMap[target] || Object.values(authorizedCodesMap || {}).find(item => item && normalizeCodeServer(item.code).toLowerCase() === target.toLowerCase()) || {};
+    return String(info.role || '').toLowerCase() === 'admin' || info.isAdmin === true;
+  }
+
   function formatMoneyVn(val) {
     const num = parseInt(String(val || 0).replace(/[^0-9-]/g, ''), 10) || 0;
     return num.toLocaleString('vi-VN') + " đ";
@@ -3248,6 +3264,7 @@
       const codeToDel = normalizeCodeServer(args[0]);
       const reqIdToDel = args[1] || null;
       const deleteDataAlso = Boolean(args[2]);
+      if (codeToDel && isProtectedAdminAccount(codeToDel)) throw new Error('Không thể xóa tài khoản có quyền ADMIN!');
       if (reqIdToDel) {
         await firebaseFetch(`${dbUrl}/auth_requests/${encodeURIComponent(reqIdToDel)}.json`, { method: "DELETE" });
         delete pendingRequestsMap[reqIdToDel];
@@ -4351,7 +4368,7 @@
 
     let addrHtml = `<span>${diaChiText}</span>`;
     if (savedMapLink) {
-      addrHtml += `<div class="mt-1.5"><a href="${savedMapLink}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success py-1 px-2.5 fw-semibold text-decoration-none" style="font-size: 12px; border-radius: 8px;">📍 Mở Bản Đồ</a></div>`;
+      addrHtml += `<div class="mt-1.5"><a href="${savedMapLink}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success py-0 px-2 fw-semibold text-decoration-none" style="font-size: 10px; border-radius: 7px;">📍 Mở Bản Đồ</a></div>`;
     }
     document.getElementById('infoPopupDiaChi').innerHTML = addrHtml;
     document.getElementById('infoPopupZaloText').value = buildZaloJobText(j, savedMapLink);
@@ -7021,6 +7038,7 @@
         rowCounter++;
         const rIdx = rowCounter;
         const info = authorizedCodesMap[code] || {};
+        const isAdminTarget = isProtectedAdminAccount(code);
         const isActive = info.active !== false && info.status !== 'locked';
         const dName = info.displayName || info.note || "Tài khoản";
         const createdStr = formatCreatedDateVn(info.createdAt);
@@ -7042,7 +7060,7 @@
             <div class="d-flex flex-wrap gap-1 flex-shrink-0">
               <button type="button" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size: 11px;" onclick="openAdminEditAuthModal('${escapeJsQuotes(code)}')">✏️ Sửa</button>
               <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 11px;" onclick="toggleAuthCodeActive('${escapeJsQuotes(code)}')">${isActive ? 'Khóa' : 'Mở'}</button>
-              <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px;" onclick="removeAuthorizedCode('${escapeJsQuotes(code)}')">Xóa</button>
+              <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 11px; ${isAdminTarget ? "display:none;" : ""}" onclick="removeAuthorizedCode('${escapeJsQuotes(code)}')">Xóa</button>
             </div>
           </div>
         `;
@@ -7196,6 +7214,7 @@
   }
 
   function removeAuthorizedCode(code, reqId = null) {
+    if (isProtectedAdminAccount(code)) { showToast('Không thể xóa tài khoản có quyền ADMIN!', true); return; }
     const dName = getDisplayNameForCode(code);
     const promptMsg = reqId
       ? `Từ chối và xóa yêu cầu tạo tài khoản "${dName}"?`
