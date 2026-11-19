@@ -5515,12 +5515,14 @@
     });
 
     google.script.run
-      .withSuccessHandler(function(res) {
-        if (res && Array.isArray(res.jobs) && res.jobs.length > 0) {
-          allJobs = res.jobs;
-        }
+      .withSuccessHandler(function() {
+        // Cập nhật các dòng hiện có, không thay toàn bộ danh sách bằng phản hồi có thể rỗng hoặc cũ.
+        targetRows.forEach(rNum => {
+          const localJob = allJobs.find(item => Number(item.rowNumber) === Number(rNum));
+          if (localJob) localJob.ttChiPhi = newCostStatus;
+        });
         renderMasterTable();
-        showToast((checkboxEl.checked ? 'Đã thanh toán chi phí' : 'Đã bỏ tích chi phí') + (targetRows.length > 1 ? ` (${targetRows.length} công việc)` : ''));
+        showToast((checkboxEl.checked ? 'Đã thanh toán chi phí' : 'Đã bỏ tích chi phí') + (targetRows.length > 1 ? ' (' + targetRows.length + ' công việc)' : ''));
       })
       .withFailureHandler(function(err) {
         showToast("Lỗi cập nhật chi phí", true);
@@ -5833,6 +5835,20 @@
       });
     }
 
+    // Tránh trạng thái rỗng không thể khôi phục do bộ lọc nhanh đã lưu từ phiên trước.
+    const quickFilterEls = [
+      document.getElementById('toggleOnlyEmptyDays'),
+      document.getElementById('toggleMissingTimeOrAddress'),
+      document.getElementById('toggleHideCompleted')
+    ];
+    const hasQuickFilter = quickFilterEls.some(el => el && el.checked);
+    if (displayItems.length === 0 && allJobs.length > 0 && hasQuickFilter) {
+      quickFilterEls.forEach(el => { if (el) el.checked = false; });
+      saveTablePrefs();
+      renderMasterTable();
+      showToast('Đã tắt bộ lọc nhanh vì không có công việc phù hợp.');
+      return;
+    }
     displayItems.sort((a, b) => {
       const d1 = a.dateStr || (a.job ? a.job.ngay : '');
       const d2 = b.dateStr || (b.job ? b.job.ngay : '');
@@ -7299,15 +7315,52 @@
           const parsed = JSON.parse(e.data);
           if (!parsed || parsed.path === undefined) return;
           if (parsed.path === "/") {
-            firebaseJobsMap = parsed.data || {};
+            if (e.type === 'patch' && parsed.data && typeof parsed.data === 'object' && !Array.isArray(parsed.data)) {
+              // Firebase PATCH tại /jobs có thể gửi cả cụm thay đổi; ghép từng công việc thay vì ghi đè toàn bộ cache.
+              Object.entries(parsed.data).forEach(([patchPath, patchValue]) => {
+                const pathParts = patchPath.split('/').filter(Boolean);
+                const jobKey = pathParts[0];
+                if (!jobKey) return;
+                if (pathParts.length > 1) {
+                  let target = firebaseJobsMap[jobKey];
+                  if (!target || typeof target !== 'object') target = firebaseJobsMap[jobKey] = {};
+                  for (let i = 1; i < pathParts.length - 1; i++) {
+                    if (!target[pathParts[i]] || typeof target[pathParts[i]] !== 'object') target[pathParts[i]] = {};
+                    target = target[pathParts[i]];
+                  }
+                  const field = pathParts[pathParts.length - 1];
+                  if (patchValue === null) delete target[field];
+                  else target[field] = patchValue;
+                } else if (patchValue === null) {
+                  delete firebaseJobsMap[jobKey];
+                } else if (patchValue && typeof patchValue === 'object' && !Array.isArray(patchValue)) {
+                  firebaseJobsMap[jobKey] = { ...(firebaseJobsMap[jobKey] || {}), ...patchValue };
+                } else {
+                  firebaseJobsMap[jobKey] = patchValue;
+                }
+              });
+            } else {
+              firebaseJobsMap = parsed.data || {};
+            }
           } else {
             const parts = parsed.path.replace(/^\//, '').split('/');
             const key = parts[0];
             if (parts.length === 1) {
-              if (parsed.data === null) delete firebaseJobsMap[key];
-              else firebaseJobsMap[key] = parsed.data;
+              if (parsed.data === null) {
+                delete firebaseJobsMap[key];
+              } else if (e.type === 'patch' && parsed.data && typeof parsed.data === 'object' && !Array.isArray(parsed.data)) {
+                firebaseJobsMap[key] = { ...(firebaseJobsMap[key] || {}), ...parsed.data };
+              } else {
+                firebaseJobsMap[key] = parsed.data;
+              }
             } else if (parts.length === 2 && firebaseJobsMap[key]) {
               firebaseJobsMap[key][parts[1]] = parsed.data;
+              if (parts[1] === 'ttChiPhi') {
+                const localJob = allJobs.find(item => String(item.firebaseKey || '') === String(key));
+                if (localJob) localJob.ttChiPhi = String(parsed.data || 'Chưa trả');
+                renderMasterTable();
+                return;
+              }
             }
           }
           const refreshed = buildFilteredJobsFromMap(firebaseJobsMap, currentAuthCode);
