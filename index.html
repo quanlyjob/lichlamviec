@@ -7013,20 +7013,26 @@
   });
 
 
+  let lastBackgroundAt = 0;
+  let isResumingConnection = false;
+  let resumeReconnectTimer = null;
+
   function startRealtimeSync() {
     if (firebaseEventSource) {
       try { firebaseEventSource.close(); } catch (e) {}
       firebaseEventSource = null;
     }
     const dbUrl = getFirebaseDbUrl();
-    if (!dbUrl || dbUrl.includes("DÁN_LINK_FIREBASE")) return;
+    if (!dbUrl || dbUrl.includes("DÁN_LINK_FIREBASE") || !currentAuthCode) return;
 
     try {
       const cleanAuth = normalizeCodeServer(currentAuthCode);
       const streamUrl = isAdminAccount
         ? `${dbUrl}/jobs.json`
         : `${dbUrl}/jobs.json?orderBy="maDangNhap"&equalTo="${encodeURIComponent(cleanAuth)}"`;
-      firebaseEventSource = new EventSource(streamUrl);
+      const es = new EventSource(streamUrl);
+      firebaseEventSource = es;
+
       const applyStreamUpdate = function(e) {
         if (!currentAuthCode || noteAutoSaveTimer || !e.data) return;
         try {
@@ -7054,13 +7060,73 @@
           }
         } catch (err) {}
       };
-      firebaseEventSource.addEventListener("put", applyStreamUpdate);
-      firebaseEventSource.addEventListener("patch", applyStreamUpdate);
+
+      es.addEventListener("put", applyStreamUpdate);
+      es.addEventListener("patch", applyStreamUpdate);
+      es.onerror = function() {
+        if (document.hidden || !currentAuthCode) return;
+        clearTimeout(resumeReconnectTimer);
+        resumeReconnectTimer = setTimeout(function() {
+          if (!document.hidden && currentAuthCode) {
+            startRealtimeSync();
+          }
+        }, 2500);
+      };
     } catch (err) {}
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
+  function recoverConnectionOnResume() {
+    if (!currentAuthCode || isResumingConnection) return;
+    const loginOverlayEl = document.getElementById('loginOverlay');
+    if (loginOverlayEl && !loginOverlayEl.classList.contains('d-none')) return;
+
+    const inactiveMs = lastBackgroundAt ? (Date.now() - lastBackgroundAt) : 0;
+    isResumingConnection = true;
+
+    // Luôn mở lại EventSource mới vì kết nối nền trên điện thoại thường bị treo im lặng
     startRealtimeSync();
+
+    // Tải lại dữ liệu mới nhất khi quay lại từ app khác hoặc khi luồng SSE từng bị ngắt
+    const shouldReloadData = inactiveMs > 1500 || !firebaseEventSource || firebaseEventSource.readyState !== EventSource.OPEN;
+    if (shouldReloadData) {
+      loadData(function() {
+        startRealtimeSync();
+        isResumingConnection = false;
+      });
+    } else {
+      isResumingConnection = false;
+    }
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      lastBackgroundAt = Date.now();
+      clearTimeout(resumeReconnectTimer);
+      if (firebaseEventSource) {
+        try { firebaseEventSource.close(); } catch (e) {}
+        firebaseEventSource = null;
+      }
+    } else {
+      clearTimeout(resumeReconnectTimer);
+      resumeReconnectTimer = setTimeout(recoverConnectionOnResume, 180);
+    }
+  });
+
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted || !document.hidden) {
+      clearTimeout(resumeReconnectTimer);
+      resumeReconnectTimer = setTimeout(recoverConnectionOnResume, 180);
+    }
+  });
+
+  window.addEventListener('online', function() {
+    if (!document.hidden && currentAuthCode) {
+      clearTimeout(resumeReconnectTimer);
+      resumeReconnectTimer = setTimeout(recoverConnectionOnResume, 300);
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
     initCustomDialog();
     loadCategoriesPrefs();
     loadTableColumnSettings();
@@ -7078,14 +7144,15 @@
     if (window.lucide) lucide.createIcons();
 
     try {
-
       const savedCode = localStorage.getItem('letan_saved_auth_code');
       if (savedCode && savedCode.trim() !== '') {
         currentAuthCode = savedCode.trim();
         updateCalendarPageTitle();
         loadCategoriesPrefs();
         document.getElementById('loginCodeInput').value = currentAuthCode;
-        loadData();
+        loadData(function() {
+          startRealtimeSync();
+        });
       } else {
         document.getElementById('loginOverlay').classList.remove('d-none');
         setTimeout(() => document.getElementById('loginCodeInput').focus(), 200);
