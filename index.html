@@ -5372,7 +5372,7 @@
 
     google.script.run
       .withSuccessHandler(function(res) {
-        allJobs = res.jobs || [];
+        if (res && Array.isArray(res.jobs)) { allJobs = res.jobs; }
         renderCalendar();
         renderSelectedDayJobs();
         renderMasterTable();
@@ -5393,7 +5393,7 @@
 
     google.script.run
       .withSuccessHandler(function(res) {
-        allJobs = res.jobs || [];
+        if (res && Array.isArray(res.jobs)) { allJobs = res.jobs; }
         renderCalendar();
         renderSelectedDayJobs();
         renderMasterTable();
@@ -5414,15 +5414,35 @@
       targetRows = selectedRows;
     }
 
+    // Cập nhật ngay trên bộ nhớ cục bộ để đồng bộ realtime SSE không làm mất dòng khi renderMasterTable chạy lại
+    targetRows.forEach(rNum => {
+      const localJob = allJobs.find(item => Number(item.rowNumber) === Number(rNum));
+      if (localJob) {
+        localJob.ttChiPhi = newCostStatus;
+      }
+      const foundEntry = Object.entries(firebaseJobsMap || {}).find(([k, v]) => v && Number(v.rowNumber) === Number(rNum));
+      if (foundEntry && foundEntry[1]) {
+        foundEntry[1].ttChiPhi = newCostStatus;
+      }
+    });
+
     google.script.run
       .withSuccessHandler(function(res) {
-        allJobs = res.jobs || [];
+        if (res && Array.isArray(res.jobs) && res.jobs.length > 0) {
+          allJobs = res.jobs;
+        }
         renderMasterTable();
         showToast((checkboxEl.checked ? 'Đã thanh toán chi phí' : 'Đã bỏ tích chi phí') + (targetRows.length > 1 ? ` (${targetRows.length} công việc)` : ''));
       })
       .withFailureHandler(function(err) {
         showToast("Lỗi cập nhật chi phí", true);
         checkboxEl.checked = !checkboxEl.checked;
+        const revertStatus = checkboxEl.checked ? "Đã trả" : "Chưa trả";
+        targetRows.forEach(rNum => {
+          const localJob = allJobs.find(item => Number(item.rowNumber) === Number(rNum));
+          if (localJob) localJob.ttChiPhi = revertStatus;
+        });
+        renderMasterTable();
       })
       .batchUpdateCostStatus(targetRows, newCostStatus);
   }
