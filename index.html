@@ -2381,8 +2381,8 @@
           <div>
             <label class="form-label small fw-bold text-secondary mb-1">3. Tình trạng</label>
             <select id="qrStatusSelect" class="form-select fw-semibold text-danger" onchange="updateQrDropdownsAndStatement()">
-              <option value="">Tất cả tình trạng</option>
               <option value="Chưa TT">Chưa TT</option>
+              <option value="">Tất cả tình trạng</option>
               <option value="Chờ">Chờ</option>
               <option value="Xong">Xong</option>
             </select>
@@ -3524,12 +3524,6 @@
       const foundEntry = Object.entries(firebaseJobsMap).find(([k, v]) => v && Number(v.rowNumber) === targetRow);
       if (foundEntry) {
         const key = foundEntry[0];
-        const snapshot = { ...foundEntry[1], deletedAt: Date.now(), deletedBy: cleanAuth };
-        await fetch(`${dbUrl}/deleted_jobs_backup/${encodeURIComponent(key)}_${Date.now()}.json`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(snapshot)
-        }).catch(() => {});
         await fetch(`${dbUrl}/jobs/${key}.json`, { method: "DELETE" });
         delete firebaseJobsMap[key];
       }
@@ -3684,7 +3678,7 @@
   let jobTypes = ["Chụp PSC", "Quay PSC", "Chụp SK", "Quay SK", "Ăn hỏi", "Khác"];
   let customerList = ["OneStory", "Chiến", "June", "Lita", "Kog", "MinhThe", "Thangken", "Dungcasau", "Mira", "Khách lẻ"];
   let executorList = ["Lê Tân", "Cộng sự 1", "Cộng sự 2", "Team Media"];
-  let statusList = ["Chờ", "Chưa TT", "Xong"];
+  let statusList = ["Chờ", "Chưa thực hiện", "Chưa TT", "Đã TT", "Xong"];
 
   let filterJobTypeVal = "";
   let filterCustomerVal = "";
@@ -4221,7 +4215,7 @@
       `Đ/c: ${diaChiText}`
     ];
     if (mapLinkToUse) {
-      lines.push(`Maps: ${mapLinkToUse}`);
+      lines.push(`${mapLinkToUse}`);
     }
     if (noteText) {
       lines.push(`( ${noteText} )`);
@@ -4367,7 +4361,7 @@
   const DEFAULT_JOB_TYPES = [];
   const DEFAULT_CUSTOMER_LIST = [];
   const DEFAULT_EXECUTOR_LIST = [];
-  const DEFAULT_STATUS_LIST = ["Chờ", "Chưa TT", "Xong"];
+  const DEFAULT_STATUS_LIST = ["Chờ", "Chưa thực hiện", "Chưa TT", "Đã TT", "Xong"];
 
   function getAuthCatSuffix() {
     return currentAuthCode ? `_${normalizeCodeServer(currentAuthCode)}` : '';
@@ -4392,12 +4386,7 @@
       if (savedJobTypes) jobTypes = JSON.parse(savedJobTypes);
       if (savedCustomers) customerList = JSON.parse(savedCustomers);
       if (savedExecutors) executorList = JSON.parse(savedExecutors);
-      if (savedStatuses) {
-        const parsedSt = JSON.parse(savedStatuses);
-        if (Array.isArray(parsedSt)) {
-          statusList = parsedSt.filter(s => s !== 'Chưa thực hiện' && s !== 'Đã TT');
-        }
-      }
+      if (savedStatuses) statusList = JSON.parse(savedStatuses);
     } catch(e) {}
   }
 
@@ -4610,11 +4599,11 @@
           adminDefaultFilterInitialized = true;
         }
 
-        // Mặc định tắt 2 cột Thứ và Tài khoản trên Danh sách công việc
-        const thuCol = tableColumns.find(c => c.id === 'thu');
+        // Tự động hiển thị cột Mã ĐN nếu là Admin để dễ tổng hợp công việc các mã khác
         const maDnCol = tableColumns.find(c => c.id === 'maDangNhap');
-        if (thuCol && localStorage.getItem('pref_table_col_vis_v2') === null) thuCol.visible = false;
-        if (maDnCol && localStorage.getItem('pref_table_col_vis_v2') === null) maDnCol.visible = false;
+        if (maDnCol && isAdminAccount && localStorage.getItem('pref_table_col_vis_v2') === null) {
+          maDnCol.visible = true;
+        }
 
         // Nạp danh mục riêng của mã đăng nhập hiện tại
         resetCategoriesToDefault();
@@ -4622,9 +4611,7 @@
           if (Array.isArray(res.categories.jobTypes)) jobTypes = res.categories.jobTypes;
           if (Array.isArray(res.categories.customerList)) customerList = res.categories.customerList;
           if (Array.isArray(res.categories.executorList)) executorList = res.categories.executorList;
-          if (Array.isArray(res.categories.statusList)) {
-            statusList = res.categories.statusList.filter(s => s !== 'Chưa thực hiện' && s !== 'Đã TT');
-          }
+          if (Array.isArray(res.categories.statusList)) statusList = res.categories.statusList;
           const sfx = getAuthCatSuffix();
           try {
             localStorage.setItem('pref_job_types' + sfx, JSON.stringify(jobTypes));
@@ -6226,8 +6213,7 @@
         }
       }
       const execName = (j.nguoiThucHien || '').trim();
-      const salVal = j.luuTruChiPhi || parseMoney(j.chiPhi);
-      if (execName && (j.congViec || j.khachHang) && j.ttChiPhi !== 'Đã trả' && salVal > 0) {
+      if (execName && (j.congViec || j.khachHang) && j.ttChiPhi !== 'Đã trả') {
         if (!selectedStatus || j.tinhTrang === selectedStatus) {
           execMap.set(execName, (execMap.get(execName) || 0) + 1);
         }
@@ -6383,8 +6369,6 @@
       if (jExec.toLowerCase() !== execName.toLowerCase()) return false;
       if (!j.congViec && !j.khachHang) return false;
       if (j.ttChiPhi === 'Đã trả') return false;
-      const salVal = j.luuTruChiPhi || parseMoney(j.chiPhi);
-      if (!salVal || salVal <= 0) return false;
       if (selectedStatus && j.tinhTrang !== selectedStatus) return false;
       if (selectedMonth) {
         let p = j.ngay.split('/');
