@@ -1933,11 +1933,11 @@
     <!-- Tab chuyển đổi Đăng nhập / Tạo mã mới -->
     <div class="statement-mode-tabs mb-3">
       <div class="statement-mode-tab">
-        <input type="radio" name="loginModeRadio" id="loginTabSignIn" checked onchange="switchLoginCardMode('login')">
+        <input type="radio" name="loginModeRadio" id="loginTabSignIn" checked onchange="switchLoginCardMode('login')" autocomplete="off">
         <label class="statement-mode-label" for="loginTabSignIn">🔓 Đăng nhập</label>
       </div>
       <div class="statement-mode-tab">
-        <input type="radio" name="loginModeRadio" id="loginTabRegister" onchange="switchLoginCardMode('register')">
+        <input type="radio" name="loginModeRadio" id="loginTabRegister" onchange="switchLoginCardMode('register')" autocomplete="off">
         <label class="statement-mode-label" for="loginTabRegister">➕ Tạo mã ĐN mới</label>
       </div>
     </div>
@@ -1950,7 +1950,7 @@
       </div>
       <div class="d-flex align-items-center justify-content-between mb-3 px-1">
         <div class="form-check text-start mb-0">
-          <input class="form-check-input" type="checkbox" id="rememberLoginCheck" checked>
+          <input class="form-check-input" type="checkbox" id="rememberLoginCheck" checked autocomplete="off">
           <label class="form-check-label small text-muted" for="rememberLoginCheck" style="cursor:pointer;">Ghi nhớ trên máy này</label>
         </div>
         <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleLoginPassLink" onclick="toggleShowLoginPass()">👁️ Hiện mã</a>
@@ -2075,7 +2075,7 @@
                 <i data-lucide="plus"></i> Thêm
               </button>
             </div>
-            <input type="text" id="filterCustomerInput" class="form-control form-control-sm mb-3" placeholder="🔍 Tìm tên dâu rể / studio..." oninput="renderSelectedDayJobs()">
+            <input type="text" id="filterCustomerInput" class="form-control form-control-sm mb-3" placeholder="🔍 Tìm tên dâu rể / studio..." oninput="renderSelectedDayJobs()" autocomplete="off">
 
             <div id="selectedDayEventsContainer"></div>
           </div>
@@ -2103,7 +2103,7 @@
             
             <div class="search-filter-box shadow-sm">
               <span class="search-filter-icon"><i data-lucide="search"></i></span>
-              <input type="text" id="searchTableInput" class="search-filter-input" placeholder="Tìm khách, việc, địa chỉ..." oninput="renderMasterTable(false)">
+              <input type="text" id="searchTableInput" class="search-filter-input" placeholder="Tìm khách, việc, địa chỉ..." oninput="renderMasterTable(false)" autocomplete="off">
               <button type="button" id="btnClearAllFilters" class="btn-clear-filter" onclick="clearAllFilters()" title="Xóa tìm kiếm & tất cả bộ lọc">✕</button>
             </div>
 
@@ -2131,19 +2131,19 @@
                 <label class="col-vis-item justify-content-between mb-0" for="toggleOnlyEmptyDays">
                   <span>Chỉ ngày trống</span>
                   <div class="form-check form-switch mb-0 p-0 d-flex align-items-center">
-                    <input class="form-check-input m-0" type="checkbox" id="toggleOnlyEmptyDays" onchange="saveTablePrefs(); renderMasterTable(false);" style="cursor: pointer;">
+                    <input class="form-check-input m-0" type="checkbox" id="toggleOnlyEmptyDays" onchange="saveTablePrefs(); renderMasterTable(false);" style="cursor: pointer;" autocomplete="off">
                   </div>
                 </label>
                 <label class="col-vis-item justify-content-between mb-0" for="toggleMissingTimeOrAddress">
                   <span>Thiếu giờ/địa chỉ</span>
                   <div class="form-check form-switch mb-0 p-0 d-flex align-items-center">
-                    <input class="form-check-input m-0" type="checkbox" id="toggleMissingTimeOrAddress" onchange="saveTablePrefs(); renderMasterTable(false);" style="cursor: pointer;">
+                    <input class="form-check-input m-0" type="checkbox" id="toggleMissingTimeOrAddress" onchange="saveTablePrefs(); renderMasterTable(false);" style="cursor: pointer;" autocomplete="off">
                   </div>
                 </label>
                 <label class="col-vis-item justify-content-between mb-0" for="toggleHideCompleted">
                   <span>Ẩn công việc đã xong</span>
                   <div class="form-check form-switch mb-0 p-0 d-flex align-items-center">
-                    <input class="form-check-input m-0" type="checkbox" id="toggleHideCompleted" onchange="saveTablePrefs(); renderMasterTable(false);" style="cursor: pointer;">
+                    <input class="form-check-input m-0" type="checkbox" id="toggleHideCompleted" onchange="saveTablePrefs(); renderMasterTable(false);" style="cursor: pointer;" autocomplete="off">
                   </div>
                 </label>
               </div>
@@ -2224,7 +2224,7 @@
           <div class="job-info-row align-items-start">
             <div class="job-info-label pt-1">Ghi chú</div>
             <div class="job-info-val">
-              <textarea id="infoPopupGhiChuInput" class="form-control form-control-sm" rows="2" placeholder="Nhập hoặc sửa ghi chú trực tiếp tại đây..." oninput="onInfoPopupNoteInput(this)" style="font-size: 13px; background-color: #ffffff;"></textarea>
+              <textarea id="infoPopupGhiChuInput" class="form-control form-control-sm" rows="2" placeholder="Nhập hoặc sửa ghi chú trực tiếp tại đây..." oninput="onInfoPopupNoteInput(this)" style="font-size: 13px; background-color: #ffffff;" autocomplete="off"></textarea>
               <div class="d-flex justify-content-between align-items-center mt-1.5">
                 <small class="text-muted fst-italic" id="noteSaveStatusText" style="font-size: 11px;">⚡ Tự động lưu tức thì</small>
               </div>
@@ -2233,7 +2233,7 @@
         </div>
 
         <label class="form-label small fw-bold text-secondary mb-1.5">Nội dung tin nhắn gửi Zalo:</label>
-        <textarea id="infoPopupZaloText" class="form-control font-monospace mb-3" rows="6" style="font-size: 12.5px; background-color: #f8fafc;"></textarea>
+        <textarea id="infoPopupZaloText" class="form-control font-monospace mb-3" rows="6" style="font-size: 12.5px; background-color: #f8fafc;" autocomplete="off"></textarea>
 
         <div class="d-flex gap-2 justify-content-end align-items-center">
           <button type="button" class="btn btn-toolbar-modern btn-sm px-3" id="btnEditFromInfoPopup">✏️ Sửa</button>
@@ -2268,7 +2268,7 @@
         </div>
 
         <div class="d-flex gap-2 mb-3">
-          <input type="text" id="newCatalogItemInput" class="form-control" placeholder="Nhập tên mục mới để thêm..." onkeyup="if(event.key==='Enter') addCatalogItemDirect()">
+          <input type="text" id="newCatalogItemInput" class="form-control" placeholder="Nhập tên mục mới để thêm..." onkeyup="if(event.key==='Enter') addCatalogItemDirect()" autocomplete="off">
           <button class="btn text-white px-3 flex-shrink-0" type="button" style="background-color: #7b1113;" onclick="addCatalogItemDirect()">+ Thêm</button>
         </div>
 
@@ -2291,9 +2291,9 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form id="jobForm">
-          <input type="hidden" name="rowNumber" id="formRowNumber">
-          <input type="hidden" name="chiTiet" id="formChiTiet">
+        <form id="jobForm" autocomplete="off">
+          <input type="hidden" name="rowNumber" id="formRowNumber" autocomplete="off">
+          <input type="hidden" name="chiTiet" id="formChiTiet" autocomplete="off">
           
           <div class="row g-2.5 mb-2.5">
             <div class="col-12 d-none mb-2" id="adminOwnerCodeGroup">
@@ -2302,7 +2302,7 @@
             </div>
             <div class="col-12 mb-2">
               <label class="form-label">Ngày thực hiện</label>
-              <input type="date" class="form-control fw-semibold" name="ngay" id="formNgay" required>
+              <input type="date" class="form-control fw-semibold" name="ngay" id="formNgay" required autocomplete="off">
             </div>
           </div>
 
@@ -2338,12 +2338,12 @@
           <div class="row g-2.5 mb-2.5">
             <div class="col-4">
               <label class="form-label">Thời gian</label>
-              <input type="text" class="form-control" id="formThoiGian">
+              <input type="text" class="form-control" id="formThoiGian" autocomplete="off">
             </div>
             <div class="col-8">
               <label class="form-label">Địa chỉ</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="formDiaChi">
+                <input type="text" class="form-control" id="formDiaChi" autocomplete="off">
                 <button class="btn btn-outline-secondary" type="button" onclick="generateMapLinkFromDetail(this)" title="Tạo link Google Maps rút gọn từ địa chỉ">Tạo map</button>
               </div>
             </div>
@@ -2352,7 +2352,7 @@
           <div class="mb-2.5">
             <label class="form-label text-success">Link Google Maps</label>
             <div class="input-group">
-              <input type="text" class="form-control" name="mapLink" id="formMapLink">
+              <input type="text" class="form-control" name="mapLink" id="formMapLink" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
               <button class="btn btn-outline-secondary" type="button" onclick="fixMapLinkInput(this)" title="Rút gọn link Google Maps">Rút gọn</button>
               <button class="btn btn-outline-success" type="button" onclick="fetchAddressFromMap(this)" title="Trích xuất địa chỉ tự động vào ô Địa chỉ">Lấy địa chỉ</button>
             </div>
@@ -2360,23 +2360,23 @@
 
           <div class="mb-2.5">
             <label class="form-label">Ghi chú công việc</label>
-            <textarea class="form-control" name="ghiChu" id="formGhiChu" rows="2" placeholder="Nhập ghi chú thêm cho công việc (nếu có)..."></textarea>
+            <textarea class="form-control" name="ghiChu" id="formGhiChu" rows="2" placeholder="Nhập ghi chú thêm cho công việc (nếu có)..." autocomplete="off"></textarea>
           </div>
 
           <div class="row g-2.5 pt-1">
             <div class="col-4">
               <label class="form-label">Giá trị</label>
-              <input type="text" inputmode="numeric" class="form-control fw-semibold text-primary" name="giaTri" id="formGiaTri" oninput="handleMoneyInput(this, 'chipsGiaTri')" onblur="formatMoneyBlur(this)">
+              <input type="text" inputmode="numeric" class="form-control fw-semibold text-primary" name="giaTri" id="formGiaTri" oninput="handleMoneyInput(this, 'chipsGiaTri')" onblur="formatMoneyBlur(this)" autocomplete="off">
               <div id="chipsGiaTri" class="money-quick-chips"></div>
             </div>
             <div class="col-4">
               <label class="form-label">Đã cọc</label>
-              <input type="text" inputmode="numeric" class="form-control" name="daCoc" id="formDaCoc" oninput="handleMoneyInput(this, 'chipsDaCoc')" onblur="formatMoneyBlur(this)">
+              <input type="text" inputmode="numeric" class="form-control" name="daCoc" id="formDaCoc" oninput="handleMoneyInput(this, 'chipsDaCoc')" onblur="formatMoneyBlur(this)" autocomplete="off">
               <div id="chipsDaCoc" class="money-quick-chips"></div>
             </div>
             <div class="col-4">
               <label class="form-label">Chi phí</label>
-              <input type="text" inputmode="numeric" class="form-control" name="chiPhi" id="formChiPhi" oninput="handleMoneyInput(this, 'chipsChiPhi')" onblur="formatMoneyBlur(this)">
+              <input type="text" inputmode="numeric" class="form-control" name="chiPhi" id="formChiPhi" oninput="handleMoneyInput(this, 'chipsChiPhi')" onblur="formatMoneyBlur(this)" autocomplete="off">
               <div id="chipsChiPhi" class="money-quick-chips"></div>
             </div>
           </div>
@@ -2405,11 +2405,11 @@
         <!-- Segmented Control chuyển đổi chế độ -->
         <div class="statement-mode-tabs">
           <div class="statement-mode-tab">
-            <input type="radio" name="statementMode" id="modeCustomer" value="customer" checked onchange="switchStatementMode()">
+            <input type="radio" name="statementMode" id="modeCustomer" value="customer" checked onchange="switchStatementMode()" autocomplete="off">
             <label class="statement-mode-label" for="modeCustomer">📋 Công nợ Khách hàng</label>
           </div>
           <div class="statement-mode-tab">
-            <input type="radio" name="statementMode" id="modeExecutor" value="executor" onchange="switchStatementMode()">
+            <input type="radio" name="statementMode" id="modeExecutor" value="executor" onchange="switchStatementMode()" autocomplete="off">
             <label class="statement-mode-label" for="modeExecutor">💰 Bảng kê Lương</label>
           </div>
         </div>
@@ -2427,7 +2427,7 @@
             <!-- Nhóm chọn Khách hàng -->
             <div id="customerSelectorGroup">
               <label class="form-label small fw-bold text-secondary mb-1">2. Khách hàng</label>
-              <input type="text" id="qrSearchCustomerInput" class="form-control mb-1.5" placeholder="🔍 Gõ tên khách / studio..." oninput="filterQrCustomerDropdown()">
+              <input type="text" id="qrSearchCustomerInput" class="form-control mb-1.5" placeholder="🔍 Gõ tên khách / studio..." oninput="filterQrCustomerDropdown()" autocomplete="off">
               <select id="qrCustomerSelect" class="form-select fw-semibold text-primary" onchange="generateQrStatement()">
                 <option value="">-- Chọn khách hàng --</option>
               </select>
@@ -2435,7 +2435,7 @@
             <!-- Nhóm chọn Người thực hiện (Lương) -->
             <div id="executorSelectorGroup" class="d-none">
               <label class="form-label small fw-bold text-secondary mb-1">2. Khách hàng / Nhân sự</label>
-              <input type="text" id="qrSearchExecutorInput" class="form-control mb-1.5" placeholder="🔍 Gõ tên nhân sự..." oninput="filterQrExecutorDropdown()">
+              <input type="text" id="qrSearchExecutorInput" class="form-control mb-1.5" placeholder="🔍 Gõ tên nhân sự..." oninput="filterQrExecutorDropdown()" autocomplete="off">
               <select id="qrExecutorSelect" class="form-select fw-semibold text-success" onchange="generateQrStatement()">
                 <option value="">-- Chọn nhân sự --</option>
               </select>
@@ -2454,7 +2454,7 @@
             Hiện giá trị
           </button>
         </div>
-        <textarea id="qrStatementText" class="form-control font-monospace statement-textarea mb-3" rows="9"></textarea>
+        <textarea id="qrStatementText" class="form-control font-monospace statement-textarea mb-3" rows="9" autocomplete="off"></textarea>
 
         <button type="button" class="btn btn-brand-primary w-100 py-2.5" id="btnCopyDebtText" onclick="copyDebtText(this)">
           Copy
@@ -2537,7 +2537,7 @@
         <div id="customDialogMessage" class="mb-2 fw-semibold text-dark" style="font-size: 13.5px;"></div>
         <input type="text" id="customDialogInput" class="form-control text-center mt-2 d-none" autocomplete="off">
         <div id="customDialogCheckboxWrap" class="form-check text-start mt-3 p-2.5 rounded-3 d-none" style="background: #fff1f2; border: 1px solid #fecdd3;">
-          <input class="form-check-input ms-0 me-2" type="checkbox" id="customDialogCheckbox" style="cursor: pointer;">
+          <input class="form-check-input ms-0 me-2" type="checkbox" id="customDialogCheckbox" style="cursor: pointer;" autocomplete="off">
           <label class="form-check-label small fw-bold text-danger" for="customDialogCheckbox" id="customDialogCheckboxLabel" style="cursor: pointer;"></label>
         </div>
       </div>
@@ -2562,7 +2562,7 @@
           <label class="form-label small fw-bold text-secondary mb-1.5">Cấp phép trực tiếp tài khoản mới:</label>
           <div class="row g-2">
             <div class="col-5">
-              <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tên hiển thị...">
+              <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tên hiển thị..." autocomplete="off">
             </div>
             <div class="col-4">
               <input type="password" id="newAuthCodeInput" class="form-control fw-bold" placeholder="Mã ĐN..." autocomplete="new-password">
@@ -2598,10 +2598,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <input type="hidden" id="adminEditOldCodeInput">
+        <input type="hidden" id="adminEditOldCodeInput" autocomplete="off">
         <div class="mb-2.5">
           <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị:</label>
-          <input type="text" id="adminEditDisplayNameInput" class="form-control fw-semibold" placeholder="Nhập tên hiển thị...">
+          <input type="text" id="adminEditDisplayNameInput" class="form-control fw-semibold" placeholder="Nhập tên hiển thị..." autocomplete="off">
         </div>
         <div class="mb-2">
           <div class="d-flex justify-content-between align-items-center mb-1">
@@ -2631,7 +2631,7 @@
       <div class="modal-body">
         <div class="mb-2.5">
           <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị (Tiêu đề Lịch):</label>
-          <input type="text" id="selfDisplayNameInput" class="form-control fw-semibold" placeholder="VD: Lê Tân, Studio June...">
+          <input type="text" id="selfDisplayNameInput" class="form-control fw-semibold" placeholder="VD: Lê Tân, Studio June..." autocomplete="off">
         </div>
         <div class="mb-2" id="selfChangeCodeGroup">
           <div class="d-flex justify-content-between align-items-center mb-1">
@@ -3790,7 +3790,7 @@
   }
 
   let tableColumns = [
-    { id: 'checkbox', label: '<input type="checkbox" id="selectAllJobs" class="form-check-input mt-0" onclick="toggleSelectAllJobs(this)" title="Chọn tất cả">', removable: false, visible: true, width: '40px' },
+    { id: 'checkbox', label: '<input type="checkbox" id="selectAllJobs" class="form-check-input mt-0" onclick="toggleSelectAllJobs(this)" title="Chọn tất cả" autocomplete="off">', removable: false, visible: true, width: '40px' },
     { id: 'thu', label: 'Thứ', removable: true, visible: false, width: '60px' },
     { id: 'ngay', label: 'Ngày', removable: false, visible: true, width: '100px' },
     { id: 'congViec', label: 'Công việc', removable: false, visible: true },
@@ -3930,7 +3930,7 @@
       if (c.removable) {
         html += `
           <div class="col-vis-item" onclick="toggleColumnVisibility('${c.id}')">
-            <input type="checkbox" class="form-check-input mt-0 m-0" ${c.visible ? 'checked' : ''} onclick="event.stopPropagation(); toggleColumnVisibility('${c.id}')">
+            <input type="checkbox" class="form-check-input mt-0 m-0" ${c.visible ? 'checked' : ''} onclick="event.stopPropagation(); toggleColumnVisibility('${c.id}')" autocomplete="off">
             <span class="flex-grow-1">${c.label}</span>
           </div>
         `;
@@ -5967,7 +5967,7 @@
         html += `<tr ${rowIdAttr} class="${rowClassAttr}">`;
         visibleCols.forEach(col => {
           if (col.id === 'checkbox') {
-            html += `<td class="text-center"><input type="checkbox" class="form-check-input mt-0 job-row-checkbox" data-row="${j.rowNumber}"></td>`;
+            html += `<td class="text-center"><input type="checkbox" class="form-check-input mt-0 job-row-checkbox" data-row="${j.rowNumber}" autocomplete="off"></td>`;
           } else if (col.id === 'thu') {
             html += `<td class="text-center text-nowrap text-secondary">${item.thu}</td>`;
           } else if (col.id === 'ngay') {
@@ -5991,7 +5991,7 @@
           } else if (col.id === 'chiPhi') {
             html += `<td class="text-end text-nowrap cell-money-secondary">${cVal.toLocaleString('vi-VN')} đ</td>`;
           } else if (col.id === 'ttChiPhi') {
-            html += `<td class="text-center"><input type="checkbox" class="cost-checkbox" ${j.ttChiPhi === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)" title="Tích chọn nếu đã thanh toán chi phí"></td>`;
+            html += `<td class="text-center"><input type="checkbox" class="cost-checkbox" ${j.ttChiPhi === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)" title="Tích chọn nếu đã thanh toán chi phí" autocomplete="off"></td>`;
           } else if (col.id === 'maDangNhap') {
             html += `<td class="text-center"><span class="badge bg-dark bg-opacity-10 text-dark border">${getDisplayNameForCode(j.maDangNhap)}</span></td>`;
           }
@@ -6114,7 +6114,7 @@
 
               <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top" style="font-size: 12px;">
                 <label class="d-flex align-items-center gap-2 text-secondary fw-semibold mb-0" style="cursor: pointer;">
-                  <input type="checkbox" class="cost-checkbox m-0" ${j.ttChiPhi === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)">
+                  <input type="checkbox" class="cost-checkbox m-0" ${j.ttChiPhi === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)" autocomplete="off">
                   <span>TT Chi phí (${j.ttChiPhi === 'Đã trả' ? 'Đã trả' : 'Chưa trả'})</span>
                 </label>
                 ${isAdminAccount ? `<span class="badge bg-light text-secondary border">👤 ${getDisplayNameForCode(j.maDangNhap)}</span>` : ''}
