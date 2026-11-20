@@ -6313,6 +6313,7 @@
 
     document.getElementById('qrSearchCustomerInput').value = '';
     document.getElementById('qrSearchExecutorInput').value = '';
+    document.getElementById('qrExecutorSelect').value = '';
     
     updateQrDropdownsAndStatement(filterCustomerVal);
     debtQrModalInstance.show();
@@ -6400,7 +6401,6 @@
     }
 
     selectEl.innerHTML = opts;
-    if (!previousSelected && qrExecutorsCache.length) selectEl.value = '__ALL__';
     generateQrStatement();
   }
 
