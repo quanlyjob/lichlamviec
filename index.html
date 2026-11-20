@@ -1956,6 +1956,16 @@
     #loginOverlay .login-mode-tabs .statement-mode-tab{flex:1;min-width:0}
     #loginOverlay .login-mode-tabs .statement-mode-label{min-height:38px;padding:7px 10px;border-radius:9px;font-size:13px;white-space:nowrap}
     #btnSubmitRegister{display:block;width:auto!important;min-width:190px;margin:12px auto 0;padding:8px 18px!important;font-size:13px}
+
+  #selfAccountModal .modal-body{overflow-x:hidden}
+  #selfAccountModal .self-password-hint{display:block;width:100%;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;margin:10px 0 0;padding:8px 10px;border-radius:8px;background:#f8fafc;color:#64748b;font-size:11px;line-height:1.4;text-align:left}
+
+  #manageAuthCodesModal .auth-create-button{font-size:13px;padding:.45rem .55rem;line-height:1.2}
+
+  #loginOverlay .login-contact{margin-top:-8px;color:#7b1113;font-size:12px;font-weight:600}
+
+
+  #loginOverlay .login-submit-button{min-width:180px;font-size:14px;padding:.45rem 1.25rem!important}
 </style>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
@@ -1968,16 +1978,17 @@
     <div class="login-logo">LT</div>
     <h5 class="fw-bold text-dark mb-1" id="loginCardTitle">Xác Thực Truy Cập</h5>
     <p class="text-muted small mb-3" id="loginCardSubtitle">Nhập tên tài khoản và mật khẩu để truy cập lịch làm việc</p>
+    <p class="login-contact small mb-3">QTV Lê Tân - 0966.220.002</p>
 
     <!-- Tab chuyển đổi Đăng nhập / Tạo tài khoản mới -->
     <div class="statement-mode-tabs login-mode-tabs mb-3">
       <div class="statement-mode-tab">
         <input type="radio" name="loginModeRadio" id="loginTabSignIn" checked onchange="switchLoginCardMode('login')" autocomplete="off">
-        <label class="statement-mode-label" for="loginTabSignIn">🔓 Đăng nhập</label>
+        <label class="statement-mode-label" for="loginTabSignIn">Đăng nhập</label>
       </div>
       <div class="statement-mode-tab">
         <input type="radio" name="loginModeRadio" id="loginTabRegister" onchange="switchLoginCardMode('register')" autocomplete="off">
-        <label class="statement-mode-label" for="loginTabRegister">➕ Tạo tài khoản</label>
+        <label class="statement-mode-label" for="loginTabRegister">Đăng ký</label>
       </div>
     </div>
 
@@ -1985,9 +1996,9 @@
     <div id="loginSignInForm">
       <div class="mb-3 text-start">
         <label class="form-label small fw-bold text-secondary mb-1">Tên đăng nhập:</label>
-        <input type="text" id="loginUsernameInput" class="form-control text-center fw-bold text-uppercase mb-2" placeholder="Nhập tên tài khoản" autocomplete="username" style="height:42px;border-radius:10px;" oninput="this.value=this.value.toUpperCase();document.getElementById('loginErrorInline').classList.add('d-none')">
+        <input type="text" id="loginUsernameInput" class="form-control text-uppercase mb-2" placeholder="Nhập tên tài khoản" autocomplete="username" style="height:40px;border-radius:10px;" oninput="this.value=this.value.toUpperCase();document.getElementById('loginErrorInline').classList.add('d-none')">
         <label class="form-label small fw-bold text-secondary mb-1">Mật khẩu:</label>
-        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mật khẩu..." autocomplete="current-password" style="letter-spacing: 1px; height: 42px; border-radius: 10px;" oninput="document.getElementById('loginErrorInline').classList.add('d-none')" onkeyup="if(event.key==='Enter') submitLoginCode()">
+        <input type="password" id="loginCodeInput" class="form-control" placeholder="Nhập mật khẩu..." autocomplete="current-password" style="height: 40px; border-radius: 10px;" oninput="document.getElementById('loginErrorInline').classList.add('d-none')" onkeyup="if(event.key==='Enter') submitLoginCode()">
       </div>
       <div class="d-flex align-items-center justify-content-between mb-3 px-1">
         <div class="form-check text-start mb-0">
@@ -1997,8 +2008,8 @@
         <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleLoginPassLink" onclick="toggleShowLoginPass()">👁️ Hiện mật khẩu</a>
       </div>
       <div id="loginErrorInline" class="alert alert-danger py-2 px-3 small d-none mb-3 text-start" style="border-radius: 10px;"></div>
-      <button type="button" id="btnSubmitLogin" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitLoginCode()">
-        🔓 Đăng nhập
+      <button type="button" id="btnSubmitLogin" class="btn fw-bold text-white py-2 px-4 d-block mx-auto login-submit-button" style="background-color: #7b1113; border-radius: 10px;" onclick="submitLoginCode()">
+        Đăng nhập
       </button>
     </div>
 
@@ -2013,12 +2024,16 @@
           <label class="form-label small fw-bold text-secondary mb-0">Mật khẩu muốn tạo:</label>
           <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleRegPassLink" onclick="toggleShowInputPass('regAuthCodeInput', 'toggleRegPassLink')">👁️ Hiện</a>
         </div>
-        <input type="password" id="regAuthCodeInput" class="form-control fw-bold" placeholder="Tạo mật khẩu" autocomplete="new-password" style="height: 40px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitRegisterAuthCode()">
+        <input type="password" id="regAuthCodeInput" class="form-control" placeholder="Tạo mật khẩu" autocomplete="new-password" style="height: 40px; border-radius: 10px;">
+      </div>
+      <div class="mb-2">
+        <label class="form-label small fw-bold text-secondary mb-1">Nhập lại mật khẩu:</label>
+        <input type="password" id="regConfirmAuthCodeInput" class="form-control" placeholder="Nhập lại mật khẩu" autocomplete="new-password" style="height: 40px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitRegisterAuthCode()">
         <small class="text-muted d-block mt-1" style="font-size: 11px;">🔒 Mật khẩu cần chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự.</small>
       </div>
       <div id="regStatusBanner" class="alert alert-info py-2 px-3 small d-none mb-3" style="border-radius: 10px;"></div>
       <button type="button" id="btnSubmitRegister" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitRegisterAuthCode()">
-        📩 Gửi yêu cầu tạo tài khoản
+        Gửi yêu cầu tạo tài khoản
       </button>
     </div>
   </div>
@@ -2609,10 +2624,10 @@
               <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tài khoản..." autocomplete="username">
             </div>
             <div class="col-4">
-              <input type="password" id="newAuthCodeInput" class="form-control fw-bold" placeholder="Mật khẩu..." autocomplete="new-password">
+              <input type="password" id="newAuthCodeInput" class="form-control" placeholder="Mật khẩu..." autocomplete="new-password">
             </div>
             <div class="col-4">
-              <button type="button" class="btn btn-brand-primary w-100 h-100" onclick="addAuthorizedCode()">Tạo tài khoản</button>
+              <button type="button" class="btn btn-brand-primary w-100 h-100 auth-create-button" onclick="addAuthorizedCode()">Tạo tài khoản</button>
             </div>
           </div>
           <small class="text-muted d-block mt-1.5" style="font-size: 11px;">🔒 Mật khẩu bắt buộc gồm chữ HOA, chữ thường, số và ký tự đặc biệt (tối thiểu 6 ký tự).</small>
@@ -2696,8 +2711,8 @@
           <label class="form-label small fw-bold text-secondary mb-1">Nhập lại mật khẩu mới:</label>
           <input type="password" id="selfConfirmNewPasswordInput" class="form-control fw-bold" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password">
         </div>
+        <div class="self-password-hint">🔒 Mật khẩu mới cần có: <strong>chữ HOA, chữ thường, số và ký tự đặc biệt</strong> (tối thiểu 6 ký tự).</div>
       </div>
-        <small class="text-muted d-block mt-2" style="font-size: 11px;">🔒 Mật khẩu mới cần có: <strong>chữ HOA, chữ thường, số và ký tự đặc biệt</strong> (tối thiểu 6 ký tự).</small>
       <div class="modal-footer justify-content-end gap-2">
         <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Hủy</button>
         <button type="button" class="btn btn-brand-primary btn-sm px-3" id="btnSaveSelfAccount" onclick="submitSelfAccountChange()">Lưu thay đổi</button>
@@ -6729,9 +6744,20 @@
     }
     const username = userCheck.username;
     const code = normalizeCodeServer(codeInp.value);
+    const confirmCode = normalizeCodeServer(document.getElementById('regConfirmAuthCodeInput').value);
     if (!code) {
       showToast('Vui lòng nhập mật khẩu muốn tạo!', true);
       codeInp.focus();
+      return;
+    }
+    if (!confirmCode) {
+      showToast('Vui lòng nhập lại mật khẩu để xác nhận!', true);
+      document.getElementById('regConfirmAuthCodeInput').focus();
+      return;
+    }
+    if (code !== confirmCode) {
+      showToast('Hai mật khẩu chưa khớp nhau!', true);
+      document.getElementById('regConfirmAuthCodeInput').focus();
       return;
     }
     const strongCheck = validateStrongAuthCode(code);
@@ -6751,6 +6777,7 @@
         btn.disabled = false;
         btn.innerHTML = oldHtml;
         codeInp.value = '';
+        document.getElementById('regConfirmAuthCodeInput').value = '';
         nameInp.value = '';
         banner.className = 'alert alert-success py-2 px-3 small mb-3';
         banner.innerHTML = `✅ Đã gửi yêu cầu tạo tài khoản <strong>${res.displayName}</strong>. Vui lòng liên hệ <strong>LETAN (0966.220.002)</strong> để phê duyệt!`;
