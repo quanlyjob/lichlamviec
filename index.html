@@ -6450,7 +6450,7 @@
     let lines = [];
 
     const customerTitle = cust === '__ALL__' ? 'TẤT CẢ KHÁCH HÀNG' : cust.toUpperCase();
-    lines.push(`BẢNG KÊ TỔNG CÔNG VIỆC - ${customerTitle}${selectedMonth ? ' (Tháng ' + selectedMonth + ')' : ' (Tất cả tháng)'}${selectedStatus ? ' [' + selectedStatus + ']' : ''}`);
+    lines.push(`BẢNG KÊ CÔNG VIỆC - ${customerTitle}${selectedMonth ? ' (Tháng ' + selectedMonth + ')' : ' (Tất cả tháng)'}${selectedStatus ? ' [' + selectedStatus + ']' : ''}`);
     lines.push(`----------------------------`);
 
     unpaidJobs.forEach((j, i) => {
