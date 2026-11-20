@@ -1927,7 +1927,26 @@
     @media(max-width:767.98px){#calendarMonthTitle{font-size:14px!important}.calendar-weekday{font-size:9px!important}.day-number{font-size:11px!important}.lunar-date{font-size:8px!important}.event-badge{font-size:7.5px!important}}
   
     @media(min-width:768px){.sidebar-tools-section .menu-action-item{font-size:11.5px}.sidebar-tools-section .sidebar-section-label{font-size:10px}}
-</style>
+    /* Compact, refined job detail dialog and neutral note styling. */
+    .info-detail-card{padding:3px 12px;margin-bottom:12px;background:#fbfcfe;border-color:#e8ebf0}
+    .info-detail-card .job-info-row{padding:6px 0;font-size:12.5px}
+    .info-detail-card .job-info-label{width:120px;font-size:11.5px}
+    .info-detail-card .job-info-val{font-size:12.5px}
+    .info-popup-action{height:36px;min-width:70px;border-radius:9px!important;font-weight:600!important}
+    #selectedDayEventsContainer .event-item-card .mt-2.rounded-3.small{background:transparent!important;border-color:transparent!important;color:inherit!important}
+  
+    /* Calendar readability and compact navigation refinements. */
+    #calendarMonthTitle{font-size:18px!important}
+    .calendar-weekday{font-size:12px!important}
+    .day-number{font-size:14px!important}
+    .lunar-date{font-size:11px!important}
+    .event-badge{font-size:10px!important;padding:1px 5px!important}
+    .calendar-header .btn-group{gap:4px}
+    .calendar-nav-button{width:32px;min-height:31px;height:31px}
+    .calendar-nav-button svg,.calendar-today-button svg{width:13px;height:13px}
+    .calendar-today-button{font-size:12px!important;padding:0 8px!important;min-height:31px;height:31px}
+    @media(max-width:767.98px){#calendarMonthTitle{font-size:15px!important}.calendar-weekday{font-size:10px!important}.day-number{font-size:12px!important}.lunar-date{font-size:9px!important}.event-badge{font-size:8.5px!important;padding:1px 4px!important}}
+  </style>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
 
@@ -2010,7 +2029,7 @@
       </section>
       <section class="sidebar-tools-section" aria-label="Công cụ quản lý">
         <div class="sidebar-section-label">CÔNG CỤ</div>
-        <button type="button" class="menu-action-item" onclick="openDebtQrModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="receipt"></i></span><span>Công nợ &amp; Bảng kê lương</span></button>
+        <button type="button" class="menu-action-item" onclick="openDebtQrModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="receipt"></i></span><span>Bảng kê &amp; đối soát</span></button>
         <button type="button" class="menu-action-item" onclick="openReportModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="bar-chart-3"></i></span><span>Báo cáo tài chính</span></button>
         <button type="button" class="menu-action-item" onclick="openManageCatalogsModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="sliders-horizontal"></i></span><span>Quản lý danh mục</span></button>
         <button type="button" class="menu-action-item d-none" id="btnMenuManageAuthCodes" onclick="openManageAuthCodesModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="shield-check"></i></span><span>Quản lý mã đăng nhập</span></button>
@@ -2243,15 +2262,18 @@
         <label class="form-label small fw-bold text-secondary mb-1.5">Nội dung tin nhắn gửi Zalo:</label>
         <textarea id="infoPopupZaloText" class="form-control font-monospace mb-3" rows="6" style="font-size: 12.5px; background-color: #f8fafc;" autocomplete="off"></textarea>
 
-        <div class="d-flex gap-2 justify-content-end align-items-center">
-          <button type="button" class="btn btn-toolbar-modern btn-sm px-3" id="btnEditFromInfoPopup">✏️ Sửa</button>
-          <button type="button" class="btn btn-outline-danger btn-sm px-3" id="btnDeleteFromInfoPopup" style="height: 36px;">🗑️ Xoá</button>
-          <button type="button" class="btn btn-sm px-4 text-white" id="btnCopyJobInfoZalo" onclick="copyJobInfoZalo(this)" style="height: 36px; background-color: #7b1113; border-color: #7b1113;">Copy</button>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-light border btn-sm px-3 info-popup-action" id="btnEditFromInfoPopup">Sửa</button>
+            <button type="button" class="btn btn-light border btn-sm px-3 info-popup-action text-danger" id="btnDeleteFromInfoPopup">Xoá</button>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-light border btn-sm px-3 info-popup-action" id="btnCopyJobInfoZalo" onclick="copyJobInfoZalo(this)">Copy</button>
+            <button type="button" class="btn btn-light border btn-sm px-3 info-popup-action" data-bs-dismiss="modal">Đóng</button>
+          </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
-      </div>
+      
     </div>
   </div>
 </div>
@@ -2352,7 +2374,7 @@
               <label class="form-label">Địa chỉ</label>
               <div class="input-group">
                 <input type="text" class="form-control" id="formDiaChi" autocomplete="off">
-                <button class="btn btn-outline-secondary" type="button" onclick="generateMapLinkFromDetail(this)" title="Tạo link Google Maps rút gọn từ địa chỉ">Tạo map</button>
+                <button class="btn btn-outline-secondary" type="button" onclick="generateMapLinkFromDetail(this)" title="Tạo link Google Maps từ địa chỉ">Tạo map</button>
               </div>
             </div>
           </div>
@@ -2361,7 +2383,6 @@
             <label class="form-label text-success">Link Google Maps</label>
             <div class="input-group">
               <input type="text" class="form-control" name="mapLink" id="formMapLink" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-              <button class="btn btn-outline-secondary" type="button" onclick="fixMapLinkInput(this)" title="Rút gọn link Google Maps">Rút gọn</button>
               <button class="btn btn-outline-success" type="button" onclick="fetchAddressFromMap(this)" title="Trích xuất địa chỉ tự động vào ô Địa chỉ">Lấy địa chỉ</button>
             </div>
           </div>
@@ -2406,7 +2427,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h6 class="modal-title">Công Nợ & Bảng Kê Lương</h6>
+        <h6 class="modal-title">Bảng kê & đối soát</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -2414,11 +2435,11 @@
         <div class="statement-mode-tabs">
           <div class="statement-mode-tab">
             <input type="radio" name="statementMode" id="modeCustomer" value="customer" checked onchange="switchStatementMode()" autocomplete="off">
-            <label class="statement-mode-label" for="modeCustomer">📋 Công nợ Khách hàng</label>
+            <label class="statement-mode-label" for="modeCustomer">Khách hàng</label>
           </div>
           <div class="statement-mode-tab">
             <input type="radio" name="statementMode" id="modeExecutor" value="executor" onchange="switchStatementMode()" autocomplete="off">
-            <label class="statement-mode-label" for="modeExecutor">💰 Bảng kê Lương</label>
+            <label class="statement-mode-label" for="modeExecutor">Nhân sự</label>
           </div>
         </div>
 
@@ -2432,9 +2453,17 @@
           </div>
 
           <div class="mb-2.5">
+            <div id="customerStatusFilter"><label class="form-label small fw-bold text-secondary mb-1">2. Tình trạng công việc</label>
+            <select id="qrStatusSelect" class="form-select fw-semibold text-danger" onchange="updateQrDropdownsAndStatement()"><option value="">Tất cả</option><option value="Chưa TT">Chưa TT</option><option value="Chờ">Chờ</option><option value="Xong">Xong</option></select></div>
+            <div id="executorCostStatusFilter" class="d-none"><label class="form-label small fw-bold text-secondary mb-1">2. Tình trạng TT chi phí</label>
+            <select id="qrCostStatusSelect" class="form-select fw-semibold text-danger" onchange="updateQrDropdownsAndStatement()"><option value="">Tất cả</option><option value="Chưa trả">Chưa thanh toán</option><option value="Đã trả">Đã thanh toán</option></select></div>
+          </div>
+ 
+
+          <div class="mb-2.5">
             <!-- Nhóm chọn Khách hàng -->
             <div id="customerSelectorGroup">
-              <label class="form-label small fw-bold text-secondary mb-1">2. Khách hàng</label>
+              <label class="form-label small fw-bold text-secondary mb-1">3. Khách hàng</label>
               <input type="text" id="qrSearchCustomerInput" class="form-control mb-1.5" placeholder="🔍 Gõ tên khách / studio..." oninput="filterQrCustomerDropdown()" autocomplete="off">
               <select id="qrCustomerSelect" class="form-select fw-semibold text-primary" onchange="generateQrStatement()">
                 <option value="">-- Chọn khách hàng --</option>
@@ -2442,7 +2471,7 @@
             </div>
             <!-- Nhóm chọn Người thực hiện (Lương) -->
             <div id="executorSelectorGroup" class="d-none">
-              <label class="form-label small fw-bold text-secondary mb-1">2. Khách hàng / Nhân sự</label>
+              <label class="form-label small fw-bold text-secondary mb-1">3. Nhân sự</label>
               <input type="text" id="qrSearchExecutorInput" class="form-control mb-1.5" placeholder="🔍 Gõ tên nhân sự..." oninput="filterQrExecutorDropdown()" autocomplete="off">
               <select id="qrExecutorSelect" class="form-select fw-semibold text-success" onchange="generateQrStatement()">
                 <option value="">-- Chọn nhân sự --</option>
@@ -2450,11 +2479,7 @@
             </div>
           </div>
 
-          <div>
-            <label class="form-label small fw-bold text-secondary mb-1">3. Tình trạng</label>
-            <select id="qrStatusSelect" class="form-select fw-semibold text-danger" onchange="updateQrDropdownsAndStatement()"><option value="">Tất cả</option><option value="Chưa TT">Chưa TT</option><option value="Chờ">Chờ</option><option value="Xong">Xong</option></select>
-          </div>
-        </div>
+       </div>
 
         <div class="d-flex justify-content-between align-items-center mb-1.5">
           <label class="form-label small fw-bold text-secondary mb-0">4. Nội dung bảng kê</label>
@@ -2464,12 +2489,11 @@
         </div>
         <textarea id="qrStatementText" class="form-control font-monospace statement-textarea mb-3" rows="9" autocomplete="off"></textarea>
 
-        <button type="button" class="btn btn-brand-primary w-100 py-2.5" id="btnCopyDebtText" onclick="copyDebtText(this)">
-          Copy
-        </button>
-      </div>
-      <div class="modal-footer">
+        <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
+        <button type="button" class="btn btn-light border btn-sm px-3" id="btnCopyDebtText" onclick="copyDebtText(this)">Copy</button>
         <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -3687,10 +3711,11 @@
       const raw = String(args[0] || "").trim();
       if (!raw) return { success: false, message: "Vui lòng nhập link hoặc địa chỉ." };
 
-      // Giữ nguyên nếu đã là link rút gọn thật từ Google Maps hoặc is.gd
-      const existingShortMatch = raw.match(/https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|is\.gd)\/[a-zA-Z0-9_-]+/);
-      if (existingShortMatch) {
-        return { success: true, url: existingShortMatch[0] };
+      // Chỉ giữ link chia sẻ rút gọn do Google Maps tạo.
+      const existingMapsShort = raw.match(/^https?:\/\/maps\.app\.goo\.gl\/[a-zA-Z0-9_-]+\/?(?:[?#][^\s]*)?$/i);
+      if (existingMapsShort) return { success: true, url: existingMapsShort[0] };
+      if (/^https?:\/\/(?:goo\.gl\/maps|is\.gd)\//i.test(raw)) {
+        return { success: false, message: "Chỉ hỗ trợ link rút gọn maps.app.goo.gl. Hãy dán link chia sẻ từ Google Maps." };
       }
 
       let targetUrl = "";
@@ -3718,28 +3743,7 @@
         targetUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(raw)}`;
       }
 
-      // Rút gọn bằng dịch vụ is.gd qua JSONP (tránh lỗi chặn CORS trên mọi trình duyệt & iPhone)
-      try {
-        const shortUrlJsonp = await new Promise((resolve) => {
-          const cbName = '_isgd_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-          const scriptEl = document.createElement('script');
-          const timer = setTimeout(() => { cleanup(); resolve(null); }, 4500);
-          function cleanup() {
-            clearTimeout(timer);
-            try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
-            if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
-          }
-          window[cbName] = function(data) { cleanup(); resolve(data && data.shorturl ? data.shorturl : null); };
-          scriptEl.onerror = function() { cleanup(); resolve(null); };
-          scriptEl.src = `https://is.gd/create.php?format=json&callback=${cbName}&url=${encodeURIComponent(targetUrl)}`;
-          document.body.appendChild(scriptEl);
-        });
-        if (shortUrlJsonp) {
-          return { success: true, url: shortUrlJsonp, targetUrl: targetUrl };
-        }
-      } catch (e1) {}
-
-      // Nếu dịch vụ is.gd bận, trả về link Google Maps chuẩn hoạt động 100%
+      // Google Maps URL chuẩn được giữ nguyên; link maps.app.goo.gl đã được bảo toàn ở trên.
       return { success: true, url: targetUrl, targetUrl: targetUrl };
     }
 
@@ -4938,7 +4942,7 @@
 
       const ghiChuDayStr = getJobNote(j);
       const ghiChuDayHtml = ghiChuDayStr
-        ? `<div class="mt-2 px-2.5 py-1.5 rounded-3 small" style="background-color: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 12px; line-height: 1.4;">📝 <strong>Ghi chú:</strong> ${ghiChuDayStr.replace(/\n/g, '<br>')}</div>`
+        ? `<div class="mt-2 px-2.5 py-1.5 rounded-3 small" style="font-size: 12px; line-height: 1.4;">📝 <strong>Ghi chú:</strong> ${ghiChuDayStr.replace(/\n/g, '<br>')}</div>`
         : '';
 
       html += `<div class="event-item-card ${isJobDone ? 'event-done' : ''}">
@@ -4989,39 +4993,6 @@
 
 
 
-
-  function fixMapLinkInput(btnEl) {
-    const mapLinkInput = document.getElementById('formMapLink');
-    const rawVal = mapLinkInput.value.trim();
-
-    if (!rawVal) {
-      showToast('Chưa nhập link hoặc tọa độ Google Maps', true);
-      return;
-    }
-
-    const btn = btnEl || null;
-    const oldHtml = btn.innerHTML;
-    btn.innerHTML = 'Đang rút gọn...';
-    btn.disabled = true;
-
-    google.script.run
-      .withSuccessHandler(function(res) {
-        btn.innerHTML = oldHtml;
-        btn.disabled = false;
-        if (res && res.success) {
-          mapLinkInput.value = res.url;
-          showToast('Đã rút gọn link Google Maps');
-        } else {
-          showToast((res && res.message) || 'Không thể chuẩn hóa link', true);
-        }
-      })
-      .withFailureHandler(function() {
-        btn.innerHTML = oldHtml;
-        btn.disabled = false;
-        showToast('Lỗi kết nối khi chuẩn hóa link', true);
-      })
-      .normalizeAndFixMapUrl(rawVal);
-  }
 
   function cleanExtractedAddressText(rawAddress) {
     if (!rawAddress) return '';
@@ -5511,7 +5482,7 @@
   }
 
   function toggleCostStatus(targetRowNumber, checkboxEl) {
-    const newCostStatus = checkboxEl.checked ? "Đã trả" : "Chưa trả";
+    const newCostStatus = checkboxEl.checked ? "Đã thanh toán" : "Chưa trả";
     const selectedRows = getSelectedRowNumbers();
 
     let targetRows = [targetRowNumber];
@@ -6293,6 +6264,8 @@
     const isCust = document.getElementById('modeCustomer').checked;
     document.getElementById('customerSelectorGroup').classList.toggle('d-none', !isCust);
     document.getElementById('executorSelectorGroup').classList.toggle('d-none', isCust);
+    document.getElementById('customerStatusFilter').classList.toggle('d-none', !isCust);
+    document.getElementById('executorCostStatusFilter').classList.toggle('d-none', isCust);
     generateQrStatement();
   }
 
@@ -6330,15 +6303,13 @@
     document.getElementById('qrMonthSelect').innerHTML = monthOpts;
 
     const statusSel = document.getElementById('qrStatusSelect');
-    if (statusSel && filterStatusVal) {
-      statusSel.value = filterStatusVal;
-    } else if (statusSel) {
-      statusSel.value = 'Chưa TT';
-    }
+    if (statusSel) statusSel.value = '';
+    const costStatusSel = document.getElementById('qrCostStatusSelect');
+    if (costStatusSel) costStatusSel.value = '';
 
     qrShowMoney = true;
     const toggleBtn = document.getElementById('btnToggleQrMoney');
-    if (toggleBtn) toggleBtn.innerText = '💵 Đang hiện tiền';
+    if (toggleBtn) toggleBtn.innerText = 'Hiện giá trị';
 
     document.getElementById('qrSearchCustomerInput').value = '';
     document.getElementById('qrSearchExecutorInput').value = '';
@@ -6347,9 +6318,15 @@
     debtQrModalInstance.show();
   }
 
+  function normalizeQrCostStatus(value) {
+    const normalized = String(value || '').trim().toLocaleLowerCase('vi');
+    return normalized === 'đã trả' || normalized === 'đã thanh toán' ? 'Đã trả' : 'Chưa trả';
+  }
+
   function updateQrDropdownsAndStatement(preferredCust = null) {
     const selectedMonth = document.getElementById('qrMonthSelect').value;
     const selectedStatus = document.getElementById('qrStatusSelect')?.value || '';
+    const selectedCostStatus = document.getElementById('qrCostStatusSelect')?.value || '';
     const custMap = new Map();
     const execMap = new Map();
 
@@ -6358,17 +6335,13 @@
         let p = j.ngay.split('/');
         if (p.length !== 3 || `${p[1].padStart(2, '0')}/${p[2]}` !== selectedMonth) return;
       }
-      if (j.khachHang && j.khachHang.trim() !== '') {
-        if (!selectedStatus || j.tinhTrang === selectedStatus) {
-          const cName = j.khachHang.trim();
-          custMap.set(cName, (custMap.get(cName) || 0) + 1);
-        }
+      if (j.khachHang && j.khachHang.trim() !== '' && (!selectedStatus || j.tinhTrang === selectedStatus)) {
+        const cName = j.khachHang.trim();
+        custMap.set(cName, (custMap.get(cName) || 0) + 1);
       }
       const execName = (j.nguoiThucHien || '').trim();
-      if (execName && (j.congViec || j.khachHang) && j.ttChiPhi !== 'Đã trả') {
-        if (!selectedStatus || j.tinhTrang === selectedStatus) {
-          execMap.set(execName, (execMap.get(execName) || 0) + 1);
-        }
+      if (execName && (j.congViec || j.khachHang) && (!selectedCostStatus || normalizeQrCostStatus(j.ttChiPhi) === selectedCostStatus)) {
+        execMap.set(execName, (execMap.get(execName) || 0) + 1);
       }
     });
 
@@ -6384,21 +6357,21 @@
     const keyword = document.getElementById('qrSearchCustomerInput').value.toLowerCase().trim();
     const selectEl = document.getElementById('qrCustomerSelect');
     const previousSelected = preferredCust !== null ? preferredCust : selectEl.value;
-    const statusLabel = document.getElementById('qrStatusSelect')?.value || 'phù hợp';
 
     const filtered = qrUnpaidCustomersCache.filter(item =>
       item.name.toLowerCase().includes(keyword)
     );
 
-    let opts = `<option value="">-- Chọn khách hàng (${filtered.length}) --</option>`;
+    const allCustomerJobs = qrUnpaidCustomersCache.reduce((sum, item) => sum + item.count, 0);
+    let opts = `<option value="">-- Chọn khách hàng (${filtered.length}) --</option><option value="__ALL__">Tất cả khách hàng (${allCustomerJobs} công việc)</option>`;
     filtered.forEach(item => {
       const isSelected = (item.name.toLowerCase() === String(previousSelected).toLowerCase());
-      opts += `<option value="${item.name}" ${isSelected ? 'selected' : ''}>${item.name} (${item.count} công việc ${statusLabel})</option>`;
+      opts += `<option value="${item.name}" ${isSelected ? 'selected' : ''}>${item.name} (${item.count} công việc)</option>`;
     });
 
     if (keyword && filtered.length === 1) {
-      opts = `<option value="">-- Chọn khách hàng (1) --</option>` +
-             `<option value="${filtered[0].name}" selected>${filtered[0].name} (${filtered[0].count} công việc ${statusLabel})</option>`;
+      opts = `<option value="">-- Chọn khách hàng (1) --</option><option value="__ALL__">Tất cả khách hàng (${allCustomerJobs} công việc)</option>` +
+             `<option value="${filtered[0].name}" selected>${filtered[0].name} (${filtered[0].count} công việc)</option>`;
     }
 
     selectEl.innerHTML = opts;
@@ -6409,24 +6382,25 @@
     const keyword = document.getElementById('qrSearchExecutorInput').value.toLowerCase().trim();
     const selectEl = document.getElementById('qrExecutorSelect');
     const previousSelected = preferredExec !== null ? preferredExec : selectEl.value;
-    const statusLabel = document.getElementById('qrStatusSelect')?.value || 'chưa trả';
 
     const filtered = qrExecutorsCache.filter(item =>
       item.name.toLowerCase().includes(keyword)
     );
 
-    let opts = `<option value="">-- Chọn nhân sự (${filtered.length}) --</option>`;
+    const allExecutorJobs = qrExecutorsCache.reduce((sum, item) => sum + item.count, 0);
+    let opts = `<option value="">-- Chọn nhân sự (${filtered.length}) --</option><option value="__ALL__">Tất cả nhân sự (${allExecutorJobs} công việc)</option>`;
     filtered.forEach(item => {
       const isSelected = (item.name.toLowerCase() === String(previousSelected).toLowerCase());
-      opts += `<option value="${item.name}" ${isSelected ? 'selected' : ''}>${item.name} (${item.count} công việc ${statusLabel})</option>`;
+      opts += `<option value="${item.name}" ${isSelected ? 'selected' : ''}>${item.name} (${item.count} công việc)</option>`;
     });
 
     if (keyword && filtered.length === 1) {
-      opts = `<option value="">-- Chọn nhân sự (1) --</option>` +
-             `<option value="${filtered[0].name}" selected>${filtered[0].name} (${filtered[0].count} công việc ${statusLabel})</option>`;
+      opts = `<option value="">-- Chọn nhân sự (1) --</option><option value="__ALL__">Tất cả nhân sự (${allExecutorJobs} công việc)</option>` +
+             `<option value="${filtered[0].name}" selected>${filtered[0].name} (${filtered[0].count} công việc)</option>`;
     }
 
     selectEl.innerHTML = opts;
+    if (!previousSelected && qrExecutorsCache.length) selectEl.value = '__ALL__';
     generateQrStatement();
   }
 
@@ -6434,6 +6408,7 @@
     const isCustMode = document.getElementById('modeCustomer').checked;
     const selectedMonth = document.getElementById('qrMonthSelect').value;
     const selectedStatus = document.getElementById('qrStatusSelect')?.value || '';
+    const selectedCostStatus = document.getElementById('qrCostStatusSelect')?.value || '';
 
     if (isCustMode) {
       const cust = document.getElementById('qrCustomerSelect').value;
@@ -6448,13 +6423,14 @@
         document.getElementById('qrStatementText').value = "Vui lòng chọn hoặc tìm kiếm nhân sự ở trên để tạo bảng kê lương.";
         return;
       }
-      generateExecutorSalaryStatement(exec, selectedMonth, selectedStatus);
+      generateExecutorSalaryStatement(exec, selectedMonth, selectedCostStatus);
     }
   }
 
   function generateCustomerDebtStatement(cust, selectedMonth, selectedStatus = 'Chưa TT') {
     const unpaidJobs = getActiveAdminScopedJobs().filter(j => {
-      if (!j.khachHang || String(j.khachHang || '').trim().toLowerCase() !== String(cust || '').toLowerCase()) return false;
+      if (!j.khachHang) return false;
+      if (cust !== '__ALL__' && String(j.khachHang).trim().toLowerCase() !== String(cust || '').toLowerCase()) return false;
       if (selectedStatus && j.tinhTrang !== selectedStatus) return false;
       if (selectedMonth) {
         let p = j.ngay.split('/');
@@ -6465,7 +6441,7 @@
 
     const statusDesc = selectedStatus ? ` "${selectedStatus}"` : '';
     if (unpaidJobs.length === 0) {
-      document.getElementById('qrStatementText').value = `Khách hàng "${cust}" không có công việc nào${statusDesc} trong ${selectedMonth ? 'Tháng ' + selectedMonth : 'tất cả các tháng'}.`;
+      document.getElementById('qrStatementText').value = cust === '__ALL__' ? `Không có công việc nào phù hợp${statusDesc} trong ${selectedMonth ? 'Tháng ' + selectedMonth : 'tất cả các tháng'}.` : `Khách hàng "${cust}" không có công việc nào${statusDesc} trong ${selectedMonth ? 'Tháng ' + selectedMonth : 'tất cả các tháng'}.`;
       return;
     }
 
@@ -6473,7 +6449,8 @@
     let totalDeposit = 0;
     let lines = [];
 
-    lines.push(`BẢNG KÊ TỔNG CÔNG VIỆC - ${cust.toUpperCase()}${selectedMonth ? ' (Tháng ' + selectedMonth + ')' : ' (Tất cả tháng)'}${selectedStatus ? ' [' + selectedStatus + ']' : ''}`);
+    const customerTitle = cust === '__ALL__' ? 'TẤT CẢ KHÁCH HÀNG' : cust.toUpperCase();
+    lines.push(`BẢNG KÊ TỔNG CÔNG VIỆC - ${customerTitle}${selectedMonth ? ' (Tháng ' + selectedMonth + ')' : ' (Tất cả tháng)'}${selectedStatus ? ' [' + selectedStatus + ']' : ''}`);
     lines.push(`----------------------------`);
 
     unpaidJobs.forEach((j, i) => {
@@ -6518,10 +6495,10 @@
   function generateExecutorSalaryStatement(execName, selectedMonth, selectedStatus = '') {
     const filteredJobs = getActiveAdminScopedJobs().filter(j => {
       const jExec = (j.nguoiThucHien || '').trim();
-      if (String(jExec || '').toLowerCase() !== String(execName || '').toLowerCase()) return false;
+      if (!jExec) return false;
+      if (execName !== '__ALL__' && jExec.toLowerCase() !== String(execName || '').toLowerCase()) return false;
       if (!j.congViec && !j.khachHang) return false;
-      if (j.ttChiPhi === 'Đã trả') return false;
-      if (selectedStatus && j.tinhTrang !== selectedStatus) return false;
+      if (selectedStatus && normalizeQrCostStatus(j.ttChiPhi) !== selectedStatus) return false;
       if (selectedMonth) {
         let p = j.ngay.split('/');
         if (p.length !== 3 || `${p[1].padStart(2, '0')}/${p[2]}` !== selectedMonth) return false;
@@ -6531,7 +6508,7 @@
 
     const statusDesc = selectedStatus ? ` "${selectedStatus}"` : '';
     if (filteredJobs.length === 0) {
-      document.getElementById('qrStatementText').value = `Nhân sự "${execName}" không có khoản lương/chi phí nào${statusDesc} chưa thanh toán trong ${selectedMonth ? 'Tháng ' + selectedMonth : 'tất cả các tháng'}.`;
+      document.getElementById('qrStatementText').value = execName === '__ALL__' ? `Không có khoản lương/chi phí nào phù hợp${statusDesc} trong ${selectedMonth ? 'Tháng ' + selectedMonth : 'tất cả các tháng'}.` : `Nhân sự "${execName}" không có khoản lương/chi phí nào${statusDesc} trong ${selectedMonth ? 'Tháng ' + selectedMonth : 'tất cả các tháng'}.`;
       return;
     }
 
@@ -6539,7 +6516,8 @@
     let lines = [];
 
     const monthLabel = selectedMonth ? `Tháng ${selectedMonth}` : 'Tất cả tháng';
-    lines.push(`BẢNG KÊ TỔNG LƯƠNG - ${execName.toUpperCase()} (${monthLabel})${selectedStatus ? ' [' + selectedStatus + ']' : ''}`);
+    const executorTitle = execName === '__ALL__' ? 'TẤT CẢ NHÂN SỰ' : execName.toUpperCase();
+    lines.push(`BẢNG KÊ CÔNG VIỆC - ${executorTitle} (${monthLabel})${selectedStatus ? ' [' + selectedStatus + ']' : ''}`);
     lines.push(`----------------------------`);
 
     filteredJobs.forEach((j, i) => {
