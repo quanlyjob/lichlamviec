@@ -1951,43 +1951,50 @@
     #masterTableCard{min-height:calc(100vh - 250px);display:flex;flex-direction:column}
     #masterTableContainer{flex:1 1 auto;min-height:220px}
     @media(max-width:767.98px){#masterTableCard{min-height:calc(100dvh - 190px)}}
+
+    #loginOverlay .login-mode-tabs{display:flex;gap:6px;padding:4px;border-radius:12px;background:#f1f5f9}
+    #loginOverlay .login-mode-tabs .statement-mode-tab{flex:1;min-width:0}
+    #loginOverlay .login-mode-tabs .statement-mode-label{min-height:38px;padding:7px 10px;border-radius:9px;font-size:13px;white-space:nowrap}
+    #btnSubmitRegister{display:block;width:auto!important;min-width:190px;margin:12px auto 0;padding:8px 18px!important;font-size:13px}
 </style>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
 
 <div id="appToast" class="app-toast"></div>
 
-<!-- Màn hình yêu cầu Mã Đăng Nhập trước khi trích xuất Sheet -->
+<!-- Màn hình yêu cầu Tài Khoản trước khi trích xuất Sheet -->
 <div id="loginOverlay" class="login-overlay">
   <div class="login-card">
     <div class="login-logo">LT</div>
     <h5 class="fw-bold text-dark mb-1" id="loginCardTitle">Xác Thực Truy Cập</h5>
-    <p class="text-muted small mb-3" id="loginCardSubtitle">Nhập mã đăng nhập của bạn để truy cập lịch làm việc</p>
+    <p class="text-muted small mb-3" id="loginCardSubtitle">Nhập tên tài khoản và mật khẩu để truy cập lịch làm việc</p>
 
-    <!-- Tab chuyển đổi Đăng nhập / Tạo mã mới -->
-    <div class="statement-mode-tabs mb-3">
+    <!-- Tab chuyển đổi Đăng nhập / Tạo tài khoản mới -->
+    <div class="statement-mode-tabs login-mode-tabs mb-3">
       <div class="statement-mode-tab">
         <input type="radio" name="loginModeRadio" id="loginTabSignIn" checked onchange="switchLoginCardMode('login')" autocomplete="off">
         <label class="statement-mode-label" for="loginTabSignIn">🔓 Đăng nhập</label>
       </div>
       <div class="statement-mode-tab">
         <input type="radio" name="loginModeRadio" id="loginTabRegister" onchange="switchLoginCardMode('register')" autocomplete="off">
-        <label class="statement-mode-label" for="loginTabRegister">➕ Tạo mã ĐN mới</label>
+        <label class="statement-mode-label" for="loginTabRegister">➕ Tạo tài khoản</label>
       </div>
     </div>
 
     <!-- Form Đăng nhập -->
     <div id="loginSignInForm">
       <div class="mb-3 text-start">
-        <label class="form-label small fw-bold text-secondary mb-1">Mã đăng nhập:</label>
-        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mã truy cập..." autocomplete="current-password" style="letter-spacing: 1px; height: 42px; border-radius: 10px;" oninput="document.getElementById('loginErrorInline').classList.add('d-none')" onkeyup="if(event.key==='Enter') submitLoginCode()">
+        <label class="form-label small fw-bold text-secondary mb-1">Tên đăng nhập:</label>
+        <input type="text" id="loginUsernameInput" class="form-control text-center fw-bold text-uppercase mb-2" placeholder="Nhập tên tài khoản" autocomplete="username" style="height:42px;border-radius:10px;" oninput="this.value=this.value.toUpperCase();document.getElementById('loginErrorInline').classList.add('d-none')">
+        <label class="form-label small fw-bold text-secondary mb-1">Mật khẩu:</label>
+        <input type="password" id="loginCodeInput" class="form-control text-center fw-bold" placeholder="Nhập mật khẩu..." autocomplete="current-password" style="letter-spacing: 1px; height: 42px; border-radius: 10px;" oninput="document.getElementById('loginErrorInline').classList.add('d-none')" onkeyup="if(event.key==='Enter') submitLoginCode()">
       </div>
       <div class="d-flex align-items-center justify-content-between mb-3 px-1">
         <div class="form-check text-start mb-0">
           <input class="form-check-input" type="checkbox" id="rememberLoginCheck" checked autocomplete="off">
           <label class="form-check-label small text-muted" for="rememberLoginCheck" style="cursor:pointer;">Ghi nhớ trên máy này</label>
         </div>
-        <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleLoginPassLink" onclick="toggleShowLoginPass()">👁️ Hiện mã</a>
+        <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleLoginPassLink" onclick="toggleShowLoginPass()">👁️ Hiện mật khẩu</a>
       </div>
       <div id="loginErrorInline" class="alert alert-danger py-2 px-3 small d-none mb-3 text-start" style="border-radius: 10px;"></div>
       <button type="button" id="btnSubmitLogin" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitLoginCode()">
@@ -1995,23 +2002,23 @@
       </button>
     </div>
 
-    <!-- Form Tạo mã đăng nhập mới (chờ Admin duyệt) -->
+    <!-- Form Tạo tài khoản mới (chờ Admin duyệt) -->
     <div id="loginRegisterForm" class="d-none text-start">
       <div class="mb-2">
-        <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị:</label>
-        <input type="text" id="regDisplayNameInput" class="form-control" placeholder="VD: Studio Ánh Dương, Lê Tân..." autocomplete="off" style="height: 40px; border-radius: 10px;">
+        <label class="form-label small fw-bold text-secondary mb-1">Tên đăng nhập:</label>
+        <input type="text" id="regDisplayNameInput" class="form-control" placeholder="Nhập tên tài khoản" oninput="this.value=this.value.toUpperCase()" autocomplete="off" style="height: 40px; border-radius: 10px;">
       </div>
       <div class="mb-2.5">
         <div class="d-flex justify-content-between align-items-center mb-1">
-          <label class="form-label small fw-bold text-secondary mb-0">Mã đăng nhập muốn tạo:</label>
+          <label class="form-label small fw-bold text-secondary mb-0">Mật khẩu muốn tạo:</label>
           <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleRegPassLink" onclick="toggleShowInputPass('regAuthCodeInput', 'toggleRegPassLink')">👁️ Hiện</a>
         </div>
-        <input type="password" id="regAuthCodeInput" class="form-control fw-bold" placeholder="VD: Studio@123" autocomplete="new-password" style="height: 40px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitRegisterAuthCode()">
-        <small class="text-muted d-block mt-1" style="font-size: 11px;">🔒 Bắt buộc gồm: chữ HOA, chữ thường, số và ký tự đặc biệt (tối thiểu 6 ký tự).</small>
+        <input type="password" id="regAuthCodeInput" class="form-control fw-bold" placeholder="Tạo mật khẩu" autocomplete="new-password" style="height: 40px; border-radius: 10px;" onkeyup="if(event.key==='Enter') submitRegisterAuthCode()">
+        <small class="text-muted d-block mt-1" style="font-size: 11px;">🔒 Mật khẩu cần chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự.</small>
       </div>
       <div id="regStatusBanner" class="alert alert-info py-2 px-3 small d-none mb-3" style="border-radius: 10px;"></div>
       <button type="button" id="btnSubmitRegister" class="btn w-100 fw-bold text-white py-2" style="background-color: #7b1113; border-radius: 10px;" onclick="submitRegisterAuthCode()">
-        📩 Gửi yêu cầu tạo mã
+        📩 Gửi yêu cầu tạo tài khoản
       </button>
     </div>
   </div>
@@ -2037,7 +2044,7 @@
         <button type="button" class="menu-action-item" onclick="openDebtQrModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="receipt"></i></span><span>Bảng kê &amp; đối soát</span></button>
         <button type="button" class="menu-action-item" onclick="openReportModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="bar-chart-3"></i></span><span>Báo cáo tài chính</span></button>
         <button type="button" class="menu-action-item" onclick="openManageCatalogsModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="sliders-horizontal"></i></span><span>Quản lý danh mục</span></button>
-        <button type="button" class="menu-action-item d-none" id="btnMenuManageAuthCodes" onclick="openManageAuthCodesModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="shield-check"></i></span><span>Quản lý mã đăng nhập</span></button>
+        <button type="button" class="menu-action-item d-none" id="btnMenuManageAuthCodes" onclick="openManageAuthCodesModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="shield-check"></i></span><span>Danh sách tài khoản</span></button>
         <button type="button" class="menu-action-item d-none" id="btnMenuExportBackup" onclick="exportFirebaseBackupJson(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="download"></i></span><span>Sao lưu dữ liệu (JSON)</span></button>
       </section>
     </div>
@@ -2049,7 +2056,7 @@
         <button type="button" class="sidebar-account-menu" id="sidebarAccountMenuButton" onclick="toggleSidebarAccountMenu(event)" aria-expanded="false" aria-label="Tùy chọn tài khoản"><i data-lucide="ellipsis"></i></button>
       </div>
       <div class="dropdown-menu dropdown-menu-end sidebar-account-dropdown">
-        <button type="button" class="menu-action-item" id="btnMenuSelfAccount" onclick="closeSidebarAccountMenu(); openSelfAccountModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="user-cog"></i></span><span>Đổi mã &amp; tên hiển thị</span></button>
+        <button type="button" class="menu-action-item" id="btnMenuSelfAccount" onclick="closeSidebarAccountMenu(); openSelfAccountModal(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="user-cog"></i></span><span>Quản lý tài khoản</span></button>
         <button type="button" class="menu-action-item danger" onclick="closeSidebarAccountMenu(); logoutCode(); closeSidebar()"><span class="menu-icon-wrap"><i data-lucide="log-out"></i></span><span>Đăng xuất</span></button>
       </div>
     </div>  </aside>
@@ -2332,7 +2339,7 @@
           
           <div class="row g-2.5 mb-2.5">
             <div class="col-12 d-none mb-2" id="adminOwnerCodeGroup">
-              <label class="form-label text-danger">👤 Tài khoản (Tên hiển thị)</label>
+              <label class="form-label text-danger">👤 Tài khoản (Tài khoản)</label>
               <select class="form-select form-select-sm fw-bold" name="maDangNhap" id="formMaDangNhap"></select>
             </div>
             <div class="col-12 mb-2">
@@ -2586,29 +2593,29 @@
   </div>
 </div>
 
-<!-- Modal Quản lý Tài khoản & Mã Đăng Nhập (Chỉ Admin) -->
+<!-- Modal Quản lý Tài khoản & Tài Khoản (Chỉ Admin) -->
 <div class="modal fade" id="manageAuthCodesModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h6 class="modal-title">Quản Lý Tài Khoản & Mã Đăng Nhập</h6>
+        <h6 class="modal-title">Quản Lý Tài Khoản</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <div class="statement-filter-card mb-3">
           <label class="form-label small fw-bold text-secondary mb-1.5">Cấp phép trực tiếp tài khoản mới:</label>
           <div class="row g-2">
-            <div class="col-5">
-              <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tên hiển thị..." autocomplete="off">
+            <div class="col-4">
+              <input type="text" id="newAuthNoteInput" class="form-control" placeholder="Tài khoản..." autocomplete="username">
             </div>
             <div class="col-4">
-              <input type="password" id="newAuthCodeInput" class="form-control fw-bold" placeholder="Mã ĐN..." autocomplete="new-password">
+              <input type="password" id="newAuthCodeInput" class="form-control fw-bold" placeholder="Mật khẩu..." autocomplete="new-password">
             </div>
-            <div class="col-3">
-              <button type="button" class="btn btn-brand-primary w-100 h-100" onclick="addAuthorizedCode()">+ Cấp mã</button>
+            <div class="col-4">
+              <button type="button" class="btn btn-brand-primary w-100 h-100" onclick="addAuthorizedCode()">Tạo tài khoản</button>
             </div>
           </div>
-          <small class="text-muted d-block mt-1.5" style="font-size: 11px;">🔒 Mã ĐN bắt buộc gồm chữ HOA, chữ thường, số và ký tự đặc biệt (tối thiểu 6 ký tự).</small>
+          <small class="text-muted d-block mt-1.5" style="font-size: 11px;">🔒 Mật khẩu bắt buộc gồm chữ HOA, chữ thường, số và ký tự đặc biệt (tối thiểu 6 ký tự).</small>
         </div>
 
         <div id="pendingAuthCodesSection" class="mb-3 d-none">
@@ -2626,27 +2633,27 @@
   </div>
 </div>
 
-<!-- Modal Admin Sửa Tài Khoản & Mã Đăng Nhập -->
+<!-- Modal Admin Sửa Tài Khoản -->
 <div class="modal fade" id="adminEditAuthModal" tabindex="-1" style="z-index: 100001;">
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">
       <div class="modal-header">
-        <h6 class="modal-title">Sửa Tài Khoản & Mã ĐN</h6>
+        <h6 class="modal-title">Sửa tài khoản</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="adminEditOldCodeInput" autocomplete="off">
         <div class="mb-2.5">
-          <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị:</label>
-          <input type="text" id="adminEditDisplayNameInput" class="form-control fw-semibold" placeholder="Nhập tên hiển thị..." autocomplete="off">
+          <label class="form-label small fw-bold text-secondary mb-1">Tài khoản:</label>
+          <input type="text" id="adminEditDisplayNameInput" class="form-control fw-semibold" placeholder="Nhập tài khoản..." autocomplete="off">
         </div>
         <div class="mb-2">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <label class="form-label small fw-bold text-secondary mb-0">Mã đăng nhập:</label>
-            <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleAdminEditCodeLink" onclick="toggleShowInputPass('adminEditNewCodeInput', 'toggleAdminEditCodeLink')">🙈 Ẩn mã</a>
+            <label class="form-label small fw-bold text-secondary mb-0">Mật khẩu:</label>
+            <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleAdminEditCodeLink" onclick="toggleShowInputPass('adminEditNewCodeInput', 'toggleAdminEditCodeLink')">🙈 Ẩn mật khẩu</a>
           </div>
-          <input type="text" id="adminEditNewCodeInput" class="form-control fw-bold" placeholder="Nhập mã mới..." autocomplete="off">
-          <small class="text-muted d-block mt-1" style="font-size: 11px;">🔒 Gồm chữ HOA, chữ thường, số và ký tự đặc biệt (tối thiểu 6 ký tự). Dữ liệu công việc & danh mục sẽ tự động chuyển sang mã mới.</small>
+          <input type="text" id="adminEditNewCodeInput" class="form-control fw-bold" placeholder="Nhập mật khẩu..." autocomplete="off">
+          <small class="text-muted d-block mt-1" style="font-size: 11px;">🔒 Mật khẩu gồm chữ HOA, chữ thường, số và ký tự đặc biệt (tối thiểu 6 ký tự). Dữ liệu công việc & danh mục sẽ tự động chuyển sang mã mới.</small>
         </div>
       </div>
       <div class="modal-footer justify-content-end gap-2">
@@ -2657,7 +2664,7 @@
   </div>
 </div>
 
-<!-- Modal Tự Đổi Mã Đăng Nhập & Tên Hiển Thị -->
+<!-- Modal Tự Đổi Tài Khoản & Tài Khoản -->
 <div class="modal fade" id="selfAccountModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">
@@ -2667,18 +2674,30 @@
       </div>
       <div class="modal-body">
         <div class="mb-2.5">
-          <label class="form-label small fw-bold text-secondary mb-1">Tên hiển thị (Tiêu đề Lịch):</label>
+          <label class="form-label small fw-bold text-secondary mb-1">Tài khoản (Tiêu đề Lịch):</label>
           <input type="text" id="selfDisplayNameInput" class="form-control fw-semibold" placeholder="VD: Lê Tân, Studio June..." autocomplete="off">
+        </div>
+        <div class="mb-2" id="selfCurrentPasswordGroup">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label small fw-bold text-secondary mb-0">Mật khẩu hiện tại:</label>
+            
+          </div>
+          <input type="password" id="selfCurrentPasswordDisplay" class="form-control" readonly autocomplete="off">
         </div>
         <div class="mb-2" id="selfChangeCodeGroup">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <label class="form-label small fw-bold text-secondary mb-0">Mã đăng nhập của bạn:</label>
-            <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleSelfCodeLink" onclick="toggleShowInputPass('selfNewCodeInput', 'toggleSelfCodeLink')">👁️ Hiện mã</a>
+            <label class="form-label small fw-bold text-secondary mb-0">Mật khẩu mới:</label>
+            <a href="javascript:void(0)" class="small text-decoration-none text-secondary" id="toggleSelfCodeLink" onclick="toggleSelfNewPasswords()">👁️ Hiện mật khẩu</a>
           </div>
-          <input type="password" id="selfNewCodeInput" class="form-control fw-bold" placeholder="Nhập mã mới..." autocomplete="new-password">
-          <small class="text-muted d-block mt-1" style="font-size: 11px;">🔒 Bắt buộc có: <strong>chữ HOA, chữ thường, số và ký tự đặc biệt</strong> (tối thiểu 6 ký tự). Khi đổi mã mới, toàn bộ dữ liệu hiện tại sẽ tự động chuyển sang mã mới.</small>
+          <input type="password" id="selfNewCodeInput" class="form-control fw-bold" placeholder="Nhập mật khẩu mới" autocomplete="new-password">
+          
+        </div>
+        <div class="mb-2" id="selfConfirmPasswordGroup">
+          <label class="form-label small fw-bold text-secondary mb-1">Nhập lại mật khẩu mới:</label>
+          <input type="password" id="selfConfirmNewPasswordInput" class="form-control fw-bold" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password">
         </div>
       </div>
+        <small class="text-muted d-block mt-2" style="font-size: 11px;">🔒 Mật khẩu mới cần có: <strong>chữ HOA, chữ thường, số và ký tự đặc biệt</strong> (tối thiểu 6 ký tự). Khi đổi mật khẩu mới, toàn bộ dữ liệu hiện tại sẽ tự động chuyển sang mã mới.</small>
       <div class="modal-footer justify-content-end gap-2">
         <button type="button" class="btn btn-light border btn-sm px-3" data-bs-dismiss="modal">Hủy</button>
         <button type="button" class="btn btn-brand-primary btn-sm px-3" id="btnSaveSelfAccount" onclick="submitSelfAccountChange()">Lưu thay đổi</button>
@@ -2739,22 +2758,22 @@
   function validateStrongAuthCode(rawCode) {
     const code = normalizeCodeServer(rawCode);
     if (!code || code.length < 6 || code.length > 32) {
-      return { valid: false, message: "Mã đăng nhập phải từ 6 đến 32 ký tự!" };
+      return { valid: false, message: "Mật khẩu phải từ 6 đến 32 ký tự!" };
     }
     if (/\s/.test(code)) {
-      return { valid: false, message: "Mã đăng nhập không được chứa khoảng trắng!" };
+      return { valid: false, message: "Mật khẩu không được chứa khoảng trắng!" };
     }
     if (!/[A-Z]/.test(code)) {
-      return { valid: false, message: "Mã đăng nhập bắt buộc có ít nhất 1 chữ cái VIẾT HOA (A-Z)!" };
+      return { valid: false, message: "Mật khẩu bắt buộc có ít nhất 1 chữ cái VIẾT HOA (A-Z)!" };
     }
     if (!/[a-z]/.test(code)) {
-      return { valid: false, message: "Mã đăng nhập bắt buộc có ít nhất 1 chữ cái viết thường (a-z)!" };
+      return { valid: false, message: "Tài khoản bắt buộc có ít nhất 1 chữ cái viết thường (a-z)!" };
     }
     if (!/[0-9]/.test(code)) {
-      return { valid: false, message: "Mã đăng nhập bắt buộc có ít nhất 1 chữ số (0-9)!" };
+      return { valid: false, message: "Tài khoản bắt buộc có ít nhất 1 chữ số (0-9)!" };
     }
     if (!/[^A-Za-z0-9]/.test(code)) {
-      return { valid: false, message: "Mã đăng nhập bắt buộc có ít nhất 1 ký tự đặc biệt (VD: @, #, $, !, _...)!" };
+      return { valid: false, message: "Tài khoản bắt buộc có ít nhất 1 ký tự đặc biệt (VD: @, #, $, !, _...)!" };
     }
     return { valid: true, code: code };
   }
@@ -2982,7 +3001,7 @@
     const cleanAuth = normalizeCodeServer(currentAuthCode);
 
     if (action === "getAllJobsData") {
-      if (!cleanAuth) throw new Error("Vui lòng nhập mã đăng nhập!");
+      if (!cleanAuth) throw new Error("Vui lòng nhập mật khẩu!");
       if (Date.now() < loginLockoutUntil) {
         const waitSec = Math.ceil((loginLockoutUntil - Date.now()) / 1000);
         throw new Error(`Thao tác quá nhanh. Vui lòng thử lại sau ${waitSec} giây.`);
@@ -3118,9 +3137,9 @@
           loginLockoutUntil = Date.now() + Math.min(60000, failedLoginAttempts * 5000);
         }
         if (failedLoginAttempts >= 3) {
-          throw new Error("Mã đăng nhập không hợp lệ! Nếu bạn quên hãy liên hệ LETAN - 0966.220.002.");
+          throw new Error("Mật khẩu không hợp lệ! Nếu bạn quên hãy liên hệ LETAN - 0966.220.002.");
         }
-        throw new Error(`Mã đăng nhập không hợp lệ, chưa được duyệt hoặc đã bị khóa! (Sai ${failedLoginAttempts}/3 lần)`);
+        throw new Error(`Tài khoản không hợp lệ, chưa được duyệt hoặc đã bị khóa! (Sai ${failedLoginAttempts}/3 lần)`);
       }
 
       failedLoginAttempts = 0;
@@ -3218,7 +3237,7 @@
     if (action === "registerAuthCodeRequest") {
       const regCode = normalizeCodeServer(args[0]);
       const regDisplay = String(args[1] || "").trim();
-      if (!regCode || !regDisplay) throw new Error("Vui lòng nhập đầy đủ Tên hiển thị và Mã đăng nhập!");
+      if (!regCode || !regDisplay) throw new Error("Vui lòng nhập đầy đủ Tài khoản và Tài khoản!");
       const strongCheck = validateStrongAuthCode(regCode);
       if (!strongCheck.valid) {
         throw new Error(strongCheck.message);
@@ -3229,7 +3248,7 @@
       const checkRes = await firebaseFetch(`${dbUrl}/auth_hashes/${regHash}.json`);
       const existing = checkRes.ok ? (await checkRes.json()) : null;
       if (existing) {
-        throw new Error("Mã đăng nhập này không khả dụng. Vui lòng chọn một mã khác!");
+        throw new Error("Mật khẩu này không khả dụng. Vui lòng chọn một mã khác!");
       }
 
       // Ghi vào hàng đợi chỉ-ghi `/auth_requests/{randomId}` (không cho phép đọc danh sách từ client thường)
@@ -3257,7 +3276,7 @@
       const displayStr = String(args[1] || "").trim();
       const isActive = args[2] !== false;
       const reqIdToDelete = args[3] || null;
-      if (!codeToSave) throw new Error("Mã đăng nhập không hợp lệ!");
+      if (!codeToSave) throw new Error("Tài khoản không hợp lệ!");
       if (!reqIdToDelete && !authorizedCodesMap[codeToSave]) {
         const strongCheck = validateStrongAuthCode(codeToSave);
         if (!strongCheck.valid) throw new Error(strongCheck.message);
@@ -3336,7 +3355,7 @@
       const oldCode = normalizeCodeServer(args[0]);
       const newDisplay = String(args[1] || "").trim();
       const requestedNewCode = normalizeCodeServer(args[2]);
-      if (!oldCode || !newDisplay) throw new Error("Vui lòng nhập đầy đủ Tên hiển thị!");
+      if (!oldCode || !newDisplay) throw new Error("Vui lòng nhập đầy đủ Tài khoản!");
 
       // Nếu Admin đang sửa chính tài khoản của mình thì chuyển qua luồng selfUpdateAuthAccount
       if (oldCode === cleanAuth) {
@@ -3359,7 +3378,7 @@
         const checkNewRes = await firebaseFetch(`${dbUrl}/auth_hashes/${newHash}.json`);
         const existNew = checkNewRes.ok ? (await checkNewRes.json()) : null;
         if (existNew || authorizedCodesMap[targetCode]) {
-          throw new Error("Mã đăng nhập mới đã tồn tại. Vui lòng chọn mã khác!");
+          throw new Error("Mật khẩu mới đã tồn tại. Vui lòng chọn mã khác!");
         }
 
         const newEntry = {
@@ -3443,7 +3462,7 @@
       if (!cleanAuth || !currentAuthHash) throw new Error("Chưa đăng nhập!");
       const newDisplay = String(args[0] || "").trim();
       const requestedNewCode = normalizeCodeServer(args[1]);
-      if (!newDisplay) throw new Error("Tên hiển thị không được để trống!");
+      if (!newDisplay) throw new Error("Tài khoản không được để trống!");
 
       const targetCode = requestedNewCode || cleanAuth;
       if (targetCode !== cleanAuth) {
@@ -3459,7 +3478,7 @@
         const checkNewRes = await firebaseFetch(`${dbUrl}/auth_hashes/${newHash}.json`);
         const existNew = checkNewRes.ok ? (await checkNewRes.json()) : null;
         if (existNew) {
-          throw new Error("Mã đăng nhập này không khả dụng. Vui lòng chọn mã khác!");
+          throw new Error("Tài khoản này không khả dụng. Vui lòng chọn mã khác!");
         }
 
         const oldEntry = authorizedCodesMap[cleanAuth] || {};
@@ -4667,6 +4686,16 @@
 
     google.script.run
       .withSuccessHandler(function(res) {
+        const resolvedName = String((res && res.displayName) || '').trim().toLocaleUpperCase('vi');
+        if (loginExpectedUsername && resolvedName !== loginExpectedUsername) {
+          currentAuthCode = '';
+          try { localStorage.removeItem('letan_saved_auth_code'); localStorage.removeItem('letan_saved_username'); } catch(e) {}
+          document.getElementById('loginOverlay').classList.remove('d-none');
+          const loginError = document.getElementById('loginErrorInline');
+          if (loginError) { loginError.innerText = 'Tên đăng nhập hoặc mật khẩu không đúng.'; loginError.classList.remove('d-none'); }
+          if (doneCallback) doneCallback();
+          return;
+        }
         allJobs = (res && res.jobs) ? res.jobs : [];
         isAdminAccount = Boolean(res && res.isAdmin);
 
@@ -4708,13 +4737,13 @@
           adminDefaultFilterInitialized = true;
         }
 
-        // Tự động hiển thị cột Mã ĐN nếu là Admin để dễ tổng hợp công việc các mã khác
+        // Tự động hiển thị cột Tài khoản nếu là Admin để dễ tổng hợp công việc các mã khác
         const maDnCol = tableColumns.find(c => c.id === 'maDangNhap');
         if (maDnCol && isAdminAccount && localStorage.getItem('pref_table_col_vis_v2') === null) {
           maDnCol.visible = true;
         }
 
-        // Nạp danh mục riêng của mã đăng nhập hiện tại
+        // Nạp danh mục riêng của tài khoản hiện tại
         resetCategoriesToDefault();
         if (res && res.categories) {
           if (Array.isArray(res.categories.jobTypes)) jobTypes = res.categories.jobTypes.filter(Boolean).map(x => String(x).trim());
@@ -6667,6 +6696,8 @@
     toggleShowInputPass('loginCodeInput', 'toggleLoginPassLink');
   }
 
+  let loginExpectedUsername = '';
+
   function submitLoginCode() {
     const dbUrl = getFirebaseDbUrl();
     if (!dbUrl || dbUrl.includes("DÁN_LINK_FIREBASE")) {
@@ -6674,10 +6705,17 @@
       return;
     }
 
+    const userInp = document.getElementById('loginUsernameInput');
+    const username = userInp.value.trim().toLocaleUpperCase('vi');
+    userInp.value = username;
+    loginExpectedUsername = username;
     const inp = document.getElementById('loginCodeInput');
     const rawCode = inp.value.trim();
+    if (!username) {
+      showToast('Vui lòng nhập tên đăng nhập!', true); userInp.focus(); return;
+    }
     if (!rawCode) {
-      showToast('Vui lòng nhập mã đăng nhập!', true);
+      showToast('Vui lòng nhập mật khẩu!', true);
       inp.focus();
       return;
     }
@@ -6687,8 +6725,8 @@
     loadCategoriesPrefs();
     const remember = document.getElementById('rememberLoginCheck').checked;
     try {
-      if (remember) localStorage.setItem('letan_saved_auth_code', currentAuthCode);
-      else localStorage.removeItem('letan_saved_auth_code');
+      if (remember) { localStorage.setItem('letan_saved_auth_code', currentAuthCode); localStorage.setItem('letan_saved_username', username); }
+      else { localStorage.removeItem('letan_saved_auth_code'); localStorage.removeItem('letan_saved_username'); }
     } catch (e) {}
 
     const inlineErr = document.getElementById('loginErrorInline');
@@ -6736,14 +6774,14 @@
     const isReg = (mode === 'register');
     document.getElementById('loginSignInForm').classList.toggle('d-none', isReg);
     document.getElementById('loginRegisterForm').classList.toggle('d-none', !isReg);
-    document.getElementById('loginCardTitle').innerText = isReg ? 'Đăng Ký Mã Mới' : 'Xác Thực Truy Cập';
+    document.getElementById('loginCardTitle').innerText = isReg ? 'Đăng ký' : 'Xác Thực Truy Cập';
     document.getElementById('loginCardSubtitle').innerText = isReg
-      ? 'Tạo mã đăng nhập và tên hiển thị (sẽ gửi tới Quản trị viên phê duyệt)'
-      : 'Nhập mã đăng nhập của bạn để truy cập lịch làm việc';
+      ? 'Tạo tài khoản và mật khẩu (gửi Quản trị viên phê duyệt)'
+      : 'Nhập tài khoản của bạn để truy cập lịch làm việc';
     const banner = document.getElementById('regStatusBanner');
     if (banner) banner.classList.add('d-none');
     setTimeout(() => {
-      const targetInp = document.getElementById(isReg ? 'regAuthCodeInput' : 'loginCodeInput');
+      const targetInp = document.getElementById(isReg ? 'regDisplayNameInput' : 'loginUsernameInput');
       if (targetInp) targetInp.focus();
     }, 100);
   }
@@ -6756,12 +6794,12 @@
     const displayName = capitalizeAllWords(nameInp.value);
 
     if (!displayName) {
-      showToast('Vui lòng nhập Tên hiển thị!', true);
+      showToast('Vui lòng nhập mật khẩu!', true);
       nameInp.focus();
       return;
     }
     if (!code) {
-      showToast('Vui lòng nhập Mã đăng nhập muốn tạo!', true);
+      showToast('Vui lòng nhập mật khẩu muốn tạo!', true);
       codeInp.focus();
       return;
     }
@@ -6798,29 +6836,46 @@
       .registerAuthCodeRequest(code, displayName);
   }
 
+  function toggleSelfNewPasswords() {
+    const currentPassword = document.getElementById('selfCurrentPasswordDisplay');
+    const newPassword = document.getElementById('selfNewCodeInput');
+    const confirmPassword = document.getElementById('selfConfirmNewPasswordInput');
+    const show = newPassword.type === 'password';
+    currentPassword.type = show ? 'text' : 'password';
+    newPassword.type = show ? 'text' : 'password';
+    confirmPassword.type = show ? 'text' : 'password';
+    const link = document.getElementById('toggleSelfCodeLink');
+    if (link) link.innerText = show ? '🙈 Ẩn mật khẩu' : '👁️ Hiện mật khẩu';
+  }
+
   function openSelfAccountModal() {
     if (!currentAuthCode) return;
     document.getElementById('selfDisplayNameInput').value = currentDisplayName || '';
     const codeInp = document.getElementById('selfNewCodeInput');
-    codeInp.value = currentAuthCode;
+    codeInp.value = '';
+    document.getElementById('selfCurrentPasswordDisplay').value = currentAuthCode;
+    document.getElementById('selfConfirmNewPasswordInput').value = '';
     codeInp.type = 'password';
     codeInp.disabled = false;
     const toggleLink = document.getElementById('toggleSelfCodeLink');
-    if (toggleLink) toggleLink.innerText = '👁️ Hiện mã';
+    if (toggleLink) toggleLink.innerText = '👁️ Hiện mật khẩu';
     document.getElementById('selfChangeCodeGroup').classList.remove('d-none');
     selfAccountModalInstance.show();
   }
 
   function submitSelfAccountChange() {
     const newDisplay = capitalizeAllWords(document.getElementById('selfDisplayNameInput').value);
-    const newCode = normalizeCodeServer(document.getElementById('selfNewCodeInput').value);
+    const passwordInput = document.getElementById('selfNewCodeInput').value;
+    const confirmPassword = document.getElementById('selfConfirmNewPasswordInput').value;
+    if (passwordInput && passwordInput !== confirmPassword) { showToast('Mật khẩu nhập lại không khớp!', true); document.getElementById('selfConfirmNewPasswordInput').focus(); return; }
+    const newCode = passwordInput ? normalizeCodeServer(passwordInput) : currentAuthCode;
 
     if (!newDisplay) {
-      showToast('Vui lòng nhập Tên hiển thị!', true);
+      showToast('Vui lòng nhập Tài khoản!', true);
       return;
     }
     if (!newCode) {
-      showToast('Vui lòng nhập Mã đăng nhập!', true);
+      showToast('Vui lòng nhập mật khẩu mới!', true);
       return;
     }
     if (newCode !== currentAuthCode) {
@@ -6870,7 +6925,7 @@
         loadData(function() {
           startRealtimeSync();
         });
-        showToast('Đã cập nhật Tài khoản & Tên hiển thị');
+        showToast('Đã cập nhật Tài khoản & Tài khoản');
       })
       .withFailureHandler(function(err) {
         btn.disabled = false;
@@ -6970,7 +7025,7 @@
                   <span class="badge bg-warning text-dark" style="font-size: 10px;">Chờ duyệt</span>
                 </div>
                 <div class="small text-muted mt-0.5">
-                  Mã ĐN: <code id="adminRowCodeVal_${rIdx}" data-raw-code="${escapeHtmlAttr(item.code)}" data-revealed="true" class="fw-bold text-dark">${escapeHtmlAttr(item.code)}</code>
+                  Tài khoản: <code id="adminRowCodeVal_${rIdx}" data-raw-code="${escapeHtmlAttr(item.code)}" data-revealed="true" class="fw-bold text-dark">${escapeHtmlAttr(item.code)}</code>
                   <button type="button" id="adminRowEyeBtn_${rIdx}" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none text-secondary" style="font-size: 11px;" onclick="toggleRevealAdminRowCode(${rIdx})">🙈 Ẩn</button>
                 </div>
                 <div class="text-muted" style="font-size: 11px;">📅 Ngày tạo: ${createdStr}</div>
@@ -7003,7 +7058,7 @@
             <span class="badge bg-success" style="font-size: 10px;">Luôn hoạt động</span>
           </div>
           <div class="small text-muted mt-0.5">
-            Mã ĐN: <code id="adminRowCodeVal_${adminIdx}" data-raw-code="${escapeHtmlAttr(adminCodeLabel)}" data-revealed="false" class="fw-bold text-dark">••••••••</code>
+            Tài khoản: <code id="adminRowCodeVal_${adminIdx}" data-raw-code="${escapeHtmlAttr(adminCodeLabel)}" data-revealed="false" class="fw-bold text-dark">••••••••</code>
             <button type="button" id="adminRowEyeBtn_${adminIdx}" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none text-secondary" style="font-size: 11px;" onclick="toggleRevealAdminRowCode(${adminIdx})">👁️ Xem</button>
           </div>
           <div class="text-muted" style="font-size: 11px;">📅 Ngày tạo: ${adminCreatedStr}</div>
@@ -7035,7 +7090,7 @@
                 <span class="badge bg-light text-dark border" style="font-size: 10px;">${jobCount} việc</span>
               </div>
               <div class="small text-muted mt-0.5">
-                Mã ĐN: <code id="adminRowCodeVal_${rIdx}" data-raw-code="${escapeHtmlAttr(code)}" data-revealed="false" class="fw-bold text-dark">••••••••</code>
+                Tài khoản: <code id="adminRowCodeVal_${rIdx}" data-raw-code="${escapeHtmlAttr(code)}" data-revealed="false" class="fw-bold text-dark">••••••••</code>
                 <button type="button" id="adminRowEyeBtn_${rIdx}" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none text-secondary" style="font-size: 11px;" onclick="toggleRevealAdminRowCode(${rIdx})">👁️ Xem</button>
               </div>
               <div class="text-muted" style="font-size: 11px;">📅 Ngày tạo: ${createdStr}</div>
@@ -7076,11 +7131,11 @@
     const newCode = normalizeCodeServer(document.getElementById('adminEditNewCodeInput').value);
 
     if (!newDisplay) {
-      showToast('Vui lòng nhập Tên hiển thị!', true);
+      showToast('Vui lòng nhập Tài khoản!', true);
       return;
     }
     if (!newCode) {
-      showToast('Vui lòng nhập Mã đăng nhập!', true);
+      showToast('Vui lòng nhập Tài khoản!', true);
       return;
     }
     if (newCode !== oldCode) {
@@ -7141,15 +7196,15 @@
     const codeInp = document.getElementById('newAuthCodeInput');
     const noteInp = document.getElementById('newAuthNoteInput');
     const code = normalizeCodeServer(codeInp.value);
-    const note = capitalizeAllWords(noteInp.value);
+    const note = noteInp.value.trim().toLocaleUpperCase('vi');
 
     if (!note) {
-      showToast('Vui lòng nhập Tên hiển thị!', true);
+      showToast('Vui lòng nhập Tài khoản!', true);
       noteInp.focus();
       return;
     }
     if (!code) {
-      showToast('Vui lòng nhập mã đăng nhập cần cấp!', true);
+      showToast('Vui lòng nhập mật khẩu', true);
       codeInp.focus();
       return;
     }
@@ -7160,7 +7215,7 @@
       return;
     }
     if (isAdminCode(code)) {
-      showToast('Mã này đang được tài khoản quản trị sử dụng!', true);
+      showToast('Mật khẩu này đang được tài khoản quản trị sử dụng!', true);
       return;
     }
 
@@ -7274,7 +7329,7 @@
     renderCalendar();
     renderSelectedDayJobs();
     renderMasterTable();
-    showToast('Đã đăng xuất mã truy cập');
+    showToast('Đã đăng xuất tài khoản');
   }
 
 
@@ -7470,7 +7525,7 @@
         });
       } else {
         document.getElementById('loginOverlay').classList.remove('d-none');
-        setTimeout(() => document.getElementById('loginCodeInput').focus(), 200);
+        setTimeout(() => document.getElementById('loginUsernameInput').focus(), 200);
       }
     } catch (e) {
       document.getElementById('loginOverlay').classList.remove('d-none');
