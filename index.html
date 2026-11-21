@@ -5111,49 +5111,63 @@
       .extractAddressFromMap(url);
   }
 
-  function generateMapLinkFromDetail(btnEl) {
+  function shortenUrlWithIsGd(longUrl) {
+    return new Promise((resolve, reject) => {
+      const callbackName = 'isGdShortener_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      const script = document.createElement('script');
+      const timeoutId = setTimeout(() => finish(new Error('is.gd phản hồi quá thời gian')), 15000);
+      let settled = false;
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+        script.remove();
+        try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+      };
+      const finish = (error, result) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (error) reject(error);
+        else resolve(result);
+      };
+      window[callbackName] = (data) => {
+        if (data && data.shorturl && /^https:\/\/is\.gd\/[A-Za-z0-9]+$/i.test(data.shorturl)) finish(null, data.shorturl);
+        else finish(new Error((data && data.errormessage) || 'is.gd không tạo được link rút gọn'));
+      };
+      script.onerror = () => finish(new Error('Không kết nối được tới is.gd'));
+      script.src = 'https://is.gd/create.php?format=json&callback=' + encodeURIComponent(callbackName) + '&url=' + encodeURIComponent(longUrl);
+      document.head.appendChild(script);
+    });
+  }
+
+  async function generateMapLinkFromDetail(btnEl) {
     const diaChiInput = document.getElementById('formDiaChi');
     const mapLinkInput = document.getElementById('formMapLink');
     const queryText = diaChiInput.value.trim();
-    
     if (!queryText) {
       showToast('Hãy nhập ô Địa chỉ trước', true);
       return;
     }
 
-    const encodedQuery = encodeURIComponent(queryText);
-    const rawMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
-
+    const rawMapUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(queryText);
     const btn = btnEl || null;
     const oldHtml = btn ? btn.innerHTML : 'Tạo map';
     if (btn) {
-      btn.innerHTML = 'Đang tạo...';
+      btn.innerHTML = 'Đang rút gọn...';
       btn.disabled = true;
     }
-
-    google.script.run
-      .withSuccessHandler(function(res) {
-        if (btn) {
-          btn.innerHTML = oldHtml;
-          btn.disabled = false;
-        }
-        if (res && res.success) {
-          mapLinkInput.value = res.url;
-          showToast('Đã tạo & chuẩn hóa link Google Maps');
-        } else {
-          mapLinkInput.value = rawMapUrl;
-          showToast('Đã tạo link Google Maps');
-        }
-      })
-      .withFailureHandler(function() {
-        if (btn) {
-          btn.innerHTML = oldHtml;
-          btn.disabled = false;
-        }
-        mapLinkInput.value = rawMapUrl;
-        showToast('Đã tạo link Google Maps');
-      })
-      .normalizeAndFixMapUrl(rawMapUrl);
+    try {
+      const shortUrl = await shortenUrlWithIsGd(rawMapUrl);
+      mapLinkInput.value = shortUrl;
+      showToast('Đã tạo link Google Maps rút gọn');
+    } catch (err) {
+      mapLinkInput.value = rawMapUrl;
+      showToast((err && err.message ? err.message + '. ' : '') + 'Đã giữ link Google Maps đầy đủ.', true);
+    } finally {
+      if (btn) {
+        btn.innerHTML = oldHtml;
+        btn.disabled = false;
+      }
+    }
   }
 
   function openManageCatalogsModal() {
