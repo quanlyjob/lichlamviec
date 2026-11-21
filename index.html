@@ -5952,7 +5952,7 @@
           } else if (col.id === 'chiPhi') {
             html += `<td class="text-end text-nowrap cell-money-secondary">${cVal.toLocaleString('vi-VN')} đ</td>`;
           } else if (col.id === 'ttChiPhi') {
-            html += `<td class="text-center"><input type="checkbox" class="cost-checkbox" ${j.ttChiPhi === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)" title="Tích chọn nếu đã thanh toán chi phí" autocomplete="off"></td>`;
+            html += `<td class="text-center"><input type="checkbox" class="cost-checkbox" ${normalizeQrCostStatus(j.ttChiPhi) === 'Đã trả' ? 'checked' : ''} onchange="toggleCostStatus(${j.rowNumber}, this)" title="Tích chọn nếu đã thanh toán chi phí" autocomplete="off"></td>`;
           } else if (col.id === 'maDangNhap') {
             html += `<td class="text-center"><span class="badge bg-dark bg-opacity-10 text-dark border">${getDisplayNameForCode(j.maDangNhap)}</span></td>`;
           }
@@ -6438,7 +6438,7 @@
       const cleanDetail = [parsed.thoiGian, parsed.diaChi].filter(Boolean).join(' - ');
 
       let lineStr = `${i + 1}. Ngày ${j.ngay}: ${j.congViec}${cleanDetail ? ' (' + cleanDetail + ')' : ''}`;
-      if (!selectedStatus && j.tinhTrang) {
+      if (qrShowMoney && !selectedStatus && j.tinhTrang) {
         lineStr += ` [${j.tinhTrang}]`;
       }
       if (qrShowMoney) {
@@ -6502,8 +6502,9 @@
       const detailStr = cleanDetail ? ` (${cleanDetail})` : '';
 
       let lineStr = `${i + 1}. Ngày ${j.ngay}: ${j.congViec || 'Công việc'}${detailStr}`;
-      if (!selectedStatus && j.tinhTrang) {
-        lineStr += ` [${j.tinhTrang}]`;
+      if (qrShowMoney) {
+        const costStatusLabel = normalizeQrCostStatus(j.ttChiPhi) === 'Đã trả' ? 'Đã thanh toán' : 'Chưa thanh toán';
+        lineStr += ` [${costStatusLabel}]`;
       }
       if (qrShowMoney) {
         lineStr += ` — ${sal.toLocaleString('vi-VN')} đ`;
